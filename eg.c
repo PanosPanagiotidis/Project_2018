@@ -1,18 +1,16 @@
 #include <stdio.h>
 
+#define N 2
+
+
 int main(void){
-	int a[3][3] = {{1, 2, 1}, {2, 4, 2}, {1, 2, 1}};
-	int b[3][3] = {{5, 8, 1}, {2, 10, 2}, {1, 0, 3}};
+	int a[3][3] = {{1,1,1},{1,5,2},{10,1,6}};
+	int b[3][3] = {{1,1,1},{1,5,2},{10,1,6} };
 
+	int bits = (1 << N);
 
-	int aRows,bRows;
-	aRows = 3;
-	bRows = 3;
+	char mask = (1 << bits) - 1;
 
-	int n = 2;
-	char mask = 0xFF;
-	
-
-
+	printf("no");
 
 }
