@@ -1,9 +1,6 @@
 #include <stdio.h>
 
-
 #define N 2
-
-
 
 
 int main(void){
@@ -13,6 +10,5 @@ int main(void){
 	int bits = (1 << N);
 
 	char mask = (1 << bits) - 1;
-
 
 }
