@@ -14,7 +14,5 @@ int main(void){
 
 	char mask = (1 << bits) - 1;
 
-	printf("no");
-
 
 }
