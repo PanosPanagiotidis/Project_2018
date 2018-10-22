@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include "structs.h"
 
-#define N 3
+#define N 4
 
 
 
 int main(void){
-	int32_t a[3][2] = {{1,1},{1,5},{10,1}};
+	int32_t a[3][2] = {{15,1},{31,5},{10,1}};
 	int32_t b[3][2] = {{1,1},{1,5},{10,1}};
 
 	int32_t bits = (1 << N);
@@ -18,7 +18,6 @@ int main(void){
 
 	int32_t  mask = (1 << N) - 1;
 
-	// printf("%x %x\n", );
 
 	int32_t reorderedArray[3][3];
 
@@ -31,6 +30,7 @@ int main(void){
 
 	for(int i = 0 ; i < rows ; i++){
 		LSB = a[i][0] & mask;
+		printf(" Oreganol: %x Last Bits: %x\n",a[i][0],LSB);
 		histogram[LSB]++;
 	}
 
