@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-typedef struct dataInits{
-	int rows;
-	int cols;
-	int** array;
-}dataInits;
+#include "randarr.h"
 
 
 dataInits* create_random_array(){
@@ -19,8 +11,8 @@ dataInits* create_random_array(){
 
 
 
-	int r = rand()%100 + 1;
-	int c = rand()%100 + 2;
+	int r = 1000;//rand()%100 + 1;
+	int c = 2;//rand()%100 + 2;
 	arr = (int **)malloc(sizeof(int *) *r);
 	arr[0] = (int *)malloc(sizeof(int) * c * r);
 
@@ -39,15 +31,15 @@ dataInits* create_random_array(){
 
 
 
-int main(void)
-{
-	dataInits *A = create_random_array();
-	printf("A data is | rows = %d | cols = %d | \n",A->rows,A->cols);
-	for (int i = 0 ; i < A->rows ; i++){
-		for(int j = 0 ; j < A->cols ; j++){
-			printf("%d ",A->array[i][j]);
-		}
-		printf("\n");
-	}
-	dataInits *B = create_random_array();
-}
+// int main(void)
+// {
+// 	dataInits *A = create_random_array();
+// 	printf("A data is | rows = %d | cols = %d | \n",A->rows,A->cols);
+// 	for (int i = 0 ; i < A->rows ; i++){
+// 		for(int j = 0 ; j < A->cols ; j++){
+// 			printf("%d ",A->array[i][j]);
+// 		}
+// 		printf("\n");
+// 	}
+// 	dataInits *B = create_random_array();
+// }
