@@ -10,3 +10,11 @@ typedef struct relation{
 }relation;
 
 void* RadixHashJoin(relation *reIR,relation *reIS); //temporary void
+
+typedef struct bucket{
+  int** data;
+}bucket;
+
+typedef struct Bucket_Array{
+  bucket *data;
+}bucket_array;
