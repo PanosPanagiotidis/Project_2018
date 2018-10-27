@@ -9,6 +9,6 @@
 
 bucket* create_bucket(int size){
     bucket *arr = malloc(sizeof(bucket));
-    arr->data = malloc(sizeof(int*) * size);
+    arr->tuplesArray = malloc(sizeof(tuple) * size);//allocate space for array of buckets
     return arr;
 }

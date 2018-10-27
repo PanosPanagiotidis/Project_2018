@@ -51,8 +51,8 @@ int main(void){
 
 	for(i = 0; i < rows ; i++){
 		LSB = a[i][0] & mask;
-		R[pSumDsp[LSB]][0] = a[i][0];
-		R[pSumDsp[LSB]][1] = a[i][1];
+		R[pSumDsp[LSB]][0] = a[i][0];//key
+		R[pSumDsp[LSB]][1] = a[i][1];//payload
 
 		pSumDsp[LSB]++;
 	}
@@ -61,11 +61,15 @@ int main(void){
 	bucket_array *A = (bucket_array*)malloc(sizeof(bucket_array) * hist_size);
 	//bucket_array *B = (bucket_array*)malloc(sizeof(bucket_array));
 
-	for (i = 0 ; i < hist_size ; i++){
-		A->data = create_bucket(histogram[i]);
+	tuple *t = malloc(sizeof(tuple));
+
+
+	for (i = 0 ; i < hist_size ; i++){//check periptwsh opou to bucket den iparxei
+		A->bck = create_bucket(histogram[i]);
 
 		for(j = 0 ; j < histogram[i] ; j++){
-
+			A->bck[i]->tuplesArray[j].key = R[i+j][0];
+			A->bck[i]->tuplesArray[j].payload = R[i+j][1];
 		}
 
 	}
