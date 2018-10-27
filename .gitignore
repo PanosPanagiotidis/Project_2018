@@ -48,3 +48,5 @@ Temporary Items
 
 # Object Files && executables
 *.o
+*.h.gch
+*.out
