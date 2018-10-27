@@ -1,3 +1,5 @@
+#ifndef STRUCTS_H
+#define STRUCTS_H
 #include <stdint.h>
 
 typedef struct tuple{
@@ -20,3 +22,5 @@ typedef struct bucket{
 typedef struct Bucket_Array{
   bucket **bucketArray;
 }bucket_array;
+
+#endif

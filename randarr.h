@@ -1,3 +1,5 @@
+#ifndef RANDARR_H
+#define RANDARR_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,3 +11,5 @@ typedef struct dataInits{
 }dataInits;
 
 dataInits* create_random_array();
+
+#endif
