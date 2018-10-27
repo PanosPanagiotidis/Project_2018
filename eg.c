@@ -20,7 +20,7 @@ int main(void){
 	int32_t  mask = (1 << N) - 1;
 
 
-	int32_t reorderedArray[3][3];
+	//int32_t reorderedArray[3][3];
 
 	int hist_size = 1 << N;//also TOTAL NUMBER OF BUCKETS
 
@@ -47,7 +47,7 @@ int main(void){
 	}
 
 
-	int32_t R[3][2]; //to be change;Duplicate the original array keeping rowId and Relation Column
+	int32_t R[3][2]; //to be changed;Duplicate the original array keeping rowId and Relation Column
 
 	for(i = 0; i < rows ; i++){
 		LSB = a[i][0] & mask;
@@ -58,19 +58,30 @@ int main(void){
 	}
 
 	//create buckets for tables
-	bucket_array *A = (bucket_array*)malloc(sizeof(bucket_array) * hist_size);
+	bucket_array *A = (bucket_array*)malloc(sizeof(bucket_array));
 	//bucket_array *B = (bucket_array*)malloc(sizeof(bucket_array));
+	A->bucketArray = (bucket**)malloc(sizeof(bucket*) * hist_size);
+	for(i = 0 ; i < hist_size ; i++){
+		A->bucketArray[i] = malloc(sizeof(bucket));
+	}
+
 
 	tuple *t = malloc(sizeof(tuple));
-
+	int prg = 0;
 
 	for (i = 0 ; i < hist_size ; i++){//check periptwsh opou to bucket den iparxei
-		A->bck = create_bucket(histogram[i]);
-
+		bucket *bck = A->bucketArray[i];
+		if(histogram[i] != 0){
+			printf("i is %d and hist[i] is %d \n",i,histogram[i]);
+		bck->tuplesArray = (tuple**)malloc(sizeof(tuple*) * histogram[i]);
 		for(j = 0 ; j < histogram[i] ; j++){
-			A->bck[i]->tuplesArray[j].key = R[i+j][0];
-			A->bck[i]->tuplesArray[j].payload = R[i+j][1];
+			bck->tuplesArray[j] = malloc(sizeof(tuple));
+			bck->tuplesArray[j]->key = R[prg][0];
+			bck->tuplesArray[j]->payload = R[prg][1];
+			prg++;
 		}
+
+	}
 
 	}
 

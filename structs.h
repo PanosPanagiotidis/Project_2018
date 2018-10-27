@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 typedef struct tuple{
   int32_t key;//rowId
   int32_t payload;//data
@@ -12,9 +14,9 @@ typedef struct relation{
 void* RadixHashJoin(relation *reIR,relation *reIS); //temporary void
 
 typedef struct bucket{
-  tuple *tuplesArray;
+  tuple **tuplesArray;
 }bucket;
 
 typedef struct Bucket_Array{
-  bucket *bck;
+  bucket **bucketArray;
 }bucket_array;
