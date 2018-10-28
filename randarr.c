@@ -16,11 +16,11 @@ dataInits* create_random_array(){
 	arr = (int **)malloc(sizeof(int *) *r);
 	arr[0] = (int *)malloc(sizeof(int) * c * r);
 
-	for(int i = 0; i < r; i++) 
+	for(int i = 0; i < r; i++)
         arr[i] = (*arr + c * i);
 
-     for (int i = 0; i < r; i++) 
-        for (int j = 0; j < c; j++) 
+     for (int i = 0; i < r; i++)
+        for (int j = 0; j < c; j++)
             arr[i][j] = rand()%300;
 
     data->rows = r;
