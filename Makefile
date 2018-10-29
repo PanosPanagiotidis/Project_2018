@@ -1,11 +1,11 @@
-eg:	eg.c
-	gcc -o prjct.out eg.c
+CC=gcc
 
-bench: bench.c
-	gcc -o bench.out bench.c
+prjct1:	eg.c
+	$(CC) -o $@.out eg.c
 
-randarr: randarr.c
-	gcc -o randarr.out randarr.c
+bench: benchmark.c randarr.c
+	$(CC) -o $@.out benchmark.c randarr.c
 
 clean:
-	rm prjct
+	$(RM) prjct.out bench.out
+	$(RM) *.h.gch
