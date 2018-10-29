@@ -3,24 +3,35 @@
 #include <stdint.h>
 
 typedef struct tuple{
-  int32_t key;//rowId
-  int32_t payload;//data
+	int32_t key;//rowId
+	int32_t payload;//data
 }tuple;
 
 
 typedef struct relation{
-  tuple *tuples;
-  uint32_t num_tuples;
+	tuple *tuples;
+	uint32_t num_tuples;
 }relation;
 
 void* RadixHashJoin(relation *reIR,relation *reIS); //temporary void
 
 typedef struct bucket{
-  tuple **tuplesArray;
+	tuple **tuplesArray;
 }bucket;
 
 typedef struct Bucket_Array{
-  bucket **bucketArray;
+	bucket **bucketArray;
 }bucket_array;
+
+typedef struct Table_Info
+{
+	tuple ** table;
+	int rows;
+	int cols;
+	int* pSum;
+	int* histogram;
+	int histSize;
+	bucket_array* buckets;
+}Table_Info;
 
 #endif
