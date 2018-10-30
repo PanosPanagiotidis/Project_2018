@@ -46,7 +46,11 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Object Files && executables
+# Object Files, precompiled headers && executables
 *.o
 *.h.gch
 *.out
+
+# Debug mains
+
+test*.c
