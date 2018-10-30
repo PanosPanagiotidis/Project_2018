@@ -4,28 +4,41 @@
 #include <stdint.h>
 #include "structs.h"
 
-#define HASH_RANGE 101
+#define HASHFUNC_RANGE 101
 
-typedef struct bucketHashTableData
+typedef struct bucketHashTableData												// Hash Table Entry
 {
-	int position;								// Position of start of chain in chainArray
-	int32_t unhashedData;						// Copy of unhashed key for collision handling
+	int position;																// Position of start of chain in chainArray
+	int32_t unhashedData;														// Copy of unhashed key for collision handling
 } bucketHashTableData;
 
-typedef struct chainArray {
+typedef struct bucketHashTable
+{
+	bucketHashTableData *table;
+	int size;
+	int occupiedCount;
+} bucketHashTable;
+
+
+typedef struct chainArray
+{
 	int size;
 	int *array;
 } chainArray;
 
+
 typedef struct daIndex
 {
-	bucketHashTableData bucket[HASH_RANGE];
+	bucketHashTable *bucket;
 	chainArray *chain;
 } daIndex;
 
 
 int bucketHashFunction(int32_t);
-daIndex **createDAIndexArray(bucket_array *);
-daIndex *createDAIndex(bucket *);
+
+daIndex **DAIndexArrayCreate(bucket_array *);
+daIndex *DAIndexCreate(bucket *);
+void DAIndexDestroy(daIndex *);
+int DAIndexInsert(daIndex *, int32_t, int);
 
 #endif

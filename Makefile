@@ -6,8 +6,9 @@ prjct1:	eg.c helper_functions.c
 bench: benchmark.c randarr.c
 	$(CC) -o $@.out benchmark.c randarr.c
 
-helper:
+daindex: daindex.c
+	$(CC) -o $@.out daindex.c
 
 clean:
-	$(RM) prjct.out bench.out
+	$(RM) *.out
 	$(RM) *.h.gch
