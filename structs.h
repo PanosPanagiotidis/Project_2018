@@ -17,10 +17,12 @@ void* RadixHashJoin(relation *reIR,relation *reIS); //temporary void
 
 typedef struct bucket{
   tuple **tuplesArray;
+  int size;
 }bucket;
 
 typedef struct Bucket_Array{
   bucket **bucketArray;
+  int size;
 }bucket_array;
 
 #endif
