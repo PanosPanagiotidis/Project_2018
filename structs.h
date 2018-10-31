@@ -25,4 +25,16 @@ typedef struct Bucket_Array{
   int size;
 }bucket_array;
 
+typedef struct Table_Info
+{
+	tuple ** table;
+	int rows;
+	int cols;
+	int* pSum;
+	int* histogram;
+	int histSize;
+	bucket_array* buckets;
+}Table_Info;
+
+
 #endif
