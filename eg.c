@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-//#include "structs.h"
+#include "structs.h"
 #include "randarr.h"
-#include "helper_functions.c"
+//#include "helper_functions.c"
 
 #define N 4
 #define HASH_SIZE 509
@@ -33,6 +33,9 @@ int main(void){
 	int32_t bits = (1 << N);
 	int i,j;
 	
+	for (int i = 0 ; i < 15 ; i++){
+		printf("A->id %d\n",IdA[i]);
+	}
 
 
 	int32_t  mask = (1 << N) - 1;
@@ -85,12 +88,12 @@ int main(void){
 
 	for(i = 0; i < rows ; i++){
 		LSB_A = Payload_A[i] & mask;
-		R_A_Payload[pSumDsp_A[LSB_A]] = IdA[i];//key
-		R_A_Id[pSumDsp_A[LSB_A]] = Payload_A[i];//payload
+		R_A_Id[pSumDsp_A[LSB_A]] = IdA[i];//key
+		R_A_Payload[pSumDsp_A[LSB_A]] = Payload_A[i];//payload
 
 		LSB_B = Payload_B[i] & mask;
-		R_B_Payload[pSumDsp_B[LSB_B]] = IdB[i];//key
-		R_B_Id[pSumDsp_B[LSB_B]] = Payload_B[i];//payload
+		R_B_Id[pSumDsp_B[LSB_B]] = IdB[i];//key
+		R_B_Payload[pSumDsp_B[LSB_B]] = Payload_B[i];//payload
 
 		pSumDsp_A[LSB_A]++;
 		pSumDsp_B[LSB_B]++;
@@ -99,12 +102,16 @@ int main(void){
 	//create buckets for tables
 	bucket_array *A = (bucket_array*)malloc(sizeof(bucket_array));
 	bucket_array *B = (bucket_array*)malloc(sizeof(bucket_array));
+	A->size = hist_size;
+	B->size = hist_size;
+
 	A->bucketArray = (bucket**)malloc(sizeof(bucket*) * hist_size);
 	B->bucketArray = (bucket**)malloc(sizeof(bucket*) * hist_size);
 	for(i = 0 ; i < hist_size ; i++){
 		A->bucketArray[i] = malloc(sizeof(bucket));
 		B->bucketArray[i] = malloc(sizeof(bucket));
 	}
+
 
 
 	tuple *t = malloc(sizeof(tuple));
@@ -115,29 +122,34 @@ int main(void){
 
 	for (i = 0 ; i < hist_size ; i++){//check periptwsh opou to bucket den iparxei
 		bck = A->bucketArray[i];
-		if(histogram_Α[i] != 0){
-			printf("i is %d and hist[i] is %d \n",i,histogram_Α[i]);
-		bck->tuplesArray = (tuple**)malloc(sizeof(tuple*) * histogram_Α[i]);
-		for(j = 0 ; j < histogram_Α[i] ; j++){
-			bck->tuplesArray[j] = malloc(sizeof(tuple));
-			bck->tuplesArray[j]->key = IdA[prgA];
-			bck->tuplesArray[j]->payload = Payload_A[prgA];
-			prgA++;
+		bck->size = histogram_A[i];
+		if(histogram_A[i] != 0){
+			//printf("i is %d and hist[i] is %d \n",i,histogram_A[i]);
+		bck->tuplesArray = (tuple**)malloc(sizeof(tuple*) * histogram_A[i]);
+			for(j = 0 ; j < histogram_A[i] ; j++){
+				bck->tuplesArray[j] = malloc(sizeof(tuple));
+				bck->tuplesArray[j]->key = R_A_Id[prgA];
+				bck->tuplesArray[j]->payload = R_A_Payload[prgA];
+				//printf("tuple reordered with tuple->id %d and tuple->payload %d \n",IdA[prgA],Payload_A[prgA]);
+						printf("A reordered->Id %d\n",bck->tuplesArray[j]->key);
+				prgA++;
+			}
 		}
-
 	}
 
-	}
+
+
 
 	for (i = 0 ; i < hist_size ; i++){//check periptwsh opou to bucket den iparxei
-		bck = Β->bucketArray[i];
-		if(histogram_Β[i] != 0){
-			printf("i is %d and hist[i] is %d \n",i,histogram_Β[i]);
-		bck->tuplesArray = (tuple**)malloc(sizeof(tuple*) * histogram_Β[i]);
-		for(j = 0 ; j < histogram_Β[i] ; j++){
+		bck = B->bucketArray[i];
+		bck->size = histogram_B[i];
+		if(histogram_B[i] != 0){
+			//printf("i is %d and hist[i] is %d \n",i,histogram_B[i]);
+		bck->tuplesArray = (tuple**)malloc(sizeof(tuple*) * histogram_B[i]);
+		for(j = 0 ; j < histogram_B[i] ; j++){
 			bck->tuplesArray[j] = malloc(sizeof(tuple));
-			bck->tuplesArray[j]->key = IdB[prgB];
-			bck->tuplesArray[j]->payload = Payload_B[prgB];
+			bck->tuplesArray[j]->key = R_B_Id[prgB];
+			bck->tuplesArray[j]->payload = R_B_Payload[prgB];
 			prgB++;
 		}
 

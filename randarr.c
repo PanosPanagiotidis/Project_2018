@@ -3,7 +3,7 @@
 
 int* create_column(int r,int isId){
 
-	srand((unsigned) time(&t));
+	srand((unsigned) time(NULL));
 	int32_t *arr;
 	arr = malloc(sizeof(int32_t)*r);
 
@@ -25,7 +25,7 @@ dataInits* create_random_array(int r,int c){
 
 	time_t t;
 	int **arr;
-	srand((unsigned) time(&t));
+	srand((unsigned) time(NULL));
 
 	//int r = 1000;//rand()%100 + 1;
 	//int c = 2;//rand()%100 + 2;

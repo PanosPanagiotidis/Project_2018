@@ -1,7 +1,7 @@
 CC=gcc
 
-prjct1:	eg.c helper_functions.c
-	$(CC) -o $@.out eg.c helper_functions.c
+prjct1:	eg.c helper_functions.c	randarr.c
+	$(CC) -o $@.out eg.c helper_functions.c	randarr.c
 
 bench: benchmark.c randarr.c
 	$(CC) -o $@.out benchmark.c randarr.c
