@@ -23,22 +23,23 @@ typedef struct bucket{
 typedef struct Bucket_Array{
 	bucket **bucketArray;
 	int size;
-}bucket;
-
-typedef struct Bucket_Array{
-  bucket **bucketArray;
-  int size;
 }bucket_array;
 
 typedef struct Table_Info
 {
-	tuple ** table;
+	tuple **tuples_table;
 	int rows;
 	int cols;
-	int* pSum;
-	int* histogram;
-	int histSize;
-	bucket_array* buckets;
+	int32_t* pSum;
+	int32_t* pSumDsp;
+	int32_t* histogram;
+	int32_t histSize;
+	bucket_array** bck_array;
 }Table_Info;
+
+typedef struct Tables{
+	Table_Info** Table_Array;
+}Tables;
+
 
 #endif
