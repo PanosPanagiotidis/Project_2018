@@ -1,18 +1,34 @@
 #include "randarr.h"
 
 
-dataInits* create_random_array(){
+int* create_column(int r,int isId){
+
+	srand((unsigned) time(NULL));
+	int32_t *arr;
+	arr = malloc(sizeof(int32_t)*r);
+
+	for (int i = 0 ; i < r ; i++){
+		if(isId){
+			arr[i] = i+1;
+		}else{
+			arr[i] = rand()%300;
+		}
+	}
+
+	return arr; 
+
+}
+
+dataInits* create_random_array(int r,int c){
 	dataInits *data = malloc(sizeof(dataInits));
 
 
 	time_t t;
 	int **arr;
-	srand((unsigned) time(&t));
+	srand((unsigned) time(NULL));
 
-
-
-	int r = 1000;//rand()%100 + 1;
-	int c = 2;//rand()%100 + 2;
+	//int r = 1000;//rand()%100 + 1;
+	//int c = 2;//rand()%100 + 2;
 	arr = (int **)malloc(sizeof(int *) *r);
 	arr[0] = (int *)malloc(sizeof(int) * c * r);
 

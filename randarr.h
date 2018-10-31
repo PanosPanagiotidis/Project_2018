@@ -10,6 +10,7 @@ typedef struct dataInits{
 	int** array;
 }dataInits;
 
-dataInits* create_random_array();
+dataInits* create_random_array(int ,int );
 
+int* create_column(int , int);
 #endif
