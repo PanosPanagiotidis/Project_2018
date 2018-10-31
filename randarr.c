@@ -5,7 +5,7 @@ int* create_column(int r,int isId){
 
 	srand((unsigned) time(&t));
 	int32_t *arr;
-	arr = malloc(sizeof(int)*r);
+	arr = malloc(sizeof(int32_t)*r);
 
 	for (int i = 0 ; i < r ; i++){
 		if(isId){
