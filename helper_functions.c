@@ -82,3 +82,23 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 	return ti;
 }
+
+
+void Destroy_Table_Data(Table_Info* ti){ //TODO
+	int i,j;
+
+	for(i = 0 ; i < ti->histSize ; i++){
+		for(j = 0 ; j < ti->histogram[i] ; j++){
+			free(ti->bucketArray[i]->tuplesArray[i]);
+		}
+		free(ti->bucketArray[i]);
+	}
+
+
+	free(ti->tuples_table);
+	free(R_Payload);
+	free(R_Id);
+	free(pSumDsp);
+	free(pSum);
+
+}
