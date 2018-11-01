@@ -34,7 +34,7 @@ typedef struct Table_Info
 	int32_t* pSumDsp;
 	int32_t* histogram;
 	int32_t histSize;
-	bucket_array** bck_array;
+	bucket_array* bck_array;
 }Table_Info;
 
 typedef struct Tables{

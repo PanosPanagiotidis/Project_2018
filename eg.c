@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "structs.h"
 #include "randarr.h"
-//#include "helper_functions.c"
+#include "helper_functions.h"
 
 #define N 4
 #define HASH_SIZE 509
@@ -22,20 +22,21 @@ int main(void){
 	int32_t* Payload_B;
 
 
-
 	IdA = create_column(rows,1);
 	IdB = create_column(rows,1);
 
 	Payload_A = create_column(rows,0);
 	Payload_B = create_column(rows,0);
 
+	Table_Info* Table_A = init_table_info(IdA,Payload_A,rows);
+
 	int **bucket_hash_table;
 	int32_t bits = (1 << N);
 	int i,j;
 	
-	for (int i = 0 ; i < 15 ; i++){
-		printf("A->id %d\n",IdA[i]);
-	}
+	// for (int i = 0 ; i < 15 ; i++){
+	// 	printf("A->id %d\n",IdA[i]);
+	// }
 
 
 	int32_t  mask = (1 << N) - 1;
