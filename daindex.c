@@ -3,6 +3,26 @@
 #include "daindex.h"
 #include "structs.h"
 
+chainArray *chainArrayCreateInit(int size)												// Creates and initializes a chainArray
+{
+	chainArray *chain = malloc(sizeof(chainArray));
+	chain->array  = malloc(size*sizeof(int));
+	chain->size   = size;
+	return chain;
+}
+
+bucketHashTable *bucketTableCreateInit(void)											// Creates and initializes 'bucket' hash table
+{
+	bucketHashTable *bucket = malloc(sizeof(bucketHashTable));
+	bucket->size = HASHFUNC_RANGE;														// Bucket array's size is equal to the range of the hash function
+	bucket->table =  malloc((bucket->size)*sizeof(bucketHashTableData));
+	bucket->occupiedCount = 0;
+
+	for(int i=0; i< bucket->size; i++ )	bucket->table[i].position = 0;					// Marking all 'bucket' entries as empty
+
+	return bucket;
+}
+
 daIndex **DAIndexArrayCreate(bucket_array *bckArray)									// Creates and returns an daIndex for each bucket in bckArray
 {
 	int bckCount = bckArray->size;
@@ -31,16 +51,9 @@ daIndex *DAIndexCreate(bucket *buck)													// Creates and returns the inde
 
 	daIndex* bcktIndex = malloc(sizeof(daIndex));
 
-	bcktIndex->chain = malloc(sizeof(chainArray));										// Initializing chain array
-	bcktIndex->chain->array = malloc((bucketSize+1)*sizeof(int));
-	bcktIndex->chain->size = bucketSize+1;												// Chain Array's size is equal to the bucket's plus 1 ( 1-based indexing )
-
-	bcktIndex->bucket = malloc(sizeof(bucketHashTable));								// Initializing 'Bucket' Hash Table
-	bcktIndex->bucket->size = HASHFUNC_RANGE;											// Bucket array's size is equal to the range of the hash function
-	bcktIndex->bucket->table = malloc(HASHFUNC_RANGE*sizeof(bucketHashTableData));
-	bcktIndex->bucket->occupiedCount = 0;
-
-	for(int i=0; i<HASHFUNC_RANGE; i++)	bcktIndex->bucket->table[i].position = 0;		// Marking all 'bucket' entries as empty
+	bcktIndex->chain = chainArrayCreateInit(bucketSize+1);								// Craeting & initializing chain array
+																						// Chain Array's size is equal to the bucket's plus 1 ( 1-based indexing )
+	bcktIndex->bucket = bucketTableCreateInit();										// Initializing 'Bucket' Hash Table
 
 
 	for(int i=0; i<bucketSize; i++ )													// Tries to insert each data the bucket contains into the index

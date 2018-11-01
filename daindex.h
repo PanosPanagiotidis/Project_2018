@@ -6,10 +6,10 @@
 
 #define HASHFUNC_RANGE 11
 
-typedef struct bucketHashTableData												// Hash Table Entry
+typedef struct bucketHashTableData														// Hash Table Entry
 {
-	int position;																// Position of start of chain in chainArray
-	int32_t unhashedData;														// Copy of unhashed data for collision handling
+	int position;																		// Position of start of chain in chainArray
+	int32_t unhashedData;																// Copy of unhashed data for collision handling
 } bucketHashTableData;
 
 typedef struct bucketHashTable
@@ -35,6 +35,9 @@ typedef struct daIndex
 
 
 int bucketHashFunction(int32_t);
+
+chainArray *chainArrayCreateInit(int);
+bucketHashTable *bucketTableCreateInit(void);
 
 daIndex **DAIndexArrayCreate(bucket_array *);
 daIndex *DAIndexCreate(bucket *);
