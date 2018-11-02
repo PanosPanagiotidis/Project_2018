@@ -12,7 +12,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 		exit(0);
 	}
 
-
+	ti->rows = size;
 	ti->tuples_table= malloc(sizeof(tuple*)*size);			// Creating tuple array (rowID,value)
 
 	if(ti->tuples_table == NULL){
@@ -75,7 +75,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 
 	int prg = 0;											// Filling buckets. To conversion apo panou se giwrgou den einai etoimo
-	bucket *bck;
+	bucket *bk;
 
 	ti->R_Payload = calloc(size,sizeof(int32_t));
 
@@ -103,25 +103,25 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 	bucket_array *A = ti->bck_array;
 
-	A = malloc(sizeof(bucket_array));
+	ti->bck_array = malloc(sizeof(bucket_array));
 
-	if(A == NULL){
+	if(ti->bck_array == NULL){
 		fprintf(stderr,"Error allocating space for a Bucket Array\n");
 		exit(0);
 	}	
 
-	A->size = ti->histSize;
+	ti->bck_array->size = ti->histSize;
 
-	A->bucketArray = malloc(sizeof(bucket*) * (ti->histSize));
+	ti->bck_array->bck = malloc(sizeof(bucket*) * (ti->histSize));
 
-	if(A->bucketArray == NULL){
+	if(ti->bck_array->bck == NULL){
 		fprintf(stderr,"Error allocating space for size*bucketArray\n");
 		exit(0);
 	}	
 
 	for(int i =0; i < ti->histSize; i++){
-		A->bucketArray[i] = malloc(sizeof(bucket));
-		if(A->bucketArray[i] == NULL){
+		ti->bck_array->bck[i] = malloc(sizeof(bucket));
+		if(ti->bck_array->bck[i] == NULL){
 			fprintf(stderr,"Error allocating space for bucket\n");
 			exit(0);
 		}	
@@ -129,28 +129,30 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 	for (int i = 0 ; i < ti->histSize ; i++)
 	{
-		bck = A->bucketArray[i];
-		bck->size = ti->histogram[i];
+		//bk = A->bck[i];
+		ti->bck_array->bck[i]->size = ti->histogram[i];
 
 		if(ti->histogram[i] != 0){ // Bucket is not existant
 
-			bck->tuplesArray = (tuple**)malloc(sizeof(tuple*) * ti->histogram[i]);
+			ti->bck_array->bck[i]->tuplesArray = (tuple**)malloc(sizeof(tuple*) * ti->histogram[i]);
 
 			for(int j = 0 ; j < ti->histogram[i] ; j++){
 
-				bck->tuplesArray[j] = malloc(sizeof(tuple));
+				ti->bck_array->bck[i]->tuplesArray[j] = malloc(sizeof(tuple));
 
-				if(bck->tuplesArray[j] == NULL){
+				if(ti->bck_array->bck[i]->tuplesArray[j] == NULL){
 					fprintf(stderr,"Error allocating space for tuple\n");
 					exit(0);
 				}	
 
-				bck->tuplesArray[j]->key = ti->R_Id[prg];
+				ti->bck_array->bck[i]->tuplesArray[j]->key = ti->R_Id[prg];
 
-				bck->tuplesArray[j]->payload = ti->R_Payload[prg];
+				ti->bck_array->bck[i]->tuplesArray[j]->payload = ti->R_Payload[prg];
 
 				prg++;//offset for bucket
 			}
+		}else{
+			ti->bck_array->bck[i]->tuplesArray = NULL;
 		}
 	}
 
@@ -158,21 +160,42 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 }
 
 
-void Destroy_Table_Data(Table_Info* ti){ //TODO
+void Destroy_Table_Data(Table_Info** ti){ //TODO
 	int i,j;
+	bucket* bk;
+	bucket_array *A = (*ti)->bck_array;
 
-	for(i = 0 ; i < ti->histSize ; i++){
-		for(j = 0 ; j < ti->histogram[i] ; j++){
-			free(ti->bck_array->bucketArray[i]->tuplesArray[i]);
-		}
-		free(ti->bck_array->bucketArray[i]);
+
+	for(i = 0 ; i < (*ti)->histSize ; i++){
+
+		// if((*ti)->histogram[i] != 0){
+
+			for(j = 0 ; j < (*ti)->histogram[i] ; j++){
+
+				if((*ti)->bck_array->bck[i]->tuplesArray != NULL){
+
+					free((*ti)->bck_array->bck[i]->tuplesArray[j]);
+				}
+
+			}
+				free((*ti)->bck_array->bck[i]->tuplesArray);
+				free((*ti)->bck_array->bck[i]);
+	//	}
+	}
+
+	for(i = 0 ; i < (*ti)->rows ; i++){
+		free((*ti)->tuples_table[i]);
 	}
 
 
-	free(ti->tuples_table);
-	free(ti->R_Payload);
-	free(ti->R_Id);
-	free(ti->pSumDsp);
-	free(ti->pSum);
+	free((*ti)->bck_array->bck);
+	free((*ti)->bck_array);
+	free((*ti)->histogram);
+	free((*ti)->tuples_table);
+	free((*ti)->R_Payload);
+	free((*ti)->R_Id);
+	free((*ti)->pSumDsp);
+	free((*ti)->pSum);
+	free((*ti));
 
 }

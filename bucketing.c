@@ -106,11 +106,11 @@ int main(void){
 	A->size = hist_size;
 	B->size = hist_size;
 
-	A->bucketArray = (bucket**)malloc(sizeof(bucket*) * hist_size);
-	B->bucketArray = (bucket**)malloc(sizeof(bucket*) * hist_size);
+	A->bck = (bucket**)malloc(sizeof(bucket*) * hist_size);
+	B->bck = (bucket**)malloc(sizeof(bucket*) * hist_size);
 	for(i = 0 ; i < hist_size ; i++){
-		A->bucketArray[i] = malloc(sizeof(bucket));
-		B->bucketArray[i] = malloc(sizeof(bucket));
+		A->bck[i] = malloc(sizeof(bucket));
+		B->bck[i] = malloc(sizeof(bucket));
 	}
 
 
@@ -122,7 +122,7 @@ int main(void){
 	bucket *bck;
 
 	for (i = 0 ; i < hist_size ; i++){//check periptwsh opou to bucket den iparxei
-		bck = A->bucketArray[i];
+		bck = A->bck[i];
 		bck->size = histogram_A[i];
 		if(histogram_A[i] != 0){
 			//printf("i is %d and hist[i] is %d \n",i,histogram_A[i]);
@@ -142,7 +142,7 @@ int main(void){
 
 
 	for (i = 0 ; i < hist_size ; i++){//check periptwsh opou to bucket den iparxei
-		bck = B->bucketArray[i];
+		bck = B->bck[i];
 		bck->size = histogram_B[i];
 		if(histogram_B[i] != 0){
 			//printf("i is %d and hist[i] is %d \n",i,histogram_B[i]);
