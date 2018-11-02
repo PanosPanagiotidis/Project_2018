@@ -3,6 +3,8 @@
 
 Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variables and structs of table info, a=keys, b=payloads
 {
+	int32_t LSB;
+
 	Table_Info* ti = malloc(sizeof(Table_Info));
 
 	if(ti == NULL){
@@ -10,7 +12,6 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 		exit(0);
 	}
 
-	int32_t LSB;
 
 	ti->tuples_table= malloc(sizeof(tuple*)*size);			// Creating tuple array (rowID,value)
 
@@ -48,9 +49,9 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 		exit(0);
 	}
 
-	int32_t* pSumDsp = calloc(ti->histSize,sizeof(int32_t));
+	ti->pSumDsp = calloc(ti->histSize,sizeof(int32_t));
 
-	if(pSumDsp == NULL){
+	if(ti->pSumDsp == NULL){
 		fprintf(stderr,"Error allocating space for pSumDsp\n");
 		exit(0);
 	}	
@@ -69,33 +70,35 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 	for(int i = 1; i < ti->histSize; i++)
 	{
 		ti->pSum[i] = ti->pSum[i-1] + ti->histogram[i-1];
-		pSumDsp[i] = pSumDsp[i-1] + ti->histogram[i-1]; 
+		ti->pSumDsp[i] = ti->pSumDsp[i-1] + ti->histogram[i-1]; 
 	}
 
 
 	int prg = 0;											// Filling buckets. To conversion apo panou se giwrgou den einai etoimo
 	bucket *bck;
 
-	int32_t* R_Payload = calloc(size,sizeof(int32_t));
+	ti->R_Payload = calloc(size,sizeof(int32_t));
 
-	if(R_Payload == NULL){
+	if(ti->R_Payload == NULL){
 		fprintf(stderr,"Error allocating space for Reordered Payload Table\n");
 		exit(0);
 	}	
 
-	int32_t* R_Id = calloc(size,sizeof(int32_t));
+	ti->R_Id = calloc(size,sizeof(int32_t));
 
-	if(R_Id == NULL){
+	if(ti->R_Id == NULL){
 		fprintf(stderr,"Error allocating space for Reordered Id Table\n");
 		exit(0);
 	}	
 	
 	for(int i = 0 ; i < size ; i++){
 		LSB = ti->tuples_table[i]->payload & mask;
-		R_Payload[pSumDsp[LSB]] = ti->tuples_table[i]->payload;
-		R_Id[pSumDsp[LSB]] = ti->tuples_table[i]->key;
 
-		pSumDsp[LSB]++;
+		ti->R_Payload[ti->pSumDsp[LSB]] = ti->tuples_table[i]->payload;
+
+		ti->R_Id[ti->pSumDsp[LSB]] = ti->tuples_table[i]->key;
+
+		ti->pSumDsp[LSB]++;
 	}
 
 	bucket_array *A = ti->bck_array;
@@ -134,15 +137,17 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 			bck->tuplesArray = (tuple**)malloc(sizeof(tuple*) * ti->histogram[i]);
 
 			for(int j = 0 ; j < ti->histogram[i] ; j++){
+
 				bck->tuplesArray[j] = malloc(sizeof(tuple));
+
 				if(bck->tuplesArray[j] == NULL){
 					fprintf(stderr,"Error allocating space for tuple\n");
 					exit(0);
 				}	
 
-				bck->tuplesArray[j]->key = R_Id[prg];
+				bck->tuplesArray[j]->key = ti->R_Id[prg];
 
-				bck->tuplesArray[j]->payload = R_Payload[prg];
+				bck->tuplesArray[j]->payload = ti->R_Payload[prg];
 
 				prg++;//offset for bucket
 			}
@@ -158,16 +163,16 @@ void Destroy_Table_Data(Table_Info* ti){ //TODO
 
 	for(i = 0 ; i < ti->histSize ; i++){
 		for(j = 0 ; j < ti->histogram[i] ; j++){
-			free(ti->bucketArray[i]->tuplesArray[i]);
+			free(ti->bck_array->bucketArray[i]->tuplesArray[i]);
 		}
-		free(ti->bucketArray[i]);
+		free(ti->bck_array->bucketArray[i]);
 	}
 
 
 	free(ti->tuples_table);
-	free(R_Payload);
-	free(R_Id);
-	free(pSumDsp);
-	free(pSum);
+	free(ti->R_Payload);
+	free(ti->R_Id);
+	free(ti->pSumDsp);
+	free(ti->pSum);
 
 }
