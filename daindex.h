@@ -6,15 +6,19 @@
 
 #define HASHFUNC_RANGE 11
 
+/*
+
 typedef struct bucketHashTableData														// Hash Table Entry
 {
 	int position;																		// Position of start of chain in chainArray
 	int32_t unhashedData;																// Copy of unhashed data for collision handling
 } bucketHashTableData;
 
+*/
+
 typedef struct bucketHashTable
 {
-	bucketHashTableData *table;
+	int *table;																			// Position of start of chain in chainArray
 	int size;
 	int occupiedCount;
 } bucketHashTable;

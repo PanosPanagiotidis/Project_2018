@@ -15,10 +15,12 @@ bucketHashTable *bucketTableCreateInit(void)											// Creates and initialize
 {
 	bucketHashTable *bucket = malloc(sizeof(bucketHashTable));
 	bucket->size = HASHFUNC_RANGE;														// Bucket array's size is equal to the range of the hash function
-	bucket->table =  malloc((bucket->size)*sizeof(bucketHashTableData));
+	//bucket->table =  malloc((bucket->size)*sizeof(bucketHashTableData));
+	bucket->table = malloc((bucket->size)*sizeof(int));
 	bucket->occupiedCount = 0;
 
-	for(int i=0; i< bucket->size; i++ )	bucket->table[i].position = 0;					// Marking all 'bucket' entries as empty
+	//for(int i=0; i< bucket->size; i++ )	bucket->table[i].position = 0;				// Marking all 'bucket' entries as empty
+	for(int i=0; i<bucket->size; i++)	bucket->table[i] = 0;
 
 	return bucket;
 }
@@ -81,6 +83,9 @@ void DAIndexDestroy(daIndex *indx)														// Frees all memory allocated fo
 }
 
 
+/*	OLD INSERT FUNCTION
+
+
 int DAIndexInsert(daIndex *bcktIndex, int32_t data, int i )								// Inserts the 'i'th data to the index
 {
 	int hashValue = bucketHashFunction(data);
@@ -125,6 +130,23 @@ int DAIndexInsert(daIndex *bcktIndex, int32_t data, int i )								// Inserts th
 	return 0;
 }
 
+*/
+
+
+int DAIndexInsert(daIndex *bcktIndex, int32_t data, int i)								// Inserts the 'i'th data to the index
+{
+	int hashValue = bucketHashFunction(data);
+
+	if( bcktIndex->bucket->table[hashValue] == 0 )										// If bucket array entry is empty, the data is inserted
+		bcktIndex->bucket->table[hashValue]	= i+1;										// with array index equal to its hash value
+	else
+	{
+		int tmp = bcktIndex->bucket->table[hashValue];									// Else, the start of the chainArray chain is updated to the new index
+		bcktIndex->bucket->table[hashValue] = i+1;
+		bcktIndex->chain->array[i+1] = tmp;
+	}
+	return 0;
+}
 
 int bucketHashFunction(int32_t data)													// Hash function used to map R data to array "Bucket"
 {
