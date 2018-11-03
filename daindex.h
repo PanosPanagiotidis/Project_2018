@@ -1,8 +1,8 @@
 #ifndef __DA_INDEX_H__
 #define __DA_INDEX_H__
 
-#include <stdint.h>
 #include "structs.h"
+#include <stdint.h>
 
 #define HASHFUNC_RANGE 11
 

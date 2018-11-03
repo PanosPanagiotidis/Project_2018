@@ -2,6 +2,7 @@
 #define STRUCTS_H
 #include <stdint.h>
 
+
 typedef struct tuple{
 	int32_t key;//rowId
 	int32_t payload;//data
@@ -43,6 +44,7 @@ typedef struct Table_Info
 typedef struct Tables{
 	Table_Info** Table_Array;
 }Tables;
+
 
 
 #endif

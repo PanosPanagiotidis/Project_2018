@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "daindex.h"
-#include "structs.h"
 
 chainArray *chainArrayCreateInit(int size)												// Creates and initializes a chainArray
 {
@@ -33,7 +32,7 @@ daIndex **DAIndexArrayCreate(bucket_array *bckArray)									// Creates and retu
 
 	for(int i=0; i<bckCount; i++)														// Create each daIndex
 	{
-		indArray[i] = DAIndexCreate(bckArray->bucketArray[i]);
+		indArray[i] = DAIndexCreate(bckArray->bck[i]);
 
 		if(indArray[i] == NULL)															// If a daIndex could not be created
 		{

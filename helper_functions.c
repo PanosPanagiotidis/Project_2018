@@ -4,6 +4,8 @@
 Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variables and structs of table info, a=keys, b=payloads
 {
 	int32_t LSB;
+	int32_t mask = (1 << N) - 1;
+
 
 	Table_Info* ti = malloc(sizeof(Table_Info));
 
@@ -56,7 +58,6 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 		exit(0);
 	}	
 
-	int32_t mask = (1 << N) - 1;								// Creating histogram, tha mporouse kalista na einai lathos
 
 	for(int i = 0; i < ti->histSize; i++)
 	{
