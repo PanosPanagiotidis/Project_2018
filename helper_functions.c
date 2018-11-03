@@ -36,7 +36,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 		ti->tuples_table[i]->payload = b[i];
 	}
 
-	ti->histSize = 1 << N;
+	ti->histSize = 1 << N; //16
 	ti->histogram= calloc(ti->histSize,sizeof(int32_t));
 
 	if(ti->histogram == NULL){
@@ -59,13 +59,17 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 	}	
 
 
-	for(int i = 0; i < ti->histSize; i++)
+	for(int i = 0; i < ti->rows; i++)
 	{
 		LSB = ti->tuples_table[i]->payload & mask;
 		ti->histogram[LSB]++; 
 	}
 
-	
+
+	for(int i = 0 ; i < (1 << N) ; i++){
+		printf("ti->histogram[i] %d\n",ti->histogram[i]);
+	}
+
 	ti->pSum[0] = 0;											// Creating pSum
 	
 	for(int i = 1; i < ti->histSize; i++)

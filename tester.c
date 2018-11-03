@@ -27,17 +27,17 @@ int main(void){
 	Table_Info *Table_A = init_table_info(IdA,Payload_A,rowsA);
 	Table_Info *Table_B = init_table_info(IdB,Payload_B,rowsB);
 
-	daIndex **I = DAIndexArrayCreate(Table_A->bck_array);
+	// daIndex **I = DAIndexArrayCreate(Table_A->bck_array);
 
 
-	result *r = getResults(Table_A,Table_B,&I);
-	int loop = r->size;
-	int i = 0;
-	while(r->size > 0 ){
-		printf("Result on row %d and row %d",r->results_array[i].key,r->results_array[i].payload);
-		loop--;
-		i++;
-	}
+	// result *r = getResults(Table_A,Table_B,&I);
+	// int loop = r->size;
+	// int i = 0;
+	// while(r->size > 0 ){
+	// 	printf("Result on row %d and row %d",r->results_array[i].key,r->results_array[i].payload);
+	// 	loop--;
+	// 	i++;
+	// }
 
 
 	
