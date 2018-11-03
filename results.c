@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "results.h"
+#include "daindex.h"
 #include <stdlib.h>
 
 #define N 4
@@ -7,7 +8,7 @@
 #define HASHFUNC_RANGE 11
 
 
-result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex ***Index){
+result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 	int key,payload;
 
@@ -43,12 +44,10 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex ***Index){
 
 		hash2_value = payload % HASHFUNC_RANGE;//Position in bucket array to find results
 
+		int chainStart = Index[LSB]->bucket->table[hash2_value];
 
-		chain_pos = (*Index)->bucket[LSB].table[hash2_value]; //get position in chain
 
-		chainArray *chain_array = (*Index)->chain;
-
-		if (chain_pos == 0) printf("Data is nowhere to be found in the other table");
+		if (chainStart == 0) printf("Data is nowhere to be found in the other table");
 
 
 		while(chain_pos != 0)
@@ -62,8 +61,8 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex ***Index){
 				r->results_array[counter].key = key;
 				r->results_array[counter].payload = T->R_Id[r_key];
 
-				if(counter = result_size-1)
-				{	
+				if(counter == result_size-1)
+				{
 					counter = 0;
 					result *temp = malloc(sizeof(result));
 					temp->results_array = malloc(sizeof(tuple)*result_size);
@@ -76,10 +75,10 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex ***Index){
 				r->size++;
 			}
 
-			chain_pos = Index->bucket[LSB].table[chain_pos];
+			chain_pos = Index[LSB]->chain->array[chain_pos];
 
 		}
-	
+
 	}
 	return head;
 
