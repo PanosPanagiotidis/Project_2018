@@ -53,4 +53,4 @@ Temporary Items
 
 # Debug mains
 
-test*.c
+#test*.c
