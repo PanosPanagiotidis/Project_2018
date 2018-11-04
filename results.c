@@ -88,12 +88,12 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 void destroy_results(result** r){
 	result *temp;
 
-	free((*r)->results_array);
-	free((*r));
-	// while((*r) != NULL){
-	// 	free((*r)->results_array);
-	// 	temp = (*r)->next;
-	// 	//free((*r));
-	// }
+
+	while((*r) != NULL){
+		free((*r)->results_array);
+		temp = (*r);
+		(*r) = (*r)->next;
+		free(temp);
+	}
 
 }
