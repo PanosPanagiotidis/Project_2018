@@ -49,6 +49,8 @@ int main(void){
 		}
 	}
 
+	destroy_results(&r);
+
 	// for(int i = 0; i < Table_A->bck_array->size; i++)
 	// {
 	// 	printf("\n--BUCKET %d!!!\n\n",i);

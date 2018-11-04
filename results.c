@@ -23,7 +23,7 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 	int32_t r_key;
 	int32_t LSB;
 	int32_t hash2_value;
-	//int32_t chain_pos;
+	int32_t chain_pos;
 
 	int32_t mask = (1 << N) - 1;
 
@@ -44,7 +44,7 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 		hash2_value = payload % HASHFUNC_RANGE;//Position in bucket array to find results
 
-		int chain_pos = Index[LSB]->bucket->table[hash2_value];
+		chain_pos = Index[LSB]->bucket->table[hash2_value];
 
 		// if (chain_pos == 0) printf("Data is nowhere to be found in the other table");
 
@@ -82,5 +82,18 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 	}
 	return head;
+
+}
+
+void destroy_results(result** r){
+	result *temp;
+
+	free((*r)->results_array);
+	free((*r));
+	// while((*r) != NULL){
+	// 	free((*r)->results_array);
+	// 	temp = (*r)->next;
+	// 	//free((*r));
+	// }
 
 }
