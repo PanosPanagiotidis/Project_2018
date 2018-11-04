@@ -5,7 +5,7 @@
 chainArray *chainArrayCreateInit(int size)												// Creates and initializes a chainArray
 {
 	chainArray *chain = malloc(sizeof(chainArray));
-	chain->array  = malloc(size*sizeof(int));
+	chain->array  = calloc(size,sizeof(int));
 	chain->size   = size;
 	return chain;
 }
@@ -74,6 +74,7 @@ daIndex *DAIndexCreate(bucket *buck)													// Creates and returns the inde
 void DAIndexArrayDestroy(daIndex **indArray, int size)
 {
 	for(int i=0; i< size; i++)	DAIndexDestroy(indArray[i]);
+	free(indArray);
 }
 
 
