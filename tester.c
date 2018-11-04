@@ -74,6 +74,7 @@ int main(void){
 
 	DAIndexArrayDestroy(I,Table_A->bck_array->size);
 	Destroy_Table_Data(&Table_A);
+	Destroy_Table_Data(&Table_B);
 
 
 	free(IdA);
