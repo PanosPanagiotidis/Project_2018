@@ -40,10 +40,13 @@ int main(void){
 			r = r->next;
 			loop = r->size;
 			i = 0;
+		}else if((loop == 0) && (r->next == NULL)){
+			loop--;
+		}else{
+			printf("Result on row %d and row %d\n",r->results_array[i].key,r->results_array[i].payload);
+			loop--;
+			i++;			
 		}
-		printf("Result on row %d and row %d\n",r->results_array[i].key,r->results_array[i].payload);
-		loop--;
-		i++;
 	}
 
 	// for(int i = 0; i < Table_A->bck_array->size; i++)
