@@ -66,9 +66,6 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 	}
 
 
-	for(int i = 0 ; i < (1 << N) ; i++){
-		printf("ti->histogram[i] %d\n",ti->histogram[i]);
-	}
 
 	ti->pSum[0] = 0;											// Creating pSum
 	

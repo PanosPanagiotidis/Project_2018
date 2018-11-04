@@ -8,8 +8,8 @@
 
 int main(void){
 
-	int rowsA = 4000;
-	int rowsB = 8000;
+	int rowsA = 40;
+	int rowsB = 80;
 
 	int32_t* IdA;
 	int32_t* IdB;
@@ -31,31 +31,38 @@ int main(void){
 
 
 	result *r = getResults(Table_A,Table_B,I);
-	//int loop = r->size;
-	//int i = 0;
-	// while(r->size > 0 ){
-	// 	printf("Result on row %d and row %d",r->results_array[i].key,r->results_array[i].payload);
-	// 	loop--;
-	// 	i++;
-	// }
+	int loop = r->size;
+	int i = 0;
 
-	for(int i = 0; i < Table_A->bck_array->size; i++)
-	{
-		printf("\n--BUCKET %d!!!\n\n",i);
-		for(int j = 0; j < Table_A->bck_array->bck[i]->size; j++)
-		{
-			int lel = Table_A->bck_array->bck[i]->tuplesArray[j]->payload;
-			printf("Position: %d  Size: Payload %d, Chain: %d, Modulo: %d\n", j+1, lel , I[i]->chain->array[j+1], lel % 11 );
+	while(loop >= 0 ){
+
+		if((loop == 0) && (r->next != NULL)){
+			r = r->next;
+			loop = r->size;
+			i = 0;
 		}
-
-		printf("boketarray:\n\n");
-
-		for(int j=0; j< I[i]->bucket->size; j++)
-		{
-			printf("Position: %d   BucketArray: %d\n",j,I[i]->bucket->table[j]);
-		}
-
+		printf("Result on row %d and row %d\n",r->results_array[i].key,r->results_array[i].payload);
+		loop--;
+		i++;
 	}
+
+	// for(int i = 0; i < Table_A->bck_array->size; i++)
+	// {
+	// 	printf("\n--BUCKET %d!!!\n\n",i);
+	// 	for(int j = 0; j < Table_A->bck_array->bck[i]->size; j++)
+	// 	{
+	// 		int lel = Table_A->bck_array->bck[i]->tuplesArray[j]->payload;
+	// 		printf("Position: %d  Size: Payload %d, Chain: %d, Modulo: %d\n", j+1, lel , I[i]->chain->array[j+1], lel % 11 );
+	// 	}
+
+	// 	printf("boketarray:\n\n");
+
+	// 	for(int j=0; j< I[i]->bucket->size; j++)
+	// 	{
+	// 		printf("Position: %d   BucketArray: %d\n",j,I[i]->bucket->table[j]);
+	// 	}
+
+	// }
 
 
 
