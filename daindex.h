@@ -45,7 +45,9 @@ bucketHashTable *bucketTableCreateInit(void);
 
 daIndex **DAIndexArrayCreate(bucket_array *);
 daIndex *DAIndexCreate(bucket *);
+void DAIndexArrayDestroy(daIndex **,int);
 void DAIndexDestroy(daIndex *);
+
 int DAIndexInsert(daIndex *, int32_t, int);
 
 #endif

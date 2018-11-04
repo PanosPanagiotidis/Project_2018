@@ -71,6 +71,11 @@ daIndex *DAIndexCreate(bucket *buck)													// Creates and returns the inde
 	return bcktIndex;
 }
 
+void DAIndexArrayDestroy(daIndex **indArray, int size)
+{
+	for(int i=0; i< size; i++)	DAIndexDestroy(indArray[i]);
+}
+
 
 void DAIndexDestroy(daIndex *indx)														// Frees all memory allocated for a daIndex
 {

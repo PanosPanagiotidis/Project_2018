@@ -5,8 +5,6 @@
 
 #define N 4
 
-#define HASHFUNC_RANGE 11
-
 
 result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
@@ -24,7 +22,7 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 	int32_t r_key;
 	int32_t LSB;
 	int32_t hash2_value;
-	int32_t chain_pos;
+	//int32_t chain_pos;
 
 	int32_t mask = (1 << N) - 1;
 
@@ -33,7 +31,7 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 	// }
 
 
-	for (int i = 0 ; i < 50 ; i++) printf("row is %d\n",nonIndexed->R_Payload[i]);
+	//for (int i = 0 ; i < 50 ; i++) printf("row is %d\n",nonIndexed->R_Payload[i]);
 
 	for(int i = 0 ; i < nonIndexed->rows ;i++){
 		payload = nonIndexed->R_Payload[i];
@@ -44,17 +42,15 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 		hash2_value = payload % HASHFUNC_RANGE;//Position in bucket array to find results
 
-		int chainStart = Index[LSB]->bucket->table[hash2_value];
+		int chain_pos = Index[LSB]->bucket->table[hash2_value];
 
-
-		if (chainStart == 0) printf("Data is nowhere to be found in the other table");
-
+		if (chain_pos == 0) printf("Data is nowhere to be found in the other table");
 
 		while(chain_pos != 0)
 		{
 			r_key = chain_pos - 1;		//item in chain
 
-			printf("rpayload %d payload %d\n",T->R_Payload[r_key],payload);
+			// printf("rpayload %d payload %d\n",T->R_Payload[r_key],payload);
 			if(T->R_Payload[r_key] == payload)
 			{
 
