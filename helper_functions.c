@@ -4,7 +4,7 @@
 Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variables and structs of table info, a=keys, b=payloads
 {
 	int32_t LSB;
-	int32_t mask = (1 << N) - 1;
+	int32_t mask = (1 << N) - 1; //Mask the least significant bits.Payload & mask = LSB
 
 
 	Table_Info* ti = malloc(sizeof(Table_Info));
@@ -14,7 +14,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 		exit(0);
 	}
 
-	ti->rows = size;
+	ti->rows = size;	
 	ti->tuples_table= malloc(sizeof(tuple*)*size);			// Creating tuple array (rowID,value)
 
 	if(ti->tuples_table == NULL){
@@ -22,7 +22,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 		exit(0);
 	}
 
-	for(int i = 0; i < size; i++)
+	for(int i = 0; i < size; i++)	//creating a tuples array for each combo of rowId + payload
 	{
 		ti->tuples_table[i] = malloc(sizeof(tuple));
 
@@ -44,14 +44,14 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 		exit(0);
 	}	
 
-	ti->pSum = calloc(ti->histSize,sizeof(int32_t));
+	ti->pSum = calloc(ti->histSize,sizeof(int32_t));	//prefix sum for each bucket.i.e starting at 0,3,5 items from reordered array
 
 	if(ti->pSum == NULL){
 		fprintf(stderr,"Error allocating space for pSum table\n");
 		exit(0);
 	}
 
-	ti->pSumDsp = calloc(ti->histSize,sizeof(int32_t));
+	ti->pSumDsp = calloc(ti->histSize,sizeof(int32_t)); //Displacement pSum.
 
 	if(ti->pSumDsp == NULL){
 		fprintf(stderr,"Error allocating space for pSumDsp\n");
@@ -76,8 +76,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 	}
 
 
-	int prg = 0;											// Filling buckets. To conversion apo panou se giwrgou den einai etoimo
-	bucket *bk;
+	int prg = 0;											// Filling buckets.
 
 	ti->R_Payload = calloc(size,sizeof(int32_t));
 
@@ -93,7 +92,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 		exit(0);
 	}	
 	
-	for(int i = 0 ; i < size ; i++){
+	for(int i = 0 ; i < size ; i++){ //Reordering of Id and Payload arrays.Afterwards stored in new arrays
 		LSB = ti->tuples_table[i]->payload & mask;
 
 		ti->R_Payload[ti->pSumDsp[LSB]] = ti->tuples_table[i]->payload;
@@ -131,7 +130,6 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 	for (int i = 0 ; i < ti->histSize ; i++)
 	{
-		//bk = A->bck[i];
 		ti->bck_array->bck[i]->size = ti->histogram[i];
 
 		if(ti->histogram[i] != 0){ // Bucket is not existant
@@ -162,15 +160,13 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 }
 
 
-void Destroy_Table_Data(Table_Info** ti){ //TODO
+void Destroy_Table_Data(Table_Info** ti){ 
 	int i,j;
 	bucket* bk;
 	bucket_array *A = (*ti)->bck_array;
 
 
-	for(i = 0 ; i < (*ti)->histSize ; i++){
-
-		// if((*ti)->histogram[i] != 0){
+	for(i = 0 ; i < (*ti)->histSize ; i++){//iterate and free items
 
 			for(j = 0 ; j < (*ti)->histogram[i] ; j++){
 
@@ -182,7 +178,6 @@ void Destroy_Table_Data(Table_Info** ti){ //TODO
 			}
 				free((*ti)->bck_array->bck[i]->tuplesArray);
 				free((*ti)->bck_array->bck[i]);
-	//	}
 	}
 
 	for(i = 0 ; i < (*ti)->rows ; i++){
@@ -199,5 +194,4 @@ void Destroy_Table_Data(Table_Info** ti){ //TODO
 	free((*ti)->pSumDsp);
 	free((*ti)->pSum);
 	free((*ti));
-
 }

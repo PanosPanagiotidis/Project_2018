@@ -6,11 +6,23 @@
 #define N 4
 
 
+/*
+*	Iterates through column of non Indexed Array nonIndexed for matches on 
+*	Indexed Array T.
+*	Results are stored in a tuple with tuple.key being the nonIndexed columns Id
+*	and tuple.payload being the Indexed columns Id
+*/
+
 result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 	int key,payload;
 
 	result *r = malloc(sizeof(result));
+
+	if(r == NULL){
+		fprintf(stderr,"Error allocating space for result struct \n");
+		exit(0);
+	}
 	
 
 	int32_t result_size = (1024*1024)/sizeof(tuple);
@@ -28,7 +40,6 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 	int32_t mask = (1 << N) - 1;
 
 
-	//for (int i = 0 ; i < 50 ; i++) printf("row is %d\n",nonIndexed->R_Payload[i]);
 	result *head = r;
 
 	for(int i = 0 ; i < nonIndexed->rows ;i++){
@@ -55,7 +66,19 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 					{
 						counter = 0;
 						result *temp = malloc(sizeof(result));
+
+						if(temp == NULL){
+							fprintf(stderr,"Error allocating space for result struct\n");
+							exit(0);
+						}
+
 						temp->results_array = malloc(sizeof(tuple)*result_size);
+
+						if(temp->results_array == NULL){
+							fprintf(stderr,"Error allocating space for results array\n");
+							exit(0);
+						}
+
 						temp->size = 0;
 						temp->next = NULL;
 						r->next = temp;
@@ -65,7 +88,6 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 				r->results_array[counter].key = key; //non Indexed Column key/rowId
 				r->results_array[counter].payload = T->R_Id[r_key];	//Indexed Column key/rowId
 
-				//valto to key sta results se morfh tuple (key,key);
 				counter++;
 				r->size++;
 			}
@@ -77,8 +99,12 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 	}
 	return head;
-
 }
+
+/*
+*	Prints kinda prettily the results
+*
+*/
 
 void print_results(result* r){
 	int loop = r->size;
@@ -109,6 +135,8 @@ void print_results(result* r){
 	}
 	printf("\n"); 
 }
+
+
 
 void destroy_results(result** r){
 	result *temp;
