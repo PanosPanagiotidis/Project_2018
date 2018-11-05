@@ -3,7 +3,7 @@
 
 int* create_column(int r,int isId){
 
-	srand((unsigned) time(NULL));
+	
 	int32_t *arr;
 	arr = malloc(sizeof(int32_t)*r);
 
@@ -20,15 +20,14 @@ int* create_column(int r,int isId){
 }
 
 dataInits* create_random_array(int r,int c){
+	
 	dataInits *data = malloc(sizeof(dataInits));
-
 
 	time_t t;
 	int **arr;
 	srand((unsigned) time(NULL));
 
-	//int r = 1000;//rand()%100 + 1;
-	//int c = 2;//rand()%100 + 2;
+
 	arr = (int **)malloc(sizeof(int *) *r);
 	arr[0] = (int *)malloc(sizeof(int) * c * r);
 
@@ -45,17 +44,3 @@ dataInits* create_random_array(int r,int c){
     return data;
 }
 
-
-
-// int main(void)
-// {
-// 	dataInits *A = create_random_array();
-// 	printf("A data is | rows = %d | cols = %d | \n",A->rows,A->cols);
-// 	for (int i = 0 ; i < A->rows ; i++){
-// 		for(int j = 0 ; j < A->cols ; j++){
-// 			printf("%d ",A->array[i][j]);
-// 		}
-// 		printf("\n");
-// 	}
-// 	dataInits *B = create_random_array();
-// }

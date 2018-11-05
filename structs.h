@@ -38,7 +38,7 @@ typedef struct Table_Info
 	int32_t* R_Id;
 	int32_t* R_Payload;
 	int32_t histSize;
-	bucket_array* bck_array;
+	bucket_array* bck_array;	//this needs to be bucket** fix later
 }Table_Info;
 
 typedef struct Tables{

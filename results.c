@@ -27,10 +27,6 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 	int32_t mask = (1 << N) - 1;
 
-	// if((*Index) == NULL){
-	// 	printf("is null\n");
-	// }
-
 
 	//for (int i = 0 ; i < 50 ; i++) printf("row is %d\n",nonIndexed->R_Payload[i]);
 	result *head = r;
@@ -46,13 +42,12 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 		chain_pos = Index[LSB]->bucket->table[hash2_value];
 
-		// if (chain_pos == 0) printf("Data is nowhere to be found in the other table");
+		if(chain_pos == 0) continue;
 
 		while(chain_pos != 0)
 		{
 			r_key = chain_pos - 1;		//item in chain
 
-			// printf("rpayload %d payload %d\n",T->R_Payload[r_key],payload);
 			if(T->R_Payload[r_key] == payload)
 			{
 
@@ -67,9 +62,8 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 						r = temp;
 					}
 
-				r->results_array[counter].key = key;
-				r->results_array[counter].payload = T->R_Id[r_key];
-				//printf("key is %d and R_Key is %d\n",r->results_array[counter].key,r->results_array[counter].payload);
+				r->results_array[counter].key = key; //non Indexed Column key/rowId
+				r->results_array[counter].payload = T->R_Id[r_key];	//Indexed Column key/rowId
 
 				//valto to key sta results se morfh tuple (key,key);
 				counter++;
@@ -78,11 +72,42 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 			chain_pos = Index[LSB]->chain->array[chain_pos];
 
+
 		}
 
 	}
 	return head;
 
+}
+
+void print_results(result* r){
+	int loop = r->size;
+	int i = 0;
+
+	printf("\n");
+	printf("|	Table A Row Id  	|	Table B Row Id 		|\n");	
+
+	while(loop >= 0 ){
+
+		if((loop == 0) && (r->next != NULL)){
+
+			r = r->next;
+			loop = r->size;
+			i = 0;
+
+		}else if((loop == 0) && (r->next == NULL)){
+
+			loop--;
+
+		}else{
+			
+			printf("|	 	%d		|	 	%d		|\n",r->results_array[i].key,r->results_array[i].payload);
+			loop--;
+			i++;
+
+		}
+	}
+	printf("\n"); 
 }
 
 void destroy_results(result** r){

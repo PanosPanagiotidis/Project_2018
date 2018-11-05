@@ -11,8 +11,11 @@ typedef struct result{
 	int size;
 }result;
 
+
 result* getResults(Table_Info* ,Table_Info* ,daIndex** );
 
 void destroy_results(result** );
+
+void print_results(result* );
 
 #endif
