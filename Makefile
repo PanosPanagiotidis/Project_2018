@@ -1,7 +1,7 @@
 CC=gcc
 
-RHJ:	tester.c helper_functions.c	randarr.c	results.c	daindex.c
-	$(CC) -o $@.out tester.c helper_functions.c	randarr.c	results.c	daindex.c -ggdb3
+RHJ:	RHJ.c helper_functions.c randarr.c results.c daindex.c
+	$(CC) -o $@.out RHJ.c helper_functions.c randarr.c results.c	daindex.c -ggdb3
 
 bench: benchmark.c randarr.c
 	$(CC) -o $@.out benchmark.c randarr.c -ggdb3

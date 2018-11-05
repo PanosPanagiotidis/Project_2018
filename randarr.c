@@ -1,7 +1,14 @@
 #include "randarr.h"
 
+/*
+*	create_column creates a column based on the isId flag.
+*	IDs are from 0 to r and Payloads are random.
+*
+*/
 
-int* create_column(int r,int isId){
+
+int* create_column(int r,int isId){	
+
 	
 	int32_t *arr;
 	arr = malloc(sizeof(int32_t)*r);
@@ -22,6 +29,11 @@ int* create_column(int r,int isId){
 	return arr; 
 
 }
+
+/*
+*	Creates a random array.
+*	NOT IN USE
+*/
 
 dataInits* create_random_array(int r,int c){
 	
