@@ -14,7 +14,7 @@ int* create_column(int r,int isId){
 	arr = malloc(sizeof(int32_t)*r);
 	if(arr == NULL)
 	{
-		fprintf(stderr, "Could not allocate space for int array %s\n", );
+		fprintf(stderr, "Could not allocate space for int array\n");
 		exit(0);
 	}
 

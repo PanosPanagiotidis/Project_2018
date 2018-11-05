@@ -10,8 +10,8 @@ int main(void){
 
 	srand((unsigned) time(NULL));
 
-	int rowsA = 40;
-	int rowsB = 80;
+	int rowsA = 400;
+	int rowsB = 800;
 
 	int32_t* IdA;
 	int32_t* IdB;
