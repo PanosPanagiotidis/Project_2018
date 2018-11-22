@@ -28,7 +28,8 @@ typedef struct Bucket_Array{
 }bucket_array;
 
 typedef struct Table_Info
-{
+{	
+	u_int64_t **relation;
 	tuple **tuples_table;
 	int rows;
 	int cols;

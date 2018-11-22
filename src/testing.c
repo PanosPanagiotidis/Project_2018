@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../header/relation_loader.h"
+#include "../header/structs.h"
 
 
 // void test_empty(void)
@@ -24,6 +25,14 @@
 // }
 
 int main(void)
-{
-	init_relations("filepaths.txt");
+{	
+	Table_Info *T = malloc(sizeof(Table_Info));
+	init_relations("filepaths.txt",T);
+
+	for(int i = 0 ; i < 3 ; i++){
+		for(int j = 0 ; j < 1561 ; j++){
+			printf("%ld 	|",T->relation[i][j]);
+		}
+		printf("\n ---------------new column-------------------\n");
+	}
 }
