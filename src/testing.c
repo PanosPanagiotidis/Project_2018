@@ -26,13 +26,20 @@
 
 int main(void)
 {	
-	Table_Info *T = malloc(sizeof(Table_Info));
-	init_relations("filepaths.txt",T);
+	// const int init_size = 15;
+	// Table_Info **Relations = malloc(sizeof(Table_Info*) * init_size);
 
-	for(int i = 0 ; i < 3 ; i++){
-		for(int j = 0 ; j < 1561 ; j++){
-			printf("%ld 	|",T->relation[i][j]);
-		}
-		printf("\n ---------------new column-------------------\n");
-	}
+	// for(int i = 0 ; i  < init_size ; i ++ ){
+	// 	Relations[i] = malloc(sizeof(Table_Info));
+	// }
+	//Table_Info *T = malloc(sizeof(Table_Info));
+	Table_Info **Relations;
+	init_relations(Relations);
+
+	// for(int i = 0 ; i < 3 ; i++){
+	// 	for(int j = 0 ; j < 1561 ; j++){
+	// 		printf("%ld 	|",T->relation[i][j]);
+	// 	}
+	// 	printf("\n ---------------new column-------------------\n");
+	// }
 }

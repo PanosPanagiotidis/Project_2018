@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-void init_relations(const char* filepath,Table_Info* T)
+void init_relations(Table_Info** R)
 {
 	int docs = 0;
 	FILE *fp;
@@ -16,100 +16,113 @@ void init_relations(const char* filepath,Table_Info* T)
 	char** doc_table;
 
 
-	fp = fopen("filepaths.txt","r");
+	char* line = NULL;
+	ssize_t nread;
 
-	if (fp == NULL){
-		fprintf(stderr,"Could not open requested file");
-		exit(1);
+	int doc = 0;
+	int init_t_size = 10;
+
+	doc_table = malloc(sizeof(char*)*init_t_size);
+
+	while(getline(&line,&len,stdin)){
+		line[strlen(line)-1] = '\0';
+		if(!strcmp(line,"DONE"))
+			break;
+
+		if(doc >= init_t_size){
+			doc_table = realloc(doc_table,init_t_size+10);
+			init_t_size +=10;
+		}
+
+		doc_table[doc] = strdup(line);
+		doc++;
+		if(line != NULL){
+			line = NULL;
+		}
+
 	}
 
-	// while(!feof(fp)){
-	// 	if(fgetc(fp) == '\n'){
-	// 		docs++;
-	// 	}
+	R = malloc(sizeof(Table_Info*) * doc);
+	for(int i = 0 ; i < doc ;i++)
+		R[i] = malloc(sizeof(Table_Info));
+
+	// for(int i = 0 ; i < doc ; i++){
+	// 	printf("doc is in %s\n",doc_table[i]);
 	// }
 
-	while(getline(&buf,&len,fp) > 0 )
-		docs++;
-
-
-	rewind(fp);
-
-	doc_table = malloc(sizeof(char*) * docs);
-
-	for(int i = 0 ; i < docs ; i++){
-		doc_table[i] = NULL;
-
-		getline(&doc_table[i],&len,fp);
-		doc_table[i][strlen(doc_table[i]) -1 ] = '\0';
-		printf("doc is %s\n",doc_table[i]);
-	}
-
-	//for(int i = 0 ; i < docs ; i++)
-		load_relations(doc_table[0],T);
+	load_relations(doc_table,doc,R);
 
 }
 
-void load_relations(const char* filename,Table_Info* T)
-{
-	int fd = open(filename,O_RDONLY);
-	if(fd == -1)
-		fprintf(stderr,"Could not open requested file \n");
+void load_relations(char** doc_table,int doc,Table_Info** R)
+{	
+	for(int i = 0 ; i < doc ; i++){
+		printf("doc %s\n",doc_table[i]);
+	}
 
-
-	//Get file size
-
+	int fd = -1;
 	struct stat sb;
-	if(fstat(fd,&sb) == -1)
-		fprintf(stderr,"fstat error\n");
+	long length = 0;
+	char* addr = NULL;
+	char* tmpaddr = NULL;
+	u_int64_t size = -1;
 
+	for(int cdoc = 0 ; cdoc < doc ; cdoc++){
+		fd = open(doc_table[cdoc],O_RDONLY);
+		if(fd == -1)
+			fprintf(stderr,"Could not open requested file\n");
 
-	long length = sb.st_size;
-	char* addr = (char*)(mmap(0,length,PROT_READ,MAP_PRIVATE | MAP_POPULATE,fd,0));
+		if(fstat(fd,&sb) == -1)
+			fprintf((stderr), "fstat error\n");
 
-	char* tmpaddr = addr;
+		length = sb.st_size;
+		addr = (char*)(mmap(0,length,PROT_READ,MAP_PRIVATE | MAP_POPULATE,fd,0));
 
-	if(tmpaddr == MAP_FAILED)
-		fprintf(stderr,"Cannot mmap %s of length %ld\n",filename,length);
+		tmpaddr = addr;
 
-	if(length < 16)
-		fprintf(stderr,"Relation file %s does not contain a valid header\n",filename);
+		if(tmpaddr == MAP_FAILED)
+			fprintf(stderr,"Cannot mmap %s of length %ld\n",doc_table[cdoc],length);
 
-	//printf("%p\n",tmpaddr);
+		if(length < 16)
+			fprintf(stderr,"Relation file %s does not contain a valid header\n",doc_table[cdoc]);
 
-	u_int64_t size = *((u_int64_t*)tmpaddr);
-	printf("size is %ld\n",size);
-	tmpaddr+=sizeof(size);
-	u_int64_t num_columns =*((u_int64_t*)tmpaddr);
-	tmpaddr = tmpaddr + sizeof(u_int64_t);
+		//printf("%p\n",tmpaddr);
 
-	T->relation = malloc(sizeof(u_int64_t *) * num_columns);
-	T->rows = num_columns;
-	T->cols = size;
+		size = *((u_int64_t*)tmpaddr);
+		printf("size is %ld\n",size);
+		tmpaddr+=sizeof(size);
+		u_int64_t num_columns =*((u_int64_t*)tmpaddr);
+		tmpaddr = tmpaddr + sizeof(u_int64_t);
 
-	for(int i = 0 ; i < num_columns ; i++){
-			T->relation[i] = malloc(sizeof(u_int64_t)*size);
-	}
+		R[cdoc]->relation = malloc(sizeof(u_int64_t *) * num_columns);
+		R[cdoc]->rows = num_columns;
+		R[cdoc]->cols = size;
 
-	printf("rows is %ld and columns is %ld\n",size,num_columns);
-
-
-	for(int i = 0 ; i < num_columns ; i++)
-	{
-		for(int j = 0 ; j < size ; j++)
-		{
-		//	printf("%ld |", *((u_int64_t*)tmpaddr) );
-
-			// DO THE THING
-			T->relation[i][j] = *((u_int64_t*)tmpaddr);
-			//printf("%ld 	|",T->relation[i][j]);
-			tmpaddr+=sizeof(u_int64_t);
+		for(int i = 0 ; i < num_columns ; i++){
+				R[cdoc]->relation[i] = malloc(sizeof(u_int64_t)*size);
 		}
-		//printf("\n -----new row---- \n");
-		//tmpaddr = tmpaddr - 3*size*sizeof(u_int64_t);
-		//tmpaddr = tmpaddr + sizeof(u_int64_t);
-	}
 
-	munmap(addr,length);
+		printf("rows is %ld and columns is %ld\n",size,num_columns);
+
+
+		for(int i = 0 ; i < num_columns ; i++)
+		{
+			for(int j = 0 ; j < size ; j++)
+			{
+			//	printf("%ld |", *((u_int64_t*)tmpaddr) );
+
+				// DO THE THING
+				R[cdoc]->relation[i][j] = *((u_int64_t*)tmpaddr);
+				//printf("%ld 	|",T->relation[i][j]);
+				tmpaddr+=sizeof(u_int64_t);
+			}
+			//printf("\n -----new row---- \n");
+			//tmpaddr = tmpaddr - 3*size*sizeof(u_int64_t);
+			//tmpaddr = tmpaddr + sizeof(u_int64_t);
+		}
+
+		munmap(addr,length);
+
+	}
 
 }
