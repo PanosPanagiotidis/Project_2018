@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-Table_Info** init_relations()
+Relations* init_relations()
 {
 	int docs = 0;
 	FILE *fp;
@@ -46,25 +46,19 @@ Table_Info** init_relations()
 	// for(int i = 0 ; i < doc ; i++){
 	// 	printf("doc is in %s\n",doc_table[i]);
 	// }	
-	Table_Info **R;
+	Relations* R;
 
 	R = load_relations(doc_table,doc);
 
 	return R;
 }
 
-Table_Info** load_relations(char** doc_table,int doc)
+Relations* load_relations(char** doc_table,int doc)
 {	
 
-	Table_Info **R;
-	R = malloc(sizeof(Table_Info*) * doc);
-	for(int i = 0 ; i < doc ;i++)
-		R[i] = malloc(sizeof(Table_Info));
+	Relations *R;
+	R = malloc(sizeof(Relations) * doc);
 
-
-	for(int i = 0 ; i < doc ; i++){
-		printf("doc %s\n",doc_table[i]);
-	}
 
 	int fd = -1;
 	struct stat sb;
@@ -100,12 +94,12 @@ Table_Info** load_relations(char** doc_table,int doc)
 		u_int64_t num_columns =*((u_int64_t*)tmpaddr);
 		tmpaddr = tmpaddr + sizeof(u_int64_t);
 
-		R[cdoc]->relation = malloc(sizeof(u_int64_t *) * num_columns);
-		R[cdoc]->rows = num_columns;
-		R[cdoc]->cols = size;
+		R[cdoc].relation = malloc(sizeof(u_int64_t *) * num_columns);
+		R[cdoc].rows = num_columns;
+		R[cdoc].cols = size;
 
 		for(int i = 0 ; i < num_columns ; i++){
-				R[cdoc]->relation[i] = malloc(sizeof(u_int64_t)*size);
+				R[cdoc].relation[i] = malloc(sizeof(u_int64_t)*size);
 		}
 
 		printf("rows is %ld and columns is %ld\n",size,num_columns);
@@ -118,7 +112,7 @@ Table_Info** load_relations(char** doc_table,int doc)
 			//	printf("%ld |", *((u_int64_t*)tmpaddr) );
 
 				// DO THE THING
-				R[cdoc]->relation[i][j] = *((u_int64_t*)tmpaddr);
+				R[cdoc].relation[i][j] = *((u_int64_t*)tmpaddr);
 				//printf("%ld 	|",R[cdoc]->relation[i][j]);
 				tmpaddr+=sizeof(u_int64_t);
 			}

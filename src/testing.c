@@ -33,15 +33,13 @@ int main(void)
 	// 	Relations[i] = malloc(sizeof(Table_Info));
 	// }
 	//Table_Info *T = malloc(sizeof(Table_Info));
-	Table_Info **Relations;
-	Relations = init_relations();
+	Relations *R;
+	R = init_relations();
 
-	if(Relations[0] == NULL)
-		printf("lolno\n");
 
 	for(int i = 0 ; i < 3 ; i++){
 		for(int j = 0 ; j < 1561 ; j++){
-			printf("%ld 	|",Relations[0]->relation[i][j]);
+			printf("%ld 	|",R[0].relation[i][j]);
 		}
 		printf("\n ---------------new column-------------------\n");
 	}

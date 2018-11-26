@@ -46,6 +46,11 @@ typedef struct Tables{
 	Table_Info** Table_Array;
 }Tables;
 
+typedef struct Relations{
+	u_int64_t **relation;
+	int cols;
+	int rows;
+}Relations;
 
 
 #endif
