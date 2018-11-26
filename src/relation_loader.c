@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-void init_relations(Table_Info** R)
+Table_Info** init_relations()
 {
 	int docs = 0;
 	FILE *fp;
@@ -42,20 +42,26 @@ void init_relations(Table_Info** R)
 
 	}
 
+
+	// for(int i = 0 ; i < doc ; i++){
+	// 	printf("doc is in %s\n",doc_table[i]);
+	// }	
+	Table_Info **R;
+
+	R = load_relations(doc_table,doc);
+
+	return R;
+}
+
+Table_Info** load_relations(char** doc_table,int doc)
+{	
+
+	Table_Info **R;
 	R = malloc(sizeof(Table_Info*) * doc);
 	for(int i = 0 ; i < doc ;i++)
 		R[i] = malloc(sizeof(Table_Info));
 
-	// for(int i = 0 ; i < doc ; i++){
-	// 	printf("doc is in %s\n",doc_table[i]);
-	// }
 
-	load_relations(doc_table,doc,R);
-
-}
-
-void load_relations(char** doc_table,int doc,Table_Info** R)
-{	
 	for(int i = 0 ; i < doc ; i++){
 		printf("doc %s\n",doc_table[i]);
 	}
@@ -113,7 +119,7 @@ void load_relations(char** doc_table,int doc,Table_Info** R)
 
 				// DO THE THING
 				R[cdoc]->relation[i][j] = *((u_int64_t*)tmpaddr);
-				//printf("%ld 	|",T->relation[i][j]);
+				//printf("%ld 	|",R[cdoc]->relation[i][j]);
 				tmpaddr+=sizeof(u_int64_t);
 			}
 			//printf("\n -----new row---- \n");
@@ -124,5 +130,7 @@ void load_relations(char** doc_table,int doc,Table_Info** R)
 		munmap(addr,length);
 
 	}
+
+	return R;
 
 }

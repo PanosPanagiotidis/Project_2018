@@ -34,12 +34,15 @@ int main(void)
 	// }
 	//Table_Info *T = malloc(sizeof(Table_Info));
 	Table_Info **Relations;
-	init_relations(Relations);
+	Relations = init_relations();
 
-	// for(int i = 0 ; i < 3 ; i++){
-	// 	for(int j = 0 ; j < 1561 ; j++){
-	// 		printf("%ld 	|",T->relation[i][j]);
-	// 	}
-	// 	printf("\n ---------------new column-------------------\n");
-	// }
+	if(Relations[0] == NULL)
+		printf("lolno\n");
+
+	for(int i = 0 ; i < 3 ; i++){
+		for(int j = 0 ; j < 1561 ; j++){
+			printf("%ld 	|",Relations[0]->relation[i][j]);
+		}
+		printf("\n ---------------new column-------------------\n");
+	}
 }
