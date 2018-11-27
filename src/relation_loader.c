@@ -37,7 +37,7 @@ Relations* init_relations()
 		doc_table[doc] = strdup(line);
 		doc++;
 		if(line != NULL){
-			free(line);
+			free(line);βασικα
 			line = NULL;
 		}
 
