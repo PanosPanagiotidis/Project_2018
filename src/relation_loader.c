@@ -6,6 +6,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdint.h>
 
 Relations* init_relations()
 {
@@ -37,7 +38,7 @@ Relations* init_relations()
 		doc_table[doc] = strdup(line);
 		doc++;
 		if(line != NULL){
-			free(line);βασικα
+			free(line);
 			line = NULL;
 		}
 
@@ -66,7 +67,7 @@ Relations* load_relations(char** doc_table,int doc)
 	long length = 0;
 	char* addr = NULL;
 	char* tmpaddr = NULL;
-	u_int64_t size = -1;
+	uint64_t size = -1;
 
 	for(int cdoc = 0 ; cdoc < doc ; cdoc++){
 		fd = open(doc_table[cdoc],O_RDONLY);
@@ -92,7 +93,7 @@ Relations* load_relations(char** doc_table,int doc)
 		size = *((u_int64_t*)tmpaddr);
 		printf("size is %ld\n",size);
 		tmpaddr+=sizeof(size);
-		u_int64_t num_columns =*((u_int64_t*)tmpaddr);
+		uint64_t num_columns =*((u_int64_t*)tmpaddr);
 		tmpaddr = tmpaddr + sizeof(u_int64_t);
 
 		R[cdoc].relation = malloc(sizeof(u_int64_t *) * num_columns);

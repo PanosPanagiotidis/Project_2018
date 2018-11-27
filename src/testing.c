@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "../header/relation_loader.h"
 #include "../header/structs.h"
+#include "../header/parser.h"
+
 
 
 // void test_empty(void)
@@ -33,14 +35,9 @@ int main(void)
 	// 	Relations[i] = malloc(sizeof(Table_Info));
 	// }
 	//Table_Info *T = malloc(sizeof(Table_Info));
-	Relations *R;
-	R = init_relations();
+	// Relations *R;
+	// R = init_relations();
 
+	QueryInput();
 
-	for(int i = 0 ; i < 3 ; i++){
-		for(int j = 0 ; j < 1561 ; j++){
-			printf("%ld 	|",R[0].relation[i][j]);
-		}
-		printf("\n ---------------new column-------------------\n");
-	}
 }
