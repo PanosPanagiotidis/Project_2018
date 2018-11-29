@@ -24,12 +24,25 @@ typedef struct Query{
 	predicates* p;
 	int total_p;
 	checksum_views* checksums;
-	
+
 }Query;
 
+typedef struct queryListNode{															// Linked List Node
+	Query *qr;
+	struct queryListNode *next;
+}queryListNode;
 
-void QueryInput();
-void ParseQuery(char* );
+typedef struct queryList{																// Singly Linked List containing queries
+	queryListNode *first;
+	queryListNode *last;																// Pointer to last query for fast insertions
+} queryList;
+
+int insertNodeInQueryList(queryList *,Query *);
+queryListNode *queryListNodeCreate(Query *);
+void queryListDestroy(queryList *);
+
+queryList *QueryInput();
+Query *ParseQuery(char* );
 int* get_relation_array(char* ,int* );
 Query* create_query(char* );
 checksum_views* get_views(char* );

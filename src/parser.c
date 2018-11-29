@@ -4,12 +4,18 @@
 #include "../header/parser.h"
 
 
-void QueryInput(){
+queryList *QueryInput(){
 	size_t len = 0;
 	ssize_t nread = 0;
 	char* line;
 
 	printf("Enter your query\n");
+
+	queryList *qList = malloc(sizeof(queryList));										// queryList initialization
+	if( qList == NULL )	return NULL;
+	qList->first = NULL;
+	qList->last  = NULL;
+
 
 	while(1){
 		getline(&line,&len,stdin);
@@ -19,9 +25,16 @@ void QueryInput(){
 		if(!strcmp(line,"F")){
 			printf("enter new query\n");
 			continue;
-		} 
+		}
 
-		ParseQuery(line);
+		Query *qr = ParseQuery(line);
+		if(insertNodeInQueryList(qList,qr))
+		{
+			printf("very bad\n");
+			queryListDestroy(qList);
+			if(line != NULL)	free(line);
+			return NULL;
+		}
 
 		if(line != NULL){
 			free(line);
@@ -31,9 +44,11 @@ void QueryInput(){
 
 	}
 
+	return qList;
+
 }
 
-void ParseQuery(char* query){
+Query* ParseQuery(char* query){
 	int total_p = 0;
 	int i = 0;
 	char* q = strdup(query);
@@ -53,7 +68,7 @@ void ParseQuery(char* query){
 		Part 3 are the checksum lists.
 	*/
 
-	while(tkn != NULL){	
+	while(tkn != NULL){
 		q_parts[i] = strdup(tkn);
 		tkn = strtok(NULL,"|");
 
@@ -72,6 +87,8 @@ void ParseQuery(char* query){
 
 	qr->checksums = get_views(q_parts[2]);
 
+
+	return qr;
 
 
 }
@@ -131,7 +148,7 @@ Query* create_query(char* prds){
 	}
 
 	total_p++;
- 
+
  	query->p = malloc(sizeof(predicates)*total_p);
  	query->total_p = total_p;
  	int i = 0;
@@ -141,7 +158,7 @@ Query* create_query(char* prds){
 
 
  	while(tkn != NULL){
- 
+
  		pred = strdup(tkn);
 
  		query->p[i].relation1 = atoi(pred);
@@ -212,7 +229,7 @@ checksum_views* get_views(char* views){
 		tkn++;
 		tkn++;
 		cv->rel_cols[i] = atoi(tkn);
-		
+
 		i++;
 
 		tkn = strtok(NULL," ");
@@ -222,4 +239,52 @@ checksum_views* get_views(char* views){
 
 	return cv;
 
+}
+
+int insertNodeInQueryList(queryList *qList, Query *qr)
+{
+	queryListNode *node = queryListNodeCreate(qr);										// Create Node to be inserted
+
+	if(node == NULL)	return 1;														// Fails if node creation failed
+
+	if(qList->last == NULL)																// Node insertion if list is empty
+	{
+		qList->first = node;
+		qList->last = node;
+		return 0;
+	}
+
+	qList->last->next = node;															// Else inserts node at the end of the list
+	qList->last = node;
+
+	return 0;
+
+}
+
+queryListNode *queryListNodeCreate(Query *qr)
+{
+	queryListNode *node = malloc(sizeof(queryListNode));
+
+	if( node == NULL )	return NULL;													// Malloc failed
+
+	node->qr = qr;
+	node->next = NULL;
+
+	return node;
+}
+
+void queryListDestroy(queryList *qList)
+{
+	if(qList == NULL )	return;
+
+	queryListNode *curr = qList->first;
+	queryListNode *next;
+	while( curr != NULL )
+	{
+		next = curr->next;
+		free(curr);
+		curr = next;
+	}
+
+	free(qList);
 }
