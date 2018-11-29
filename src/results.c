@@ -17,7 +17,7 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 	int key,payload;
 
-	result *r = malloc(sizeof(result));
+	result *r = (result*)malloc(sizeof(result));
 
 	if(r == NULL){
 		fprintf(stderr,"Error allocating space for result struct \n");
@@ -28,7 +28,7 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 	int32_t result_size = (1024*1024)/sizeof(tuple);
 	int32_t counter = 0;
 
-	r->results_array = malloc(sizeof(tuple)*result_size);
+	r->results_array = (tuple*)malloc(sizeof(tuple)*result_size);
 	r->next = NULL;
 	r->size = 0;
 
@@ -65,14 +65,14 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 				if(counter == result_size-1)
 					{
 						counter = 0;
-						result *temp = malloc(sizeof(result));
+						result *temp = (result*)malloc(sizeof(result));
 
 						if(temp == NULL){
 							fprintf(stderr,"Error allocating space for result struct\n");
 							exit(0);
 						}
 
-						temp->results_array = malloc(sizeof(tuple)*result_size);
+						temp->results_array = (tuple*)malloc(sizeof(tuple)*result_size);
 
 						if(temp->results_array == NULL){
 							fprintf(stderr,"Error allocating space for results array\n");

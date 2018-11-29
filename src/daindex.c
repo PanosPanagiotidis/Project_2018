@@ -4,18 +4,18 @@
 
 chainArray *chainArrayCreateInit(int size)												// Creates and initializes a chainArray
 {
-	chainArray *chain = malloc(sizeof(chainArray));
-	chain->array  = calloc(size,sizeof(int));
+	chainArray *chain = (chainArray*)malloc(sizeof(chainArray));
+	chain->array  = (int*)calloc(size,sizeof(int));
 	chain->size   = size;
 	return chain;
 }
 
 bucketHashTable *bucketTableCreateInit(void)											// Creates and initializes 'bucket' hash table
 {
-	bucketHashTable *bucket = malloc(sizeof(bucketHashTable));
+	bucketHashTable *bucket = (bucketHashTable*)malloc(sizeof(bucketHashTable));
 	bucket->size = HASHFUNC_RANGE;														// Bucket array's size is equal to the range of the hash function
 	//bucket->table =  malloc((bucket->size)*sizeof(bucketHashTableData));
-	bucket->table = malloc((bucket->size)*sizeof(int));
+	bucket->table = (int*)malloc((bucket->size)*sizeof(int));
 	bucket->occupiedCount = 0;
 
 	//for(int i=0; i< bucket->size; i++ )	bucket->table[i].position = 0;				// Marking all 'bucket' entries as empty
@@ -28,7 +28,7 @@ daIndex **DAIndexArrayCreate(bucket_array *bckArray)									// Creates and retu
 {
 	int bckCount = bckArray->size;
 
-	daIndex **indArray = malloc(bckCount*sizeof(daIndex *));
+	daIndex **indArray = (daIndex**)malloc(bckCount*sizeof(daIndex *));
 
 	for(int i=0; i<bckCount; i++)														// Create each daIndex
 	{
@@ -50,7 +50,7 @@ daIndex *DAIndexCreate(bucket *buck)													// Creates and returns the inde
 {
 	int bucketSize = buck->size;
 
-	daIndex* bcktIndex = malloc(sizeof(daIndex));
+	daIndex* bcktIndex = (daIndex*)malloc(sizeof(daIndex));
 
 	bcktIndex->chain = chainArrayCreateInit(bucketSize+1);								// Craeting & initializing chain array
 																						// Chain Array's size is equal to the bucket's plus 1 ( 1-based indexing )

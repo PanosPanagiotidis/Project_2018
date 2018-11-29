@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef __DA_INDEX_H__
 #define __DA_INDEX_H__
 
@@ -50,4 +54,8 @@ void DAIndexDestroy(daIndex *);
 
 int DAIndexInsert(daIndex *, int32_t, int);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

@@ -1,3 +1,8 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #ifndef __RESULTS_H__
 #define __RESULTS_H__
 
@@ -18,4 +23,8 @@ void destroy_results(result** );
 
 void print_results(result* );
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

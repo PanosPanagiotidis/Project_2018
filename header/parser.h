@@ -1,6 +1,11 @@
+
 #ifndef _PARSER_H
 #define _PARSER_H
-#include "../header/structs.h"
+//#include "../header/structs.h"
+#include <vector>
+#include <string>
+
+using namespace std;
 
 enum p_type{JOIN,FILTER};
 
@@ -33,8 +38,7 @@ typedef struct queryListNode{															// Linked List Node
 }queryListNode;
 
 typedef struct queryList{																// Singly Linked List containing queries
-	queryListNode *first;
-	queryListNode *last;																// Pointer to last query for fast insertions
+	std::vector<string> queries;												// Pointer to last query for fast insertions
 } queryList;
 
 int insertNodeInQueryList(queryList *,Query *);

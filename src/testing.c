@@ -2,7 +2,7 @@
 //#include "../header/randarr.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "../header/relation_loader.h"
+//#include "../header/relation_loader.h"
 #include "../header/structs.h"
 #include "../header/parser.h"
 
@@ -39,11 +39,11 @@ int main(void)
 	// R = init_relations();
 
 	queryList *qList = QueryInput();
-	queryListNode *curr = qList->first;
-	while( curr != NULL )
-	{
-		printf("Checking stuff %d %d \n", curr->qr->p[0].relation1,curr->qr->p[0].relation2);
-		curr = curr->next;
-	}
+	// queryListNode *curr = qList->first;
+	// while( curr != NULL )
+	// {
+	// 	printf("Checking stuff %d %d \n", curr->qr->p[0].relation1,curr->qr->p[0].relation2);
+	// 	curr = curr->next;
+	// }
 
 }

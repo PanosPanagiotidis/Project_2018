@@ -7,7 +7,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 	int32_t mask = (1 << N) - 1; //Mask the least significant bits.Payload & mask = LSB
 
 
-	Table_Info* ti = malloc(sizeof(Table_Info));
+	Table_Info* ti = (Table_Info*)malloc(sizeof(Table_Info));
 
 	if(ti == NULL){
 		fprintf(stderr,"Error allocating space for Table Info with size %d \n",size);
@@ -15,7 +15,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 	}
 
 	ti->rows = size;	
-	ti->tuples_table= malloc(sizeof(tuple*)*size);			// Creating tuple array (rowID,value)
+	ti->tuples_table= (tuple**)malloc(sizeof(tuple*)*size);			// Creating tuple array (rowID,value)
 
 	if(ti->tuples_table == NULL){
 		fprintf(stderr,"Error allocating space for Tuples Table\n");
@@ -24,7 +24,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 	for(int i = 0; i < size; i++)	//creating a tuples array for each combo of rowId + payload
 	{
-		ti->tuples_table[i] = malloc(sizeof(tuple));
+		ti->tuples_table[i] = (tuple*)malloc(sizeof(tuple));
 
 		if(ti->tuples_table[i] == NULL){
 			fprintf(stderr,"Error allocating space for tuple\n");
@@ -37,21 +37,21 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 	}
 
 	ti->histSize = 1 << N; //16
-	ti->histogram= calloc(ti->histSize,sizeof(int32_t));
+	ti->histogram= (int32_t*)calloc(ti->histSize,sizeof(int32_t));
 
 	if(ti->histogram == NULL){
 		fprintf(stderr,"Error allocating space for histogram\n");
 		exit(0);
 	}	
 
-	ti->pSum = calloc(ti->histSize,sizeof(int32_t));	//prefix sum for each bucket.i.e starting at 0,3,5 items from reordered array
+	ti->pSum = (int32_t*)calloc(ti->histSize,sizeof(int32_t));	//prefix sum for each bucket.i.e starting at 0,3,5 items from reordered array
 
 	if(ti->pSum == NULL){
 		fprintf(stderr,"Error allocating space for pSum table\n");
 		exit(0);
 	}
 
-	ti->pSumDsp = calloc(ti->histSize,sizeof(int32_t)); //Displacement pSum.
+	ti->pSumDsp = (int32_t*)calloc(ti->histSize,sizeof(int32_t)); //Displacement pSum.
 
 	if(ti->pSumDsp == NULL){
 		fprintf(stderr,"Error allocating space for pSumDsp\n");
@@ -78,14 +78,14 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 	int prg = 0;											// Filling buckets.
 
-	ti->R_Payload = calloc(size,sizeof(int32_t));
+	ti->R_Payload = (int32_t*)calloc(size,sizeof(int32_t));
 
 	if(ti->R_Payload == NULL){
 		fprintf(stderr,"Error allocating space for Reordered Payload Table\n");
 		exit(0);
 	}	
 
-	ti->R_Id = calloc(size,sizeof(int32_t));
+	ti->R_Id = (int32_t*)calloc(size,sizeof(int32_t));
 
 	if(ti->R_Id == NULL){
 		fprintf(stderr,"Error allocating space for Reordered Id Table\n");
@@ -104,7 +104,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 	bucket_array *A = ti->bck_array;
 
-	ti->bck_array = malloc(sizeof(bucket_array));
+	ti->bck_array = (bucket_array*)malloc(sizeof(bucket_array));
 
 	if(ti->bck_array == NULL){
 		fprintf(stderr,"Error allocating space for a Bucket Array\n");
@@ -113,7 +113,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 	ti->bck_array->size = ti->histSize;
 
-	ti->bck_array->bck = malloc(sizeof(bucket*) * (ti->histSize));
+	ti->bck_array->bck = (bucket**)malloc(sizeof(bucket*) * (ti->histSize));
 
 	if(ti->bck_array->bck == NULL){
 		fprintf(stderr,"Error allocating space for size*bucketArray\n");
@@ -121,7 +121,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 	}	
 
 	for(int i =0; i < ti->histSize; i++){
-		ti->bck_array->bck[i] = malloc(sizeof(bucket));
+		ti->bck_array->bck[i] = (bucket*)malloc(sizeof(bucket));
 		if(ti->bck_array->bck[i] == NULL){
 			fprintf(stderr,"Error allocating space for bucket\n");
 			exit(0);
@@ -138,7 +138,7 @@ Table_Info* init_table_info(int* a, int* b, int size)		// Initializes the variab
 
 			for(int j = 0 ; j < ti->histogram[i] ; j++){
 
-				ti->bck_array->bck[i]->tuplesArray[j] = malloc(sizeof(tuple));
+				ti->bck_array->bck[i]->tuplesArray[j] = (tuple*)malloc(sizeof(tuple));
 
 				if(ti->bck_array->bck[i]->tuplesArray[j] == NULL){
 					fprintf(stderr,"Error allocating space for tuple\n");

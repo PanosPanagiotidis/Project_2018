@@ -1,3 +1,8 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #ifndef STRUCTS_H
 #define STRUCTS_H
 #include <stdint.h>
@@ -60,4 +65,8 @@ typedef struct relationArray
 
 
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
