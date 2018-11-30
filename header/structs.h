@@ -51,17 +51,6 @@ typedef struct Tables{
 	Table_Info** Table_Array;
 }Tables;
 
-typedef struct Relations{
-	uint64_t **relation;
-	int cols;
-	int rows;
-}Relations;
-
-typedef struct relationArray
-{
-	Relations *rel;
-	int relationsCount;
-}relationArray;
 
 
 

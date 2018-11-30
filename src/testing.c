@@ -5,6 +5,7 @@
 //#include "../header/relation_loader.h"
 #include "../header/structs.h"
 #include "../header/parser.h"
+#include "../header/relation_loader.h"
 
 
 
@@ -37,8 +38,8 @@ int main(void)
 	//Table_Info *T = malloc(sizeof(Table_Info));
 	// Relations *R;
 	// R = init_relations();
-
-	QueryInput();
+	relationArray *RA = init_relations();
+	//QueryInput();
 	// queryListNode *curr = qList->first;
 	// while( curr != NULL )
 	// {
