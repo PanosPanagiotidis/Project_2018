@@ -37,10 +37,11 @@ void QueryInput(){
 Query* ParseQuery(string q){
 
 	size_t pos = 0;
-	size_t subpos = 0;
-	int stringpos = 0;
 	string token;
-	string sub;
+	char* array;
+	char* start;
+	int ac = 0;
+	char c;
 
 	Query *query = new Query;
 
@@ -60,11 +61,11 @@ Query* ParseQuery(string q){
 
 	while(getline(isa,s,'&')){
 
-		char* array = new char[s.length()+1];
-		char *start = array;
+		array = new char[s.length()+1];
+		start = array;
 		s.copy(array,s.length()+1);
 
-		int ac = 0;
+		ac = 0;
 
 		predicates* pr = new predicates;
 
@@ -73,7 +74,7 @@ Query* ParseQuery(string q){
 		pr->column1 = atoi(array+ac);
 		ac++;
 		if(array[ac] == '='){
-			char c = array[ac+2];
+			c = array[ac+2];
 			if(c == '.'){
 				pr->filter = JOIN;
 				ac++;
@@ -103,10 +104,10 @@ Query* ParseQuery(string q){
 
 	q.erase(pos,q.find("|")+1);
 	int size = count (q.begin(),q.end(),'.');
-	char* array = new char[q.length()+1];
-	char* start = array;
+	array = new char[q.length()+1];
+	start = array;
 	q.copy(array,q.length()+1);
-	int ac = 0;
+	ac = 0;
 
 
 	for(int i = 0 ; i < size ; i++){
@@ -122,6 +123,7 @@ Query* ParseQuery(string q){
 
 	}
 
+	delete(start);
 	return query;
 
 }
