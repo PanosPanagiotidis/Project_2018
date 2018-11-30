@@ -7,7 +7,7 @@
 
 using namespace std;
 
-enum p_type{JOIN,FILTER};
+enum p_type{JOIN,EQ_FILTER,GT_FILTER,LT_FILTER};
 
 typedef struct predicates{
 	enum p_type type;
@@ -21,14 +21,14 @@ typedef struct predicates{
 
 
 typedef struct checksum_views{
-	int* rel_views;
-	int* rel_cols;
+	int rel_views;
+	int rel_cols;
 }checksum_views;
 
 typedef struct Query{
-	predicates* p;
-	int total_p;
-	checksum_views* checksums;
+	std::vector<predicates*> p;
+	std::vector<int> relations;
+	std::vector<checksum_views*> checksums;
 
 }Query;
 
@@ -45,8 +45,8 @@ int insertNodeInQueryList(queryList *,Query *);
 queryListNode *queryListNodeCreate(Query *);
 void queryListDestroy(queryList *);
 
-queryList *QueryInput();
-Query *ParseQuery(char* );
+void QueryInput();
+Query *ParseQuery(string );
 int* get_relation_array(char* ,int* );
 Query* create_query(char* );
 checksum_views* get_views(char* );

@@ -38,7 +38,7 @@ int main(void)
 	// Relations *R;
 	// R = init_relations();
 
-	queryList *qList = QueryInput();
+	QueryInput();
 	// queryListNode *curr = qList->first;
 	// while( curr != NULL )
 	// {
