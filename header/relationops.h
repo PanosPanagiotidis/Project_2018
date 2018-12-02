@@ -2,7 +2,7 @@
 #define __RELATIONOPS_H__
 
 #include "../header/parser.h"
-#include "../header/structs.h"
+#include "../header/relation_loader.h"
 
 
 

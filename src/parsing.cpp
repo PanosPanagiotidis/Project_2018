@@ -10,9 +10,10 @@
 using namespace std;
 
 
-void QueryInput(){
+queryBatch * QueryInput(){
 	string line;
 	vector<string> queryInput;
+	int queryCount = 0;
 
 
 	cout << "Enter your query" << endl;
@@ -20,16 +21,23 @@ void QueryInput(){
 	while(getline(cin,line)){
 		if(line == "F") break;
 		queryInput.push_back(line);
+		queryCount++;
 	}
 	vector<string>::iterator it;
 
 
-	vector<Query*> Queries;
+	queryBatch *qBatch = new queryBatch;
+	qBatch->queryCount = queryCount;
 
-	for(it = queryInput.begin() ; it != queryInput.end() ; it++){
-		Queries.push_back(ParseQuery(*it));
+	qBatch->queries = new Query*[queryCount];
+
+	int i=0;
+
+	for(it = queryInput.begin() ; it != queryInput.end() ; it++, i++){
+		qBatch->queries[i] = ParseQuery(*it);
 	}
 
+	return qBatch;
 
 }
 
@@ -95,7 +103,7 @@ Query* ParseQuery(string q){
 			ac++;
 			pr->filter = atoi(array+ac);
 		}
-		
+
 		delete(start);
 
 		query->p.push_back(pr);
@@ -116,7 +124,7 @@ Query* ParseQuery(string q){
 
 		cv->rel_views = atoi(array+ac);
 		ac+=2;
-		cv->rel_cols =	atoi(array+ac); 
+		cv->rel_cols =	atoi(array+ac);
 		ac+=2;
 
 		query->checksums.push_back(cv);

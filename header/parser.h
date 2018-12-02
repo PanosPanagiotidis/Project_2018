@@ -32,20 +32,12 @@ typedef struct Query{
 
 }Query;
 
-typedef struct queryListNode{															// Linked List Node
-	Query *qr;
-	struct queryListNode *next;
-}queryListNode;
+typedef struct queryBatch{
+	Query **queries;
+	int queryCount;
+}queryBatch;
 
-typedef struct queryList{																// Singly Linked List containing queries
-	std::vector<string> queries;												// Pointer to last query for fast insertions
-} queryList;
-
-int insertNodeInQueryList(queryList *,Query *);
-queryListNode *queryListNodeCreate(Query *);
-void queryListDestroy(queryList *);
-
-void QueryInput();
+queryBatch * QueryInput();
 Query *ParseQuery(string );
 int* get_relation_array(char* ,int* );
 Query* create_query(char* );

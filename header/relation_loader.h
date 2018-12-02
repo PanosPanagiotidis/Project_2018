@@ -1,6 +1,6 @@
 #ifndef _RELATION_LOADER_H
 #define _RELATION_LOADER_H
-#include "../header/structs.h"
+//#include "../header/structs.h"
 #include <stdint.h>
 #include <vector>
 
