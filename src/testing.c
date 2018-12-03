@@ -29,14 +29,7 @@
 
 int main(void)
 {
-	// const int init_size = 15;
-	// Table_Info **Relations = malloc(sizeof(Table_Info*) * init_size);
 
-	// for(int i = 0 ; i  < init_size ; i ++ ){
-	// 	Relations[i] = malloc(sizeof(Table_Info));
-	// }
-	//Table_Info *T = malloc(sizeof(Table_Info));
-	// Relations *R;
 	// R = init_relations();
 	relationArray *RA = init_relations();
 	//QueryInput();

@@ -41,8 +41,9 @@ Relations* load_relations(const char* fileName)
 	cerr << "fstat\n";
 
 	auto length=sb.st_size;
-
+	char* tempadr;
 	char* addr=static_cast<char*>(mmap(nullptr,length,PROT_READ,MAP_PRIVATE,fd,0u));
+	tempadr = addr;
 	if (addr==MAP_FAILED) {
 	cerr << "cannot mmap " << fileName << " of length " << length << endl;
 	throw;
@@ -71,7 +72,8 @@ Relations* load_relations(const char* fileName)
 		}
 	}
 
-	munmap(addr,length);
+
+	munmap(tempadr,length);
 
 	return R;
 }
