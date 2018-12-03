@@ -28,7 +28,6 @@ typedef struct bucket{
 
 typedef struct Bucket_Array{
 	bucket **bck;
-	tuple **tuplesArray;
 	int size;
 }bucket_array;
 
