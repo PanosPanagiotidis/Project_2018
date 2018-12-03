@@ -49,7 +49,7 @@ Query* ParseQuery(string q){
 	char* array;
 	char* start;
 	int ac = 0;
-	char c;
+	int c = -1;
 
 	Query *query = new Query;
 
@@ -78,22 +78,50 @@ Query* ParseQuery(string q){
 		predicates* pr = new predicates;
 
 		pr->relation1 = atoi(array+ac);
-		ac +=2;
-		pr->column1 = atoi(array+ac);
+
+		while(isalnum(array[ac])){
+			ac ++;
+		}
 		ac++;
+
+		pr->column1 = atoi(array+ac);
+
+		while(isalnum(array[ac])){
+			ac++;
+		}
+		cout << array[ac] << endl;
 		if(array[ac] == '='){
-			c = array[ac+2];
-			if(c == '.'){
+			if(strchr(array+ac,'.')){
+				c = 1;
+			}
+			else{
+				c = 0;
+			}
+
+			if(c == -1){
+				cout << "ridiculous command given " << endl;
+				exit(1);
+			}
+			if(c == 1){
+				cout << "we here boyz" << endl;
 				pr->filter = JOIN;
 				ac++;
 				pr->relation2 = atoi(array+ac);
-				ac+=2;
+				
+				while(isalnum(array[ac])){
+					ac++;
+				}
+				ac++;
 				pr->column2 = atoi(array+ac);
-			}else if(c != '.'){
+				
+
+			}else if(c == 0){
 				pr->type = EQ_FILTER;
 				ac++;
 				pr->filter = atoi(array+ac);
 			}
+
+
 		}else if(!strcmp(array,">")){
 			pr->type = GT_FILTER;
 			ac++;
@@ -123,9 +151,16 @@ Query* ParseQuery(string q){
 		checksum_views *cv = new checksum_views;
 
 		cv->rel_views = atoi(array+ac);
-		ac+=2;
+		while(isalnum(array+ac)){
+			ac++;
+		}
+		ac++;
+
 		cv->rel_cols =	atoi(array+ac);
-		ac+=2;
+
+		while(isalnum(array+ac)){
+			ac++;
+		}
 
 		query->checksums.push_back(cv);
 

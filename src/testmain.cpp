@@ -10,8 +10,8 @@ int main(void)
 
 	relationArray *rArray = init_relations();											// Read & Store the relations
 
-	/*queryBatch *qBatch = QueryInput();												// Read & Store a batch of queries
-
+	queryBatch *qBatch = QueryInput();												// Read & Store a batch of queries
+	/*
 	for(int i=0; i< qBatch->queryCount; i++)
 		queryExecute(qBatch->queries[i],rArray);										// Execute each query in batch
 
