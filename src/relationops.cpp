@@ -48,33 +48,48 @@ void relation_filter(predicates *pred, relationArray *rArray/*, tempResults*/)		
 
 	int relationId = pred->relation1;
 	int columnId = pred->column1;
+	uint64_t filter = pred->filter;
 
 	Relations * currentRelation = rArray->relations.at(relationId);
+
 
 	// TODO: Check if relation in tempresults and if it is, assign that to currentRelation
 	// else, proceed as follows
 
 
+	std::vector<int> results;
+
+	int rID = 0;
+	for(uint64_t row=0; row < currentRelation->size; row++, rID++)
+	{
 
 
 
-	switch (pred->type) {
-		case EQ_FILTER:
+		switch (pred->type) {
+			case EQ_FILTER:
+				if( filter == currentRelation->relation[columnId][rID])
+					results.push_back(rID);
+				break;
 
-			break;
-		case GT_FILTER:
+			case GT_FILTER:
+				if( filter <= currentRelation->relation[columnId][rID])
+					results.push_back(rID);
+				break;
 
-			break;
+			case LT_FILTER:
+				if( filter >= currentRelation->relation[columnId][rID])
+					results.push_back(rID);
+				break;
 
-		case LT_FILTER:
-
-			break;
-		default:
-			//This should never happen
-			break;
+			default:
+				//This should never happen
+				break;
+		}
 	}
 
 
-	// Update tempResult
+	// TODO: Update tempResult
+
+	return ; // TODO: results
 
 }
