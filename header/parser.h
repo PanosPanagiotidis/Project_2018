@@ -15,7 +15,7 @@ typedef struct predicates{
 	int relation2;
 	int column1;
 	int column2;
-	int filter;
+	uint64_t filter;
 
 }predicates;
 
