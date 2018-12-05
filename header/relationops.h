@@ -10,4 +10,11 @@ void queryExecute(Query *, relationArray *);											// TODO: Should return re
 
 Query *queryReorder(Query *);															// Reorders predicates in a query
 
+uint64_t *createRowID(uint64_t);
+
+void relation_join(predicates *, relationArray *);
+
+
+void jointest(void);
+
 #endif

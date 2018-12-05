@@ -15,14 +15,14 @@ extern "C" {
 typedef struct bucketHashTableData														// Hash Table Entry
 {
 	int position;																		// Position of start of chain in chainArray
-	int32_t unhashedData;																// Copy of unhashed data for collision handling
+	uint64_t unhashedData;																// Copy of unhashed data for collision handling
 } bucketHashTableData;
 
 */
 
 typedef struct bucketHashTable
 {
-	int *table;																			// Position of start of chain in chainArray
+	uint64_t *table;																			// Position of start of chain in chainArray
 	int size;
 	int occupiedCount;
 } bucketHashTable;
@@ -31,7 +31,7 @@ typedef struct bucketHashTable
 typedef struct chainArray
 {
 	int size;
-	int *array;
+	uint64_t *array;
 } chainArray;
 
 
@@ -42,7 +42,7 @@ typedef struct daIndex
 } daIndex;
 
 
-int bucketHashFunction(int32_t);
+int bucketHashFunction(uint64_t);
 
 chainArray *chainArrayCreateInit(int);
 bucketHashTable *bucketTableCreateInit(void);
@@ -52,7 +52,7 @@ daIndex *DAIndexCreate(bucket *);
 void DAIndexArrayDestroy(daIndex **,int);
 void DAIndexDestroy(daIndex *);
 
-int DAIndexInsert(daIndex *, int32_t, int);
+int DAIndexInsert(daIndex *, uint64_t, int);
 
 #endif
 

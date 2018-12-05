@@ -11,7 +11,7 @@ extern "C" {
 
 
 typedef struct result{
-	tuple *results_array;
+	toumble *results_array;
 	struct result *next;
 	int size;
 }result;

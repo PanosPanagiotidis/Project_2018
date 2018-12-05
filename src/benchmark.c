@@ -15,7 +15,7 @@ int main(void){
 		for( int j = 0 ; j < B->rows ; j++){
 			if ((i + j ) != 0){
 				final_array[(i+j)][0] +=1;
-				final_array[(i+j)][1] = (A->array[i][0]) * (B->array[j][0]);  
+				final_array[(i+j)][1] = (A->array[i][0]) * (B->array[j][0]);
 			}
 			printf("j = %d \n",j);
 		}

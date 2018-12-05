@@ -7,10 +7,13 @@
 int main(void)
 {
 
+/*
 
 	relationArray *rArray = init_relations();											// Read & Store the relations
 
 	queryBatch *qBatch = QueryInput();												// Read & Store a batch of queries
+*/
+
 	/*
 	for(int i=0; i< qBatch->queryCount; i++)
 		queryExecute(qBatch->queries[i],rArray);										// Execute each query in batch
@@ -22,13 +25,22 @@ int main(void)
 	// TODO: Free structs
 
 	*/
-
+/*
 	std::vector<Relations *>::iterator it;
 
 	for(it = rArray->relations.begin(); it != rArray->relations.end(); it++)
 	{
-		cout << "lel" << endl;
+		uint64_t **rt = (*it)->relation;
+		for(uint64_t i=0; i<(*it)->numColumns; i++, cout << endl)
+			for(uint64_t j=0; j<(*it)->size; j++ )
+			{
+				cout << rt[i][j] << " ";
+			}
 	}
+
+	relation_join(NULL,NULL);
+*/
+	jointest();
 
 	return 0;
 }

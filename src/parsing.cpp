@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cstring>
 #include "../header/parser.h"
-
+#include <cctype>
 
 using namespace std;
 
@@ -107,13 +107,13 @@ Query* ParseQuery(string q){
 				pr->filter = JOIN;
 				ac++;
 				pr->relation2 = atoi(array+ac);
-				
+
 				while(isalnum(array[ac])){
 					ac++;
 				}
 				ac++;
 				pr->column2 = atoi(array+ac);
-				
+
 
 			}else if(c == 0){
 				pr->type = EQ_FILTER;
@@ -151,14 +151,14 @@ Query* ParseQuery(string q){
 		checksum_views *cv = new checksum_views;
 
 		cv->rel_views = atoi(array+ac);
-		while(isalnum(array+ac)){
+		while(isalnum(array[ac])){
 			ac++;
 		}
 		ac++;
 
 		cv->rel_cols =	atoi(array+ac);
 
-		while(isalnum(array+ac)){
+		while(isalnum(array[ac])){
 			ac++;
 		}
 

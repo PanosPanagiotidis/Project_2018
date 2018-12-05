@@ -8,15 +8,12 @@
 #include "../header/relation_loader.h"
 
 
-using namespace std;
-
-
 relationArray* init_relations()
 {
-	string line;
+	std::string line;
 	relationArray *R = new relationArray;
-	   		cout << "Enter file path" << endl;
-   	while (getline(cin, line)) {
+	   		std::cout << "Enter file path" << std::endl;
+   	while (getline(std::cin, line)) {
       if (line == "Done" || line == "DONE" || line == "done") break;
       R->relations.push_back(load_relations(line.c_str()));
    	}
@@ -25,32 +22,32 @@ relationArray* init_relations()
 }
 
 Relations* load_relations(const char* fileName)
-{	
+{
 
 	Relations *R = new Relations;
 
 	int fd = open(fileName, O_RDONLY);
 	if (fd==-1) {
-	cerr << "cannot open " << fileName << endl;
+	std::cerr << "cannot open " << fileName << std::endl;
 	throw;
 	}
 
 	// Obtain file size
 	struct stat sb;
 	if (fstat(fd,&sb)==-1)
-	cerr << "fstat\n";
+	std::cerr << "fstat\n";
 
 	auto length=sb.st_size;
 	char* tempadr;
 	char* addr=static_cast<char*>(mmap(nullptr,length,PROT_READ,MAP_PRIVATE,fd,0u));
 	tempadr = addr;
 	if (addr==MAP_FAILED) {
-	cerr << "cannot mmap " << fileName << " of length " << length << endl;
+	std::cerr << "cannot mmap " << fileName << " of length " << length << std::endl;
 	throw;
 	}
 
 	if (length<16) {
-	cerr << "relation file " << fileName << " does not contain a valid header" << endl;
+	std::cerr << "relation file " << fileName << " does not contain a valid header" << std::endl;
 	throw;
 	}
 
@@ -61,7 +58,7 @@ Relations* load_relations(const char* fileName)
 
 	R->relation = new uint64_t*[R->numColumns];
 
-	for(int i = 0 ; i < R->numColumns ; i ++){
+	for(uint64_t i = 0 ; i < R->numColumns ; i ++){
 		R->relation[i] = new uint64_t[R->size];
 	}
 
