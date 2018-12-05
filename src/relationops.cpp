@@ -186,7 +186,7 @@ void jointest()
 		cout << endl;
 	}
 
-	result *res = getResults(tableInfo1,tableInfo2,indx);
+	result *res = getResults(tableInfo2,tableInfo1,indx);
 
 	print_results(res);
 

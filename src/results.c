@@ -60,7 +60,7 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 		{
 			r_key = chain_pos - 1;		//item in chain
 
-			if(T->bck_array->bck[LSB]->tuplesArray[chain_pos]->payload == payload)
+			if(T->bck_array->bck[LSB]->tuplesArray[r_key]->payload == payload)
 			{
 
 				if(counter == result_size-1)
@@ -87,7 +87,7 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 					}
 
 				r->results_array[counter].key = key; //non Indexed Column key/rowId
-				r->results_array[counter].payload = T->R_Id[r_key];	//Indexed Column key/rowId
+				r->results_array[counter].payload = T->bck_array->bck[LSB]->tuplesArray[r_key]->key;	//Indexed Column key/rowId
 
 				counter++;
 				r->size++;
