@@ -60,7 +60,7 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 		{
 			r_key = chain_pos - 1;		//item in chain
 
-			if(T->R_Payload[r_key] == payload)
+			if(T->bck_array->bck[LSB]->tuplesArray[chain_pos]->payload == payload)
 			{
 
 				if(counter == result_size-1)
