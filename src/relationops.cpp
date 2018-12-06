@@ -11,8 +11,12 @@ void queryExecute(Query *qr, relationArray *relArray)
 {
 	Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
 
-	// tempResults setup
-	// resultArray setup
+	int rCount = relArray->relations.size();
+
+	tempResults *tRes = new tempResults;
+	init_tempResults(tRes,rCount);
+
+	// TODO: resultArray setup
 
 	std::vector<predicates*>::iterator it;
 
@@ -20,15 +24,15 @@ void queryExecute(Query *qr, relationArray *relArray)
 		if( (*it)->type == JOIN)														// Each predicate is either a join or a filter
 		{
 			// join
-			// resultArray update
+			// TODO: resultArray update
 		}
 		else
 		{
 			// filter
-			// resultArray update
+			// TODO: resultArray update
 		}
 
-	// checksum view
+	// TODO: checksum view
 
 	delete orderedQuery;
 
@@ -110,6 +114,10 @@ void relation_join(predicates *pred, relationArray *rArray)
 	Relations * currentRelation1 = rArray->relations.at(relationId1);
 	Relations * currentRelation2 = rArray->relations.at(relationId2);
 
+	// TODO: check temp_results
+
+	// TODO: check fringe case
+
 	uint64_t *rowID1 = createRowID(currentRelation1->size);
 	uint64_t *rowID2 = createRowID(currentRelation1->size);
 
@@ -130,6 +138,9 @@ void relation_join(predicates *pred, relationArray *rArray)
 		res = getResults(tableInfo2,tableInfo1,indx);
 	}
 
+	// TODO: update temp_results
+
+	return /*res*/;
 }
 
 
@@ -193,7 +204,17 @@ void jointest()
 }
 
 
+int init_tempResults(tempResults *tRes, int rCount)
+{
+	tRes->rel = new Relations *[rCount];
+	if(tRes->rel == NULL)	return 1;
 
+	for(int i=0; i<rCount; i++)	tRes->rel[i] = NULL;
+
+	tRes->relationCount = rCount;
+
+	return 0;
+}
 
 
 
