@@ -10,11 +10,7 @@
 void queryExecute(Query *qr, relationArray *relArray)
 {
 	Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
-
-	int rCount = relArray->relations.size();
-
 	tempResults *tRes = new tempResults;
-	init_tempResults(tRes,rCount);
 
 	// TODO: resultArray setup
 
@@ -52,7 +48,7 @@ Query *queryReorder(Query *qr)
 	return newQr;
 }
 
-void relation_filter(predicates *pred, relationArray *rArray/*, tempResults*/)			// TODO: Create a result struct and make it return that
+void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 {
 
 	int relationId = pred->relation1;
@@ -61,38 +57,65 @@ void relation_filter(predicates *pred, relationArray *rArray/*, tempResults*/)		
 
 	Relations * currentRelation = rArray->relations.at(relationId);
 
+	uint64_t *size;
+	uint64_t *rowids = tempResultsLookup(tr, relationId,size);
 
-	// TODO: Check if relation in tempresults and if it is, assign that to currentRelation
-	// else, proceed as follows
+	std::vector<uint64_t> results;
 
-
-	std::vector<int> results;
-
-	int rID = 0;
-	for(uint64_t row=0; row < currentRelation->size; row++, rID++)
+	if(rowids != NULL )
 	{
 
+		for(uint64_t row=0; row < *size; row++)
+		{
+			uint64_t rid = rowids[row];
 
+			switch (pred->type) {
+				case EQ_FILTER:
+					if( filter == currentRelation->relation[columnId][rid])
+						results.push_back(rid);
+					break;
 
-		switch (pred->type) {
-			case EQ_FILTER:
-				if( filter == currentRelation->relation[columnId][rID])
-					results.push_back(rID);
-				break;
+				case GT_FILTER:
+					if( filter <= currentRelation->relation[columnId][rid])
+						results.push_back(rid);
+					break;
 
-			case GT_FILTER:
-				if( filter <= currentRelation->relation[columnId][rID])
-					results.push_back(rID);
-				break;
+				case LT_FILTER:
+					if( filter >= currentRelation->relation[columnId][rid])
+						results.push_back(rid);
+					break;
 
-			case LT_FILTER:
-				if( filter >= currentRelation->relation[columnId][rID])
-					results.push_back(rID);
-				break;
+				default:
+					//This should never happen
+					break;
+			}
+		}
+	}
+	else
+	{
+		for(uint64_t row=0; row < currentRelation->size; row++)
+		{
 
-			default:
-				//This should never happen
-				break;
+			switch (pred->type) {
+				case EQ_FILTER:
+					if( filter == currentRelation->relation[columnId][row])
+						results.push_back(row);
+					break;
+
+				case GT_FILTER:
+					if( filter <= currentRelation->relation[columnId][row])
+						results.push_back(row);
+					break;
+
+				case LT_FILTER:
+					if( filter >= currentRelation->relation[columnId][row])
+						results.push_back(row);
+					break;
+
+				default:
+					//This should never happen
+					break;
+			}
 		}
 	}
 
@@ -113,7 +136,7 @@ void relation_join(predicates *pred, relationArray *rArray)
 
 	Relations * currentRelation1 = rArray->relations.at(relationId1);
 	Relations * currentRelation2 = rArray->relations.at(relationId2);
-
+	uint64_t *rowids;
 	// TODO: check temp_results
 
 	// TODO: check fringe case
@@ -151,6 +174,28 @@ uint64_t *createRowID(uint64_t rSize)
 	return rowID;
 }
 
+
+uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *size)
+{
+	if( tpr == NULL )	return NULL;
+
+	if( tpr->res.size() == 0 )	return NULL;
+
+	std::vector<tempResultArray>::iterator it1;
+
+	for(it1 = tpr->res.begin(); it1 != tpr->res.end(); it1++)
+	{
+		size = &(*it1).size;
+
+		for( uint64_t j=0; j<(*it1).relationID.size(); j++)
+		{
+			if( (*it1).relationID.at(j) == relationId )	return (*it1).rowID.at(j);
+		}
+
+	}
+
+	return NULL;
+}
 
 
 
@@ -202,19 +247,5 @@ void jointest()
 	print_results(res);
 
 }
-
-
-int init_tempResults(tempResults *tRes, int rCount)
-{
-	tRes->rel = new Relations *[rCount];
-	if(tRes->rel == NULL)	return 1;
-
-	for(int i=0; i<rCount; i++)	tRes->rel[i] = NULL;
-
-	tRes->relationCount = rCount;
-
-	return 0;
-}
-
 
 
