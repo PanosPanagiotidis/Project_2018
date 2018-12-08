@@ -6,8 +6,8 @@
 
 typedef struct tempResultArray{
 	std::vector<uint64_t *> rowID;
-	std::vector<int> relationID;				// IDs of relations in tempResultArray
-	uint64_t size;									// Number of rowids in each vector element
+	std::vector<int> relationID;														// IDs of relations in tempResultArray
+	uint64_t size;																		// Number of rowids in each vector element
 }tempResultArray;
 
 typedef struct tempResults{

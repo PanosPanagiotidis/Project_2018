@@ -12,28 +12,25 @@ void queryExecute(Query *qr, relationArray *relArray)
 	Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
 
-	// TODO: resultArray setup
-
 	std::vector<predicates*>::iterator it;
 
 	for( it = orderedQuery->p.begin(); it != orderedQuery->p.end(); it++)
 		if( (*it)->type == JOIN)														// Each predicate is either a join or a filter
 		{
 			// join
-			// TODO: resultArray update
 		}
 		else
 		{
 			// filter
-			// TODO: resultArray update
 		}
+
+	// TODO: Create Final Results using tempResults;
 
 	// TODO: checksum view
 
 	delete orderedQuery;
 
 	return /*results*/;
-
 }
 
 
@@ -55,14 +52,14 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 	int columnId = pred->column1;
 	uint64_t filter = pred->filter;
 
-	Relations * currentRelation = rArray->relations.at(relationId);
+	Relations * currentRelation = rArray->relations.at(relationId);						// Fetch relation
 
 	uint64_t *size;
-	uint64_t *rowids = tempResultsLookup(tr, relationId,size);
+	uint64_t *rowids = tempResultsLookup(tr, relationId, size);							// Also check if relation exists on tempResults
 
-	std::vector<uint64_t> results;
+	std::vector<uint64_t> results;														// Result vector
 
-	if(rowids != NULL )
+	if(rowids != NULL )																	// If relation exists on tempResults
 	{
 
 		for(uint64_t row=0; row < *size; row++)
@@ -90,6 +87,7 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 			}
 		}
+		// TODO: tempResultsUpdate(results,relation1,tr);
 	}
 	else
 	{
@@ -117,12 +115,10 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 			}
 		}
+		// TODO: tempResultsAdd(results,relation1,tr);
 	}
 
-
-	// TODO: Update tempResult
-
-	return ; // TODO: results
+	// TODO: return results;
 
 }
 
@@ -139,7 +135,7 @@ void relation_join(predicates *pred, relationArray *rArray)
 	uint64_t *rowids;
 	// TODO: check temp_results
 
-	// TODO: check fringe case
+	// TODO: check fringe case if relation1 = relation2
 
 	uint64_t *rowID1 = createRowID(currentRelation1->size);
 	uint64_t *rowID2 = createRowID(currentRelation1->size);
@@ -195,6 +191,18 @@ uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *size)
 	}
 
 	return NULL;
+}
+
+int tempResultsUpdate(std::vector<uint64_t> &results, int relationId, int columnId, tempResults *tpr)
+{
+	std::vector<tempResultArray>::iterator it;
+
+	for(it = tpr->res.begin(); it != tpr->res.end(); it++)
+		for(uint64_t i=0; i< (*it).relationID.size(); i++)
+		{
+			// edw
+		}
+
 }
 
 
