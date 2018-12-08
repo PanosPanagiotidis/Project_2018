@@ -31,8 +31,8 @@ int main(void)
 {
 
 	// R = init_relations();
-	relationArray *RA = init_relations();
-	//QueryInput();
+	//relationArray *RA = init_relations();
+	QueryInput();
 	// queryListNode *curr = qList->first;
 	// while( curr != NULL )
 	// {

@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+using namespace std;
+
 void queryExecute(Query *qr, relationArray *relArray)
 {
 	Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
@@ -202,6 +204,47 @@ int tempResultsUpdate(std::vector<uint64_t> &results, int relationId, int column
 		{
 			// edw
 		}
+
+}
+
+
+uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_views*> cv)
+{
+	uint64_t curRel;
+	uint64_t checksum;
+	uint64_t i;
+	uint64_t row;
+
+	vector<int>::iterator rid;
+	vector<checksum_views*>::iterator check;
+	vector<uint64_t>::iterator rowit;
+
+	for(check = cv.begin(); check != cv.end(); check++)
+	{	
+		checksum = 0;
+		for(rid = tr->relationID.begin(); rid != tr->relationID.end(); rid++)
+		{
+			if((*check)->rel_views == (*rid)) //relid = check id.get results now
+			{	
+				for(i = 0 ; i < tr->size ; i++)
+				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
+				{	
+					row = tr->rowID.at((*rid))[i];
+					checksum += (ra->relations.at((*check)->rel_views))->relation[(*check)->rel_cols][row];
+				}
+			}
+		}
+
+		if(checksum == 0)
+			cout << "NULL ";
+		else
+			cout << checksum << " ";
+
+	}
+
+cout << endl;
+
+
 
 }
 

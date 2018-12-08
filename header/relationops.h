@@ -25,6 +25,8 @@ void relation_join(predicates *, relationArray *);
 
 uint64_t *tempResultsLookup(tempResults *,int, uint64_t *);
 
+uint64_t getChecksum(tempResultArray* ,relationArray* ,std::vector<checksum_views*> );
+
 void jointest(void);
 
 #endif

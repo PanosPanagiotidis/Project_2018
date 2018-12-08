@@ -89,7 +89,7 @@ Query* ParseQuery(string q){
 		while(isalnum(array[ac])){
 			ac++;
 		}
-		cout << array[ac] << endl;
+
 		if(array[ac] == '='){
 			if(strchr(array+ac,'.')){
 				c = 1;
@@ -103,7 +103,6 @@ Query* ParseQuery(string q){
 				exit(1);
 			}
 			if(c == 1){
-				cout << "we here boyz" << endl;
 				pr->filter = JOIN;
 				ac++;
 				pr->relation2 = atoi(array+ac);
@@ -150,7 +149,8 @@ Query* ParseQuery(string q){
 
 		checksum_views *cv = new checksum_views;
 
-		cv->rel_views = atoi(array+ac);
+		cv->rel_views = query->relations.at(atoi(array+ac));
+		//cout << "rel->views is" << cv ->rel_views << endl; DELET DIS
 		while(isalnum(array[ac])){
 			ac++;
 		}
