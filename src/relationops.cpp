@@ -230,7 +230,7 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
 				{	
 					row = tr->rowID.at((*rid))[i];
-					checksum += (ra->relations.at((*check)->rel_views))->relation[(*check)->rel_cols][row];
+					checksum += (ra->relations.at((*check)->rel_views	))->relation[(*check)->rel_cols][row];
 				}
 			}
 		}
