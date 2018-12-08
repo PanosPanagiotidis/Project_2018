@@ -195,17 +195,50 @@ uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *size)
 	return NULL;
 }
 
-int tempResultsUpdate(std::vector<uint64_t> &results, int relationId, int columnId, tempResults *tpr)
+int tempResultsUpdate(std::vector<uint64_t> &results, int relationId, tempResults *tpr)
 {
 	std::vector<tempResultArray>::iterator it;
 
-	for(it = tpr->res.begin(); it != tpr->res.end(); it++)
+	for(it = tpr->res.begin(); it != tpr->res.end(); it++)								// Iterate through all saved tempresultarrays
+	{																					// to find the one containing relation with relationId
 		for(uint64_t i=0; i< (*it).relationID.size(); i++)
 		{
-			// edw
-		}
+			if( (*it).relationID.at(i) == relationId )									// If found
+			{
 
+				uint64_t k=0;
+				std::vector<uint64_t *> newRowId;
+
+				for(uint64_t j=0; j<(*it).relationID.size(); j++)						// Create new tempresults
+				{
+					uint64_t *newarr = new uint64_t[(*it).size];
+					newRowId.push_back(newarr);
+				}
+
+				std::vector<uint64_t>::iterator it1;
+
+				uint64_t f=0;
+				for(it1 = results.begin(); it1 != results.end(); it1++,f++)
+				{
+					while( (*it1) != ((*it).rowID.at(i))[k])	k++;					// Go though old temp results
+					for(uint64_t j=0; j<(*it).relationID.size(); j++)
+						(newRowId.at(j))[f] = (*it).rowID.at(i)[j];						// Copy filtered rows to new temp results
+				}
+
+				std::vector<uint64_t *>::iterator tmp;
+
+				for(tmp = (*it).rowID.begin(); tmp != (*it).rowID.end(); tmp++)			// destroy old rowid
+					delete *tmp;
+
+				(*it).rowID = newRowId;													// and assign new one to tempresults
+
+				return 0;
+			}
+		}
+	}
+		return 1;
 }
+
 
 
 uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_views*> cv)
@@ -220,15 +253,15 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	vector<uint64_t>::iterator rowit;
 
 	for(check = cv.begin(); check != cv.end(); check++)
-	{	
+	{
 		checksum = 0;
 		for(rid = tr->relationID.begin(); rid != tr->relationID.end(); rid++)
 		{
 			if((*check)->rel_views == (*rid)) //relid = check id.get results now
-			{	
+			{
 				for(i = 0 ; i < tr->size ; i++)
 				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
-				{	
+				{
 					row = tr->rowID.at((*rid))[i];
 					checksum += (ra->relations.at((*check)->rel_views	))->relation[(*check)->rel_cols][row];
 				}
