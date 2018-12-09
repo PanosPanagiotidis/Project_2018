@@ -24,6 +24,36 @@ tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 	return &(tRes->res.at(0));
 }
 
+uint64_t **convert_to_arrays(result *r){
+	uint64_t** r_convd = new uint64_t*[2];
+
+	result *temp=r;
+	int total_size = 0;
+	int count = 0;
+
+	while(temp->next!=NULL){
+		total_size += temp->size;
+		temp = temp->next;
+	}
+
+	for(int i = 0 ; i < total_size ; i++){
+		r_convd[0][i] = new uint64_t;
+		r_convd[1][i] = new uint64_t;
+
+		r_convd[0][i] = r->results_array[count]->key;
+		r_convd[2][i] = r->results_array[count]->payload;
+
+		count++;
+
+		if(count > r->size && r->next!=NULL)
+			r = r->next;
+		else break;
+	}
+
+	return r_convd;
+
+}
+
 
 Query *queryReorder(Query *qr)
 {
