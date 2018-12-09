@@ -151,6 +151,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	uint64_t size1, size2;
 	uint64_t *rowID1, *rowID2;
 	Table_Info *tableInfo1, *tableInfo2;
+	int foundFlag1 = 0, foundFlag2 = 0;
 
 	Relations * currentRelation1 = rArray->relations.at(relationId1);
 	Relations * currentRelation2 = rArray->relations.at(relationId2);
@@ -166,6 +167,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}
 	else
 	{
+		foundFlag1++;
 		uint64_t *payloadColumn1 = NULL;							// TODO: Create this from relation and rowid
 		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1);
 	}
@@ -181,16 +183,17 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}
 	else
 	{
+		foundFlag2++;
 		uint64_t *payloadColumn2 = NULL;							// TODO: Create this from relation and rowid
 		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2);
 	}
 
-	// TODO: check fringe case if relation1 = relation2
+	// TODO: tackle fringe case  relation1 == relation2
 
 	daIndex **indx;
 	result *res;
 
-	if(rowID1 < rowID2)
+	if(size1 < size2)
 	{
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
 		res = getResults(tableInfo1,tableInfo2,indx);
@@ -204,8 +207,8 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 
 	uint64_t resultSize;
 	uint64_t ** joinResults = convert_to_arrays(res,resultSize);
-	
-	// TODO: update temp_results
+
+	// TODO: update temp_results with joinResults
 
 	return /*res*/;
 }
