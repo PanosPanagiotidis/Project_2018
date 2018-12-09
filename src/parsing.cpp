@@ -20,6 +20,10 @@ queryBatch * QueryInput(){
 
 	while(getline(cin,line)){
 		if(line == "F") break;
+		if(line == ""){
+			cout << "no empty strings " <<endl;
+			continue;
+		}
 		queryInput.push_back(line);
 	}
 	vector<string>::iterator it;
@@ -30,9 +34,18 @@ queryBatch * QueryInput(){
 	//qBatch->queries = new Query*[queryCount];
 
 	int i=0;
+	Query* test = NULL;
+
 
 	for(it = queryInput.begin() ; it != queryInput.end() ; it++, i++){
-		qBatch->queries.push_back(ParseQuery((*it)));
+
+		test = ParseQuery((*it));
+		if(test == NULL){
+			qBatch = NULL;
+			break;
+		}
+
+		qBatch->queries.push_back(test);
 	}
 
 	return qBatch;
@@ -48,7 +61,20 @@ Query* ParseQuery(string q){
 	char* start;
 	int ac = 0;
 	int c = -1;
+	char t;
+	int delims =0;
 
+
+	for(int i = 0 ; i < q.length();i++){
+		t = q[i];
+		if(t == '|')
+			delims++;
+	}
+
+	if(delims > 2){
+		cout <<"Please enter a correct query" << endl;
+		return NULL;
+	}
 	Query *query = new Query;
 
 	token = q.substr(pos,q.find("|",pos));

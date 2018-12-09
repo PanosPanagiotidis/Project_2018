@@ -37,17 +37,17 @@ int main(void)
 	r1->numColumns = 1;
 	r2->numColumns = 1;
 
-	r1->relation[0][0] = 1000;
-	r1->relation[0][4] = 1212321;
-	r1->relation[0][1] = 12;
-	r1->relation[0][2] = 5921;
-	r1->relation[0][3] = 9417;
+	r1->relation[0][0] = 0;
+	r1->relation[0][4] = 1;
+	r1->relation[0][1] = 1;
+	r1->relation[0][2] = 1;
+	r1->relation[0][3] = 1;
 
-	r2->relation[0][0] = 521321;
-	r2->relation[0][4] = 92;
-	r2->relation[0][1] = 151;
-	r2->relation[0][2] = 432;
-	r2->relation[0][3] = 9842;
+	r2->relation[0][0] = 1;
+	r2->relation[0][4] = 1;
+	r2->relation[0][1] = 1;
+	r2->relation[0][2] = 1;
+	r2->relation[0][3] = 1;
 
 	relationArray *ra = new relationArray;
 	ra->relations.push_back(r1);

@@ -254,21 +254,24 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	vector<int>::iterator rid;
 	vector<checksum_views*>::iterator check;
 	vector<uint64_t>::iterator rowit;
+	uint64_t j;
 
 	for(check = cv.begin(); check != cv.end(); check++)
 	{	checksum = 0;
-		for(rid = tr->relationID.begin(); rid != tr->relationID.end(); rid++)
+		for(j = 0; j < tr->relationID.size() ; j++)
+		//for(rid = tr->relationID.begin(); rid != tr->relationID.end(); rid++)
 		{
-			if((*check)->rel_views == (*rid)) //relid = check id.get results now
+			if((*check)->rel_views == tr->relationID.at(j)) //relid = check id.get results now
 			{
-				// cout << (*rid) << " is rid" <<endl;
+				//cout << (*rid) << " is rid" <<endl;
 				// cout << "size is " << tr->rowID.size()<< endl;
 				for(i = 0 ; i < tr->size ; i++)
 				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
 				{
-					uint64_t* temp = tr->rowID.at(i);
+					cout << "rowID size is " << tr->rowID.size()<<endl;
+					uint64_t* temp = tr->rowID.at(j);
 					row = temp[i];
-					relID = tr->relationID.at(i);
+					relID = tr->relationID.at(j);
 					// cout << (*check)->rel_cols << " rel cols" << endl;
 					// cout << row << " row" << endl;
 					//cout << "number added is " << (ra->relations.at(relID))->relation[(*check)->rel_cols][row] << endl;
