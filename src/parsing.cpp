@@ -148,7 +148,7 @@ Query* ParseQuery(string q){
 		checksum_views *cv = new checksum_views;
 
 		cv->rel_views = query->relations.at(atoi(array+ac));
-		//cout << "rel->views is" << cv ->rel_views << endl; DELET DIS
+		//cout << "rel->views is" << cv ->rel_views << endl;// DELET DIS
 		while(isalnum(array[ac])){
 			ac++;
 		}

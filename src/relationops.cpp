@@ -54,7 +54,6 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 		for(uint64_t row=0; row < *size; row++)
 		{
 			uint64_t rid = rowids[row];
-			cout << pred->type << endl;
 			switch (pred->type) {
 				case EQ_FILTER:
 					if( filter == currentRelation->relation[columnId][rid])
@@ -231,7 +230,7 @@ int tempResultsAdd(std::vector<uint64_t> &results, int relationId, tempResults *
 	for( it = results.begin(); it != results.end() ; it++,i++)
 		arr[i] = (*it);
 
-	cout <<results.size();
+	//cout <<results.size();
 //for(i=0; i<results.size();i++)	cout << arr[i] << endl;
 	tempResultArray newTmp;
 
@@ -249,23 +248,31 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	uint64_t checksum;
 	uint64_t i;
 	uint64_t row;
+	uint64_t temp;
+	int relID;
 
 	vector<int>::iterator rid;
 	vector<checksum_views*>::iterator check;
 	vector<uint64_t>::iterator rowit;
 
 	for(check = cv.begin(); check != cv.end(); check++)
-	{
-		checksum = 0;
+	{	checksum = 0;
 		for(rid = tr->relationID.begin(); rid != tr->relationID.end(); rid++)
 		{
 			if((*check)->rel_views == (*rid)) //relid = check id.get results now
 			{
+				// cout << (*rid) << " is rid" <<endl;
+				// cout << "size is " << tr->rowID.size()<< endl;
 				for(i = 0 ; i < tr->size ; i++)
 				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
 				{
-					row = tr->rowID.at((*rid))[i];
-					checksum += (ra->relations.at((*check)->rel_views	))->relation[(*check)->rel_cols][row];
+					uint64_t* temp = tr->rowID.at(i);
+					row = temp[i];
+					relID = tr->relationID.at(i);
+					// cout << (*check)->rel_cols << " rel cols" << endl;
+					// cout << row << " row" << endl;
+					//cout << "number added is " << (ra->relations.at(relID))->relation[(*check)->rel_cols][row] << endl;
+					checksum += (ra->relations.at(relID))->relation[(*check)->rel_cols][row];
 				}
 				break;
 			}
@@ -274,7 +281,7 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 		if(checksum == 0)
 			cout << "NULL ";
 		else
-			cout << checksum << " ";
+			cout << "checksum is "<< checksum << " ";
 
 	}
 
