@@ -16,13 +16,12 @@ tempResults *queryExecute(Query *qr, relationArray *relArray)
 
 	std::vector<predicates*>::iterator it;
 	for( it = qr->p.begin(); it != qr->p.end(); it++){
-		cout << (*it)->type << endl;
 		if( (*it)->type == JOIN)		continue;										// Each predicate is either a join or a filter
 		else	relation_filter((*it),relArray,tRes);
 	}
 	delete orderedQuery;
 
-	return NULL;
+	return tRes;
 }
 
 
@@ -33,7 +32,6 @@ Query *queryReorder(Query *qr)
 	newQr->p = qr->p;
 	newQr->relations = qr->relations;
 	newQr->checksums = qr->checksums;
-	cout << "reordered" << endl;
 	return newQr;
 }
 
@@ -56,7 +54,7 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 		for(uint64_t row=0; row < *size; row++)
 		{
 			uint64_t rid = rowids[row];
-
+			cout << pred->type << endl;
 			switch (pred->type) {
 				case EQ_FILTER:
 					if( filter == currentRelation->relation[columnId][rid])
@@ -93,9 +91,8 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 
 				case GT_FILTER:
-					if( filter <= currentRelation->relation[columnId][row]){
+					if( filter <= currentRelation->relation[columnId][row])
 						results.push_back(row);
-					}
 					break;
 
 				case LT_FILTER:
@@ -108,7 +105,7 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 			}
 		}
-		// TODO: tempResultsAdd(results,relation1,tr);
+		tempResultsAdd(results,relationId,tr);
 	}
 }
 
@@ -234,6 +231,8 @@ int tempResultsAdd(std::vector<uint64_t> &results, int relationId, tempResults *
 	for( it = results.begin(); it != results.end() ; it++,i++)
 		arr[i] = (*it);
 
+	cout <<results.size();
+//for(i=0; i<results.size();i++)	cout << arr[i] << endl;
 	tempResultArray newTmp;
 
 	newTmp.rowID.push_back(arr);
