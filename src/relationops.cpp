@@ -9,7 +9,7 @@
 
 using namespace std;
 
-tempResults *queryExecute(Query *qr, relationArray *relArray)
+tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 {
 	Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
@@ -21,7 +21,7 @@ tempResults *queryExecute(Query *qr, relationArray *relArray)
 	}
 	delete orderedQuery;
 
-	return tRes;
+	return &(tRes->res.at(0));
 }
 
 

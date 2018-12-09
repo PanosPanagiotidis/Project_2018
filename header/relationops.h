@@ -15,7 +15,7 @@ typedef struct tempResults{
 }tempResults;
 
 
-tempResults *queryExecute(Query *, relationArray *);
+tempResultArray *queryExecute(Query *, relationArray *);
 
 Query *queryReorder(Query *);															// Reorders predicates in a query
 
