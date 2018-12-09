@@ -74,3 +74,24 @@ Relations* load_relations(const char* fileName)
 
 	return R;
 }
+
+void deleteRelations(relationArray** ra){
+
+	int i,j,z;
+
+	for(i = 0; i < (*ra)->relations.size();i++){
+
+		for(j = 0;j < ((*ra)->relations.at(i))->numColumns ; j++){
+
+				delete[] (((*ra)->relations.at(i))->relation[j]);
+
+		}
+		delete[] ((*ra)->relations.at(i)->relation);
+		delete((*ra)->relations.at(i));
+	}
+
+	std::vector<Relations*>().swap((*ra)->relations);
+	delete((*ra));
+
+
+}

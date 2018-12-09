@@ -31,9 +31,10 @@ int main(void)
 {
 
 	// R = init_relations();
-	//relationArray *RA = init_relations();
-	queryBatch *qb = QueryInput();
-	deleteQuery(&qb);
+	relationArray *RA = init_relations();
+	deleteRelations(&RA);
+	//queryBatch *qb = QueryInput();
+	//deleteQuery(&qb);
 	// queryListNode *curr = qList->first;
 	// while( curr != NULL )
 	// {

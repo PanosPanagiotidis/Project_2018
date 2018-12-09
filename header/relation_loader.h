@@ -15,7 +15,7 @@ typedef struct relationArray
 	std::vector<Relations*> relations;
 }relationArray;
 
-
+void deleteRelations(relationArray** );
 relationArray* init_relations();
 Relations* load_relations(const char*);
 
