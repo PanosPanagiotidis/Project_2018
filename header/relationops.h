@@ -3,6 +3,7 @@
 
 #include "../header/parser.h"
 #include "../header/relation_loader.h"
+#include "../header/results.h"
 
 typedef struct tempResultArray{
 	std::vector<uint64_t *> rowID;
@@ -28,7 +29,7 @@ uint64_t getChecksum(tempResultArray* ,relationArray* ,std::vector<checksum_view
 
 int tempResultsUpdate(std::vector<uint64_t> &,int,tempResults *);
 int tempResultsAdd(std::vector<uint64_t> &,int,tempResults *);
-
+uint64_t **convert_to_arrays(result *,uint64_t &ts);
 void jointest(void);
 
 #endif

@@ -141,25 +141,51 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 }
 
 
-void relation_join(predicates *pred, relationArray *rArray)
+void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 {
 	int relationId1 = pred->relation1;
 	int relationId2 = pred->relation2;
 	int columnId1   = pred->column1;
 	int columnId2   = pred->column2;
 
+	uint64_t size1, size2;
+	uint64_t *rowID1, *rowID2;
+	Table_Info *tableInfo1, *tableInfo2;
+
 	Relations * currentRelation1 = rArray->relations.at(relationId1);
 	Relations * currentRelation2 = rArray->relations.at(relationId2);
-	uint64_t *rowids;
-	// TODO: check temp_results
+
+
+	rowID1 = tempResultsLookup(tpr,relationId1, &size1);
+
+	if( rowID1 == NULL )
+	{
+		rowID1 = createRowID(currentRelation1->size);
+		size1  = currentRelation1->size;
+		tableInfo1 = init_table_info(rowID1,currentRelation1->relation[columnId1],size1);
+	}
+	else
+	{
+		uint64_t *payloadColumn1 = NULL;							// TODO: Create this from relation and rowid
+		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1);
+	}
+
+
+	rowID2 = tempResultsLookup(tpr,relationId2, &size2);
+
+	if( rowID2 == NULL )
+	{
+		rowID2 = createRowID(currentRelation2->size);
+		size2  = currentRelation2->size;
+		tableInfo2 = init_table_info(rowID2,currentRelation2->relation[columnId2],size2);
+	}
+	else
+	{
+		uint64_t *payloadColumn2 = NULL;							// TODO: Create this from relation and rowid
+		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2);
+	}
 
 	// TODO: check fringe case if relation1 = relation2
-
-	uint64_t *rowID1 = createRowID(currentRelation1->size);
-	uint64_t *rowID2 = createRowID(currentRelation1->size);
-
-	Table_Info *tableInfo1 = init_table_info(rowID1,currentRelation1->relation[columnId1],currentRelation1->size);
-	Table_Info *tableInfo2 = init_table_info(rowID2,currentRelation2->relation[columnId2],currentRelation2->size);
 
 	daIndex **indx;
 	result *res;
@@ -175,6 +201,10 @@ void relation_join(predicates *pred, relationArray *rArray)
 		res = getResults(tableInfo2,tableInfo1,indx);
 	}
 
+
+	uint64_t resultSize;
+	uint64_t ** joinResults = convert_to_arrays(res,resultSize);
+	
 	// TODO: update temp_results
 
 	return /*res*/;
