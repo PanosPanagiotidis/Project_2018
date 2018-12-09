@@ -15,10 +15,11 @@ tempResults *queryExecute(Query *qr, relationArray *relArray)
 	tempResults *tRes = new tempResults;
 
 	std::vector<predicates*>::iterator it;
-	for( it = orderedQuery->p.begin(); it != orderedQuery->p.end(); it++)
+	for( it = qr->p.begin(); it != qr->p.end(); it++){
+		cout << (*it)->type << endl;
 		if( (*it)->type == JOIN)		continue;										// Each predicate is either a join or a filter
-		else							relation_filter((*it),relArray,tRes);
-
+		else	relation_filter((*it),relArray,tRes);
+	}
 	delete orderedQuery;
 
 	return NULL;
@@ -32,13 +33,12 @@ Query *queryReorder(Query *qr)
 	newQr->p = qr->p;
 	newQr->relations = qr->relations;
 	newQr->checksums = qr->checksums;
-
+	cout << "reordered" << endl;
 	return newQr;
 }
 
 void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 {
-
 	int relationId = pred->relation1;
 	int columnId = pred->column1;
 	uint64_t filter = pred->filter;
@@ -64,8 +64,10 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 
 				case GT_FILTER:
-					if( filter <= currentRelation->relation[columnId][rid])
+					if( filter <= currentRelation->relation[columnId][rid]){
+												cout << "WOO" << endl;
 						results.push_back(rid);
+					}
 					break;
 
 				case LT_FILTER:
@@ -93,8 +95,9 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 
 				case GT_FILTER:
-					if( filter <= currentRelation->relation[columnId][row])
+					if( filter <= currentRelation->relation[columnId][row]){
 						results.push_back(row);
+					}
 					break;
 
 				case LT_FILTER:

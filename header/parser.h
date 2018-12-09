@@ -33,8 +33,9 @@ typedef struct Query{
 }Query;
 
 typedef struct queryBatch{
-	Query **queries;
-	int queryCount;
+	std::vector<Query*> queries;
+	//Query **queries;
+	//int queryCount;
 }queryBatch;
 
 queryBatch * QueryInput();

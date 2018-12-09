@@ -3,6 +3,7 @@
 #include "../header/relation_loader.h"
 #include "../header/parser.h"
 #include "../header/relationops.h"
+#include "../header/randarr.h"
 
 int main(void)
 {
@@ -11,20 +12,63 @@ int main(void)
 
 	relationArray *rArray = init_relations();											// Read & Store the relations
 */
-	queryBatch *qBatch = QueryInput();												// Read & Store a batch of queries
+	vector<uint64_t> rowdID1 = create_column(10,1);
+	vector<uint64_t> rowdID2 = create_column(20,1);
+
+	vector<uint64_t> payload1 = create_column(10,0);
+	vector<uint64_t> payload2 = create_column(20,0);
+
+	Relations *r1 = new Relations;
+	Relations *r2 = new Relations;
+
+	r1->relation = new uint64_t*[1];
+	for(int i = 0 ; i < 5 ; i++){
+		r1->relation[i] = new uint64_t[5];
+	}
+
+	r2->relation = new uint64_t*[1];
+	for(int i = 0 ; i < 5 ; i++){
+		r2->relation[i] = new uint64_t[5];
+	}
+
+	r1->size = 5;
+	r2->size = 5;
+
+	r1->numColumns = 1;
+	r2->numColumns = 1;
+
+	r1->relation[0][0] = 1000;
+	r1->relation[0][4] = 1212321;
+	r1->relation[0][1] = 12;
+	r1->relation[0][2] = 5921;
+	r1->relation[0][3] = 9417;
+
+	r2->relation[0][0] = 521321;
+	r2->relation[0][4] = 92;
+	r2->relation[0][1] = 151;
+	r2->relation[0][2] = 432;
+	r2->relation[0][3] = 9842;
+
+	relationArray *ra = new relationArray;
+	ra->relations.push_back(r1);
+	ra->relations.push_back(r2);
 
 
-	/*
-	for(int i=0; i< qBatch->queryCount; i++)
-		queryExecute(qBatch->queries[i],rArray);										// Execute each query in batch
+	queryBatch *qBatch = QueryInput();
+	cout << qBatch->queries.at(0)->p.at(0)->type << endl;										// Read & Store a batch of queries
+	tempResults *tr = new tempResults;
 
-	// TODO: Possibly add  loop to request input of another query batch?
 
-	// TODO: Present results
+	
+	std:vector<Query*>::iterator q;
+	for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
+	//for(int i=0; i< qBatch->queryCount; i++)
+		tr = queryExecute((*q),ra);										// Execute each query in batch
+	}
 
-	// TODO: Free structs
-
-	*/
+	if(tr == NULL){
+		cout << "OOF" << endl;
+	}
 /*
 	std::vector<Relations *>::iterator it;
 

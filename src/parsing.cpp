@@ -13,7 +13,7 @@ using namespace std;
 queryBatch * QueryInput(){
 	string line;
 	vector<string> queryInput;
-	int queryCount = 0;
+
 
 
 	cout << "Enter your query" << endl;
@@ -21,20 +21,18 @@ queryBatch * QueryInput(){
 	while(getline(cin,line)){
 		if(line == "F") break;
 		queryInput.push_back(line);
-		queryCount++;
 	}
 	vector<string>::iterator it;
 
 
 	queryBatch *qBatch = new queryBatch;
-	qBatch->queryCount = queryCount;
 
-	qBatch->queries = new Query*[queryCount];
+	//qBatch->queries = new Query*[queryCount];
 
 	int i=0;
 
 	for(it = queryInput.begin() ; it != queryInput.end() ; it++, i++){
-		qBatch->queries[i] = ParseQuery(*it);
+		qBatch->queries.push_back(ParseQuery((*it)));
 	}
 
 	return qBatch;
@@ -121,11 +119,11 @@ Query* ParseQuery(string q){
 			}
 
 
-		}else if(!strcmp(array,">")){
+		}else if(array[ac] == '>'){
 			pr->type = GT_FILTER;
 			ac++;
 			pr->filter = atoi(array+ac);
-		}else if (!strcmp(array,"<")){
+		}else if (array[ac]=='<'){
 			pr->type = LT_FILTER;
 			ac++;
 			pr->filter = atoi(array+ac);
