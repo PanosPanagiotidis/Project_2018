@@ -7,7 +7,7 @@
 
 using namespace std;
 
-enum p_type{JOIN,EQ_FILTER,GT_FILTER,LT_FILTER};
+enum p_type{JOIN,EQ_FILTER,GT_FILTER,LT_FILTER,NA};
 
 typedef struct predicates{
 	enum p_type type;
@@ -37,6 +37,8 @@ typedef struct queryBatch{
 	//Query **queries;
 	//int queryCount;
 }queryBatch;
+
+void deleteQuery(queryBatch** );
 
 queryBatch * QueryInput();
 Query *ParseQuery(string );

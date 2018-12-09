@@ -46,8 +46,10 @@ queryBatch * QueryInput(){
 		}
 
 		qBatch->queries.push_back(test);
+		test = NULL;
 	}
 
+	queryInput.erase(queryInput.begin(),queryInput.end());
 	return qBatch;
 
 }
@@ -57,11 +59,11 @@ Query* ParseQuery(string q){
 
 	size_t pos = 0;
 	string token;
-	char* array;
-	char* start;
+	char* array = NULL;
+	char* start = NULL;
 	int ac = 0;
 	int c = -1;
-	char t;
+	char t = '0';
 	int delims =0;
 
 
@@ -83,6 +85,7 @@ Query* ParseQuery(string q){
 	string s;
 	while(getline(iss,s,' ')){
 		query->relations.push_back(stoi(s));
+		//delete(s);
 	}
 
 	//GET PREDICATES
@@ -92,14 +95,20 @@ Query* ParseQuery(string q){
 	istringstream isa(token);
 
 	while(getline(isa,s,'&')){
-
-		array = new char[s.length()+1];
-		start = array;
-		s.copy(array,s.length()+1);
+		c = -1;
+		array = NULL;
+		start = NULL;
+		array = strdup(q.c_str());
 
 		ac = 0;
 
 		predicates* pr = new predicates;
+		pr->type = NA;
+		pr->relation1 = -1;
+		pr->relation2 = -1;
+		pr->column2 = -1;
+		pr->column1 = -1;
+		pr->filter = -1;
 
 		pr->relation1 = atoi(array+ac);
 
@@ -155,23 +164,27 @@ Query* ParseQuery(string q){
 			pr->filter = atoi(array+ac);
 		}
 
-		delete(start);
+		free(array);
 
 		query->p.push_back(pr);
 
 	}
 
+	array = NULL;
+	start = NULL;
 	q.erase(pos,q.find("|")+1);
 	int size = count (q.begin(),q.end(),'.');
-	array = new char[q.length()+1];
+	array = strdup(q.c_str());
 	start = array;
-	q.copy(array,q.length()+1);
+
 	ac = 0;
 
 
 	for(int i = 0 ; i < size ; i++){
 
 		checksum_views *cv = new checksum_views;
+		cv->rel_cols = -1;
+		cv->rel_views = -1;
 
 		cv->rel_views = query->relations.at(atoi(array+ac));
 		//cout << "rel->views is" << cv ->rel_views << endl;// DELET DIS
@@ -190,7 +203,42 @@ Query* ParseQuery(string q){
 
 	}
 
-	delete(start);
+	free(array);
 	return query;
+
+}
+
+void deleteQuery(queryBatch** qb){
+	std::vector<Query*>::iterator q;
+	int i = 0;
+
+	for(q = (*qb)->queries.begin(); q != (*qb)->queries.end(); q++){
+
+		for(int i = 0 ; i < (*q)->p.size() ; i++){
+			delete((*q)->p.at(i));
+		}
+
+		vector<predicates*>().swap((*q)->p);
+
+		(*q)->relations.clear();
+		vector<int>().swap((*q)->relations);
+
+		for(int i = 0 ; i < (*q)->checksums.size() ; i++){
+			delete((*q)->checksums.at(i));
+		}
+
+		vector<checksum_views*>().swap((*q)->checksums);
+
+		delete((*q));
+
+
+	}
+
+	//(*qb)->queries.erase((*qb)->queries.begin(),(*qb)->queries.end());
+
+	vector<Query*>().swap((*qb)->queries);
+
+	delete((*qb));
+
 
 }
