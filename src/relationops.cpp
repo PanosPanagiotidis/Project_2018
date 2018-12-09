@@ -108,7 +108,7 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 			}
 		}
 
-		tempResultsUpdate(results,relationId,tr);
+		tempResultsFilterUpdate(results,relationId,tr);
 	}
 	else
 	{
@@ -168,7 +168,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	else
 	{
 		foundFlag1++;
-		uint64_t *payloadColumn1 = NULL;							// TODO: Create this from relation and rowid
+		uint64_t *payloadColumn1 = NULL;							// TODO: Fetch this from relation using rowid
 		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1);
 	}
 
@@ -184,7 +184,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	else
 	{
 		foundFlag2++;
-		uint64_t *payloadColumn2 = NULL;							// TODO: Create this from relation and rowid
+		uint64_t *payloadColumn2 = NULL;							// TODO: Fetch this from relation using rowid
 		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2);
 	}
 
@@ -208,9 +208,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	uint64_t resultSize;
 	uint64_t ** joinResults = convert_to_arrays(res,resultSize);
 
-	// TODO: update temp_results with joinResults
-
-	return /*res*/;
+	tempResultsJoinUpdate(joinResults, resultSize, tpr);
 }
 
 
@@ -219,6 +217,11 @@ uint64_t *createRowID(uint64_t rSize)
 	uint64_t *rowID = new uint64_t[rSize];
 	for(uint64_t i=0; i < rSize; i++)	rowID[i] = i;
 	return rowID;
+}
+
+void tempResultsJoinUpdate(uint64_t ** joinResults, uint64_t resultSize, tempResults *tpr)
+{
+	// TODO: Implement
 }
 
 
@@ -242,7 +245,7 @@ uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *size)
 	return NULL;
 }
 
-int tempResultsUpdate(std::vector<uint64_t> &results, int relationId, tempResults *tpr)
+int tempResultsFilterUpdate(std::vector<uint64_t> &results, int relationId, tempResults *tpr)
 {
 	std::vector<tempResultArray>::iterator it;
 
@@ -295,8 +298,6 @@ int tempResultsAdd(std::vector<uint64_t> &results, int relationId, tempResults *
 	for( it = results.begin(); it != results.end() ; it++,i++)
 		arr[i] = (*it);
 
-	//cout <<results.size();
-//for(i=0; i<results.size();i++)	cout << arr[i] << endl;
 	tempResultArray newTmp;
 
 	newTmp.rowID.push_back(arr);
@@ -313,7 +314,6 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	uint64_t checksum;
 	uint64_t i;
 	uint64_t row;
-	uint64_t temp;
 	int relID;
 
 	vector<int>::iterator rid;
