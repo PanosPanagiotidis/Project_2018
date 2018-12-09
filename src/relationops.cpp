@@ -9,30 +9,19 @@
 
 using namespace std;
 
-void queryExecute(Query *qr, relationArray *relArray)
+tempResults *queryExecute(Query *qr, relationArray *relArray)
 {
 	Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
 
 	std::vector<predicates*>::iterator it;
-
 	for( it = orderedQuery->p.begin(); it != orderedQuery->p.end(); it++)
-		if( (*it)->type == JOIN)														// Each predicate is either a join or a filter
-		{
-			// join
-		}
-		else
-		{
-			// filter
-		}
-
-	// TODO: Create Final Results using tempResults;
-
-	// TODO: checksum view
+		if( (*it)->type == JOIN)		continue;										// Each predicate is either a join or a filter
+		else							relation_filter((*it),relArray,tRes);
 
 	delete orderedQuery;
 
-	return /*results*/;
+	return NULL;
 }
 
 
@@ -56,7 +45,7 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 
 	Relations * currentRelation = rArray->relations.at(relationId);						// Fetch relation
 
-	uint64_t *size;
+	uint64_t *size = new uint64_t;
 	uint64_t *rowids = tempResultsLookup(tr, relationId, size);							// Also check if relation exists on tempResults
 
 	std::vector<uint64_t> results;														// Result vector
@@ -89,7 +78,8 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 			}
 		}
-		// TODO: tempResultsUpdate(results,relation1,tr);
+
+		tempResultsUpdate(results,relationId,tr);
 	}
 	else
 	{
@@ -119,9 +109,6 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 		}
 		// TODO: tempResultsAdd(results,relation1,tr);
 	}
-
-	// TODO: return results;
-
 }
 
 
@@ -183,34 +170,82 @@ uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *size)
 
 	for(it1 = tpr->res.begin(); it1 != tpr->res.end(); it1++)
 	{
-		size = &(*it1).size;
+		*size = (*it1).size;
 
 		for( uint64_t j=0; j<(*it1).relationID.size(); j++)
-		{
-			if( (*it1).relationID.at(j) == relationId )	return (*it1).rowID.at(j);
-		}
+			if( (*it1).relationID.at(j) == relationId )			return (*it1).rowID.at(j);
 
 	}
 
 	return NULL;
 }
 
-int tempResultsUpdate(std::vector<uint64_t> &results, int relationId, int columnId, tempResults *tpr)
+int tempResultsUpdate(std::vector<uint64_t> &results, int relationId, tempResults *tpr)
 {
 	std::vector<tempResultArray>::iterator it;
 
-	for(it = tpr->res.begin(); it != tpr->res.end(); it++)
+	for(it = tpr->res.begin(); it != tpr->res.end(); it++)								// Iterate through all saved tempresultarrays
+	{																					// to find the one containing relation with relationId
 		for(uint64_t i=0; i< (*it).relationID.size(); i++)
 		{
-			// edw
-		}
+			if( (*it).relationID.at(i) == relationId )									// If found
+			{
 
+				uint64_t k=0;
+				std::vector<uint64_t *> newRowId;
+
+				for(uint64_t j=0; j<(*it).relationID.size(); j++)						// Create new tempresults
+				{
+					uint64_t *newarr = new uint64_t[(*it).size];
+					newRowId.push_back(newarr);
+				}
+
+				std::vector<uint64_t>::iterator it1;
+
+				uint64_t f=0;
+				for(it1 = results.begin(); it1 != results.end(); it1++,f++)
+				{
+					while( (*it1) != ((*it).rowID.at(i))[k])	k++;					// Go though old temp results
+					for(uint64_t j=0; j<(*it).relationID.size(); j++)
+						(newRowId.at(j))[f] = (*it).rowID.at(i)[j];						// Copy filtered rows to new temp results
+				}
+
+				std::vector<uint64_t *>::iterator tmp;
+
+				for(tmp = (*it).rowID.begin(); tmp != (*it).rowID.end(); tmp++)			// destroy old rowid
+					delete *tmp;
+
+				(*it).rowID = newRowId;													// and assign new one to tempresults
+
+				return 0;
+			}
+		}
+	}
+		return 1;
 }
 
+int tempResultsAdd(std::vector<uint64_t> &results, int relationId, tempResults *tpr)
+{
+	uint64_t *arr = new uint64_t[results.size()];
+	std::vector<uint64_t>::iterator it;
+
+	int i=0;
+	for( it = results.begin(); it != results.end() ; it++,i++)
+		arr[i] = (*it);
+
+	tempResultArray newTmp;
+
+	newTmp.rowID.push_back(arr);
+	newTmp.relationID.push_back(relationId);
+	newTmp.size = results.size();
+
+	tpr->res.push_back(newTmp);
+
+	return 0;
+}
 
 uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_views*> cv)
 {
-	uint64_t curRel;
 	uint64_t checksum;
 	uint64_t i;
 	uint64_t row;
@@ -220,15 +255,15 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	vector<uint64_t>::iterator rowit;
 
 	for(check = cv.begin(); check != cv.end(); check++)
-	{	
+	{
 		checksum = 0;
 		for(rid = tr->relationID.begin(); rid != tr->relationID.end(); rid++)
 		{
 			if((*check)->rel_views == (*rid)) //relid = check id.get results now
-			{	
+			{
 				for(i = 0 ; i < tr->size ; i++)
 				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
-				{	
+				{
 					row = tr->rowID.at((*rid))[i];
 					checksum += (ra->relations.at((*check)->rel_views	))->relation[(*check)->rel_cols][row];
 				}
@@ -246,7 +281,7 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 cout << endl;
 
 
-
+	return 0;	//idk temporary
 }
 
 
