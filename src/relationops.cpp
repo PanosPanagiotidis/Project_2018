@@ -232,6 +232,7 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 					row = tr->rowID.at((*rid))[i];
 					checksum += (ra->relations.at((*check)->rel_views	))->relation[(*check)->rel_cols][row];
 				}
+				break;
 			}
 		}
 
