@@ -8,40 +8,48 @@
 #include <fstream>
 #include <streambuf>
 
-using namespace std;
-
-
 queryBatch * QueryInput(){
 	string line;
 	vector<string> queryInput;
-	int queryCount = 0;
+
 
 
 	cout << "Enter your query" << endl;
 
-	
 	// ifstream t("wrong_input.txt");
 	// ifstream t("empty_input.txt");																// svhnw to while loop giati kanw insert apo txt file
 	ifstream t("correct_input.txt");
 	string str((istreambuf_iterator<char>(t)), istreambuf_iterator<char>());
 	cout << str << endl;
-	line = str; 
+	line = str;
+	if(line == ""){
+		cout << "no empty strings " <<endl;
+	}
 	queryInput.push_back(line);
-	queryCount++;
 	vector<string>::iterator it;
 
 
 	queryBatch *qBatch = new queryBatch;
-	qBatch->queryCount = queryCount;
 
-	qBatch->queries = new Query*[queryCount];
+	//qBatch->queries = new Query*[queryCount];
 
 	int i=0;
+	Query* test = NULL;
+
 
 	for(it = queryInput.begin() ; it != queryInput.end() ; it++, i++){
-		qBatch->queries[i] = ParseQuery(*it);
+
+		test = ParseQuery((*it));
+		if(test == NULL){
+			qBatch = NULL;
+			break;
+		}
+
+		qBatch->queries.push_back(test);
+		test = NULL;
 	}
 
+	queryInput.erase(queryInput.begin(),queryInput.end());
 	return qBatch;
 
 }
@@ -51,11 +59,24 @@ Query* ParseQuery(string q){
 
 	size_t pos = 0;
 	string token;
-	char* array;
-	char* start;
+	char* array = NULL;
+	char* start = NULL;
 	int ac = 0;
-	char c;
+	int c = -1;
+	char t = '0';
+	int delims =0;
 
+
+	for(int i = 0 ; i < q.length();i++){
+		t = q[i];
+		if(t == '|')
+			delims++;
+	}
+
+	if(delims > 2){
+		cout <<"Please enter a correct query" << endl;
+		return NULL;
+	}
 	Query *query = new Query;
 
 	token = q.substr(pos,q.find("|",pos));
@@ -64,6 +85,7 @@ Query* ParseQuery(string q){
 	string s;
 	while(getline(iss,s,' ')){
 		query->relations.push_back(stoi(s));
+		//delete(s);
 	}
 
 	//GET PREDICATES
@@ -73,70 +95,150 @@ Query* ParseQuery(string q){
 	istringstream isa(token);
 
 	while(getline(isa,s,'&')){
-
-		array = new char[s.length()+1];
-		start = array;
-		s.copy(array,s.length()+1);
+		c = -1;
+		array = NULL;
+		start = NULL;
+		array = strdup(q.c_str());
 
 		ac = 0;
 
 		predicates* pr = new predicates;
+		pr->type = NA;
+		pr->relation1 = -1;
+		pr->relation2 = -1;
+		pr->column2 = -1;
+		pr->column1 = -1;
+		pr->filter = -1;
 
 		pr->relation1 = atoi(array+ac);
-		ac +=2;
-		pr->column1 = atoi(array+ac);
+
+		while(isalnum(array[ac])){
+			ac ++;
+		}
 		ac++;
+
+		pr->column1 = atoi(array+ac);
+
+		while(isalnum(array[ac])){
+			ac++;
+		}
+
 		if(array[ac] == '='){
-			c = array[ac+2];
-			if(c == '.'){
+			if(strchr(array+ac,'.')){
+				c = 1;
+			}
+			else{
+				c = 0;
+			}
+
+			if(c == -1){
+				cout << "ridiculous command given " << endl;
+				exit(1);
+			}
+			if(c == 1){
 				pr->filter = JOIN;
 				ac++;
 				pr->relation2 = atoi(array+ac);
-				ac+=2;
+
+				while(isalnum(array[ac])){
+					ac++;
+				}
+				ac++;
 				pr->column2 = atoi(array+ac);
-			}else if(c != '.'){
+
+
+			}else if(c == 0){
 				pr->type = EQ_FILTER;
 				ac++;
 				pr->filter = atoi(array+ac);
 			}
-		}else if(!strcmp(array,">")){
+
+
+		}else if(array[ac] == '>'){
 			pr->type = GT_FILTER;
 			ac++;
 			pr->filter = atoi(array+ac);
-		}else if (!strcmp(array,"<")){
+		}else if (array[ac]=='<'){
 			pr->type = LT_FILTER;
 			ac++;
 			pr->filter = atoi(array+ac);
 		}
 
-		delete(start);
+		free(array);
 
 		query->p.push_back(pr);
 
 	}
 
+	array = NULL;
+	start = NULL;
 	q.erase(pos,q.find("|")+1);
 	int size = count (q.begin(),q.end(),'.');
-	array = new char[q.length()+1];
+	array = strdup(q.c_str());
 	start = array;
-	q.copy(array,q.length()+1);
+
 	ac = 0;
 
 
 	for(int i = 0 ; i < size ; i++){
 
 		checksum_views *cv = new checksum_views;
+		cv->rel_cols = -1;
+		cv->rel_views = -1;
 
-		cv->rel_views = atoi(array+ac);
-		ac+=2;
+		cv->rel_views = query->relations.at(atoi(array+ac));
+		//cout << "rel->views is" << cv ->rel_views << endl;// DELET DIS
+		while(isalnum(array[ac])){
+			ac++;
+		}
+		ac++;
+
 		cv->rel_cols =	atoi(array+ac);
-		ac+=2;
+
+		while(isalnum(array[ac])){
+			ac++;
+		}
 
 		query->checksums.push_back(cv);
 
 	}
 
-	delete(start);
+	free(array);
 	return query;
+
+}
+
+void deleteQuery(queryBatch** qb){
+	std::vector<Query*>::iterator q;
+	int i = 0;
+
+	for(q = (*qb)->queries.begin(); q != (*qb)->queries.end(); q++){
+
+		for(int i = 0 ; i < (*q)->p.size() ; i++){
+			delete((*q)->p.at(i));
+		}
+
+		vector<predicates*>().swap((*q)->p);
+
+		(*q)->relations.clear();
+		vector<int>().swap((*q)->relations);
+
+		for(int i = 0 ; i < (*q)->checksums.size() ; i++){
+			delete((*q)->checksums.at(i));
+		}
+
+		vector<checksum_views*>().swap((*q)->checksums);
+
+		delete((*q));
+
+
+	}
+
+	//(*qb)->queries.erase((*qb)->queries.begin(),(*qb)->queries.end());
+
+	vector<Query*>().swap((*qb)->queries);
+
+	delete((*qb));
+
 
 }
