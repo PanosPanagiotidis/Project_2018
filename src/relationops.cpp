@@ -108,7 +108,7 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 			}
 		}
 
-		tempResultsUpdate(results,relationId,tr);
+		tempResultsFilterUpdate(results,relationId,tr);
 	}
 	else
 	{
@@ -141,30 +141,59 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 }
 
 
-void relation_join(predicates *pred, relationArray *rArray)
+void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 {
 	int relationId1 = pred->relation1;
 	int relationId2 = pred->relation2;
 	int columnId1   = pred->column1;
 	int columnId2   = pred->column2;
 
+	uint64_t size1, size2;
+	uint64_t *rowID1, *rowID2;
+	Table_Info *tableInfo1, *tableInfo2;
+	int foundFlag1 = 0, foundFlag2 = 0;
+
 	Relations * currentRelation1 = rArray->relations.at(relationId1);
 	Relations * currentRelation2 = rArray->relations.at(relationId2);
-	uint64_t *rowids;
-	// TODO: check temp_results
 
-	// TODO: check fringe case if relation1 = relation2
 
-	uint64_t *rowID1 = createRowID(currentRelation1->size);
-	uint64_t *rowID2 = createRowID(currentRelation1->size);
+	rowID1 = tempResultsLookup(tpr,relationId1, &size1);
 
-	Table_Info *tableInfo1 = init_table_info(rowID1,currentRelation1->relation[columnId1],currentRelation1->size);
-	Table_Info *tableInfo2 = init_table_info(rowID2,currentRelation2->relation[columnId2],currentRelation2->size);
+	if( rowID1 == NULL )
+	{
+		rowID1 = createRowID(currentRelation1->size);
+		size1  = currentRelation1->size;
+		tableInfo1 = init_table_info(rowID1,currentRelation1->relation[columnId1],size1);
+	}
+	else
+	{
+		foundFlag1++;
+		uint64_t *payloadColumn1 = NULL;							// TODO: Fetch this from relation using rowid
+		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1);
+	}
+
+
+	rowID2 = tempResultsLookup(tpr,relationId2, &size2);
+
+	if( rowID2 == NULL )
+	{
+		rowID2 = createRowID(currentRelation2->size);
+		size2  = currentRelation2->size;
+		tableInfo2 = init_table_info(rowID2,currentRelation2->relation[columnId2],size2);
+	}
+	else
+	{
+		foundFlag2++;
+		uint64_t *payloadColumn2 = NULL;							// TODO: Fetch this from relation using rowid
+		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2);
+	}
+
+	// TODO: tackle fringe case  relation1 == relation2
 
 	daIndex **indx;
 	result *res;
 
-	if(rowID1 < rowID2)
+	if(size1 < size2)
 	{
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
 		res = getResults(tableInfo1,tableInfo2,indx);
@@ -175,9 +204,11 @@ void relation_join(predicates *pred, relationArray *rArray)
 		res = getResults(tableInfo2,tableInfo1,indx);
 	}
 
-	// TODO: update temp_results
 
-	return /*res*/;
+	uint64_t resultSize;
+	uint64_t ** joinResults = convert_to_arrays(res,resultSize);
+
+	tempResultsJoinUpdate(joinResults, resultSize, tpr);
 }
 
 
@@ -186,6 +217,11 @@ uint64_t *createRowID(uint64_t rSize)
 	uint64_t *rowID = new uint64_t[rSize];
 	for(uint64_t i=0; i < rSize; i++)	rowID[i] = i;
 	return rowID;
+}
+
+void tempResultsJoinUpdate(uint64_t ** joinResults, uint64_t resultSize, tempResults *tpr)
+{
+	// TODO: Implement
 }
 
 
@@ -209,7 +245,7 @@ uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *size)
 	return NULL;
 }
 
-int tempResultsUpdate(std::vector<uint64_t> &results, int relationId, tempResults *tpr)
+int tempResultsFilterUpdate(std::vector<uint64_t> &results, int relationId, tempResults *tpr)
 {
 	std::vector<tempResultArray>::iterator it;
 
@@ -262,8 +298,6 @@ int tempResultsAdd(std::vector<uint64_t> &results, int relationId, tempResults *
 	for( it = results.begin(); it != results.end() ; it++,i++)
 		arr[i] = (*it);
 
-	//cout <<results.size();
-//for(i=0; i<results.size();i++)	cout << arr[i] << endl;
 	tempResultArray newTmp;
 
 	newTmp.rowID.push_back(arr);
@@ -280,7 +314,6 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	uint64_t checksum;
 	uint64_t i;
 	uint64_t row;
-	uint64_t temp;
 	int relID;
 
 	vector<int>::iterator rid;
