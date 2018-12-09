@@ -336,15 +336,9 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 					(*it).rowID = newRowID;
 					return;																// Just once
 				}
-
 		}
-
 	}
-	else  // foundFlag1 == 1 && foundFlag2 == 1											// TODO :(
-	{
-
-	}
-
+	return;
 }
 
 
