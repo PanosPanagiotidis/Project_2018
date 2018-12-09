@@ -24,7 +24,7 @@ tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 	return &(tRes->res.at(0));
 }
 
-uint64_t **convert_to_arrays(result *r){
+uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 	uint64_t** r_convd = new uint64_t*[2];
 
 	result *temp=r;
@@ -35,6 +35,8 @@ uint64_t **convert_to_arrays(result *r){
 		total_size += temp->size;
 		temp = temp->next;
 	}
+
+	ts = total_size;
 
 	for(int i = 0 ; i < total_size ; i++){
 		r_convd[0] = new uint64_t[total_size];
