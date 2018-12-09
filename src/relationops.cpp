@@ -64,10 +64,8 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 
 				case GT_FILTER:
-					if( filter <= currentRelation->relation[columnId][rid]){
-												cout << "WOO" << endl;
+					if( filter <= currentRelation->relation[columnId][rid])
 						results.push_back(rid);
-					}
 					break;
 
 				case LT_FILTER:
