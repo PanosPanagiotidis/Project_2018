@@ -37,11 +37,11 @@ uint64_t **convert_to_arrays(result *r){
 	}
 
 	for(int i = 0 ; i < total_size ; i++){
-		r_convd[0][i] = new uint64_t;
-		r_convd[1][i] = new uint64_t;
+		r_convd[0] = new uint64_t[total_size];
+		r_convd[1] = new uint64_t[total_size];
 
-		r_convd[0][i] = r->results_array[count]->key;
-		r_convd[2][i] = r->results_array[count]->payload;
+		r_convd[0][i] = r->results_array[count].key;
+		r_convd[2][i] = r->results_array[count].payload;
 
 		count++;
 
