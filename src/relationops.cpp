@@ -37,8 +37,14 @@ uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 	}
 
 	ts = total_size;
-	cout << total_size << " total size " <<endl;
 	for(int i = 0 ; i < total_size ; i++){
+		if(count > r->size && r!=NULL){
+			r = r->next;
+			count = 0;
+		}
+		else break;
+
+
 		r_convd[0] = new uint64_t[total_size];
 		r_convd[1] = new uint64_t[total_size];
 
@@ -47,10 +53,10 @@ uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 
 		count++;
 
-		if(count > r->size && r->next!=NULL)
-			r = r->next;
-		else break;
+
 	}
+
+	cout << "total size is " << ts<<endl;
 
 	return r_convd;
 
@@ -603,17 +609,17 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 		{
 			if((*check)->rel_views == tr->relationID.at(j)) //relid = check id.get results now
 			{
-				//cout << (*rid) << " is rid" <<endl;
-				// cout << "size is " << tr->rowID.size()<< endl;
+				cout << "size is " << tr->rowID.size()<< endl;
+				cout << tr->size << " is tr size " <<endl;
 				for(i = 0 ; i < tr->size ; i++)
 				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
 				{
-					// cout << "rowID size is " << tr->rowID.size()<<endl;
+					cout << "rowID size is " << tr->rowID.size()<<endl;
 					uint64_t* temp = tr->rowID.at(j);
 					row = temp[i];
 					relID = tr->relationID.at(j);
-					// cout << (*check)->rel_cols << " rel cols" << endl;
-					// cout << row << " row" << endl;
+					cout << (*check)->rel_cols << " rel cols" << endl;
+					cout << row << " row" << endl;
 					//cout << "number added is " << (ra->relations.at(relID))->relation[(*check)->rel_cols][row] << endl;
 					checksum += (ra->relations.at(relID))->relation[(*check)->rel_cols][row];
 				}
