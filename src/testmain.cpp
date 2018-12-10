@@ -15,12 +15,15 @@ int main(void)
 */
 	vector<uint64_t> rowdID1 = create_column(10,1);
 	vector<uint64_t> rowdID2 = create_column(20,1);
+	vector<uint64_t> rowdID3 = create_column(20,1);
 
 	vector<uint64_t> payload1 = create_column(10,0);
 	vector<uint64_t> payload2 = create_column(20,0);
+	vector<uint64_t> payload3 = create_column(20,0);
 
 	Relations *r1 = new Relations;
 	Relations *r2 = new Relations;
+	Relations *r3 = new Relations;
 
 	r1->relation = new uint64_t*[1];
 	for(int i = 0 ; i < 5 ; i++){
@@ -32,13 +35,22 @@ int main(void)
 		r2->relation[i] = new uint64_t[5];
 	}
 
+	r3->relation = new uint64_t*[1];
+	for(int i = 0 ; i < 5 ; i++){
+		r3->relation[i] = new uint64_t[5];
+	}
+
+
 	r1->size = 5;
 	r2->size = 5;
+	r3->size = 5;
 
 	r1->numColumns = 1;
 	r2->numColumns = 1;
+	r3->numColumns = 1;
 
-	r1->relation[0][0] = 0;
+
+	r1->relation[0][0] = 1;
 	r1->relation[0][4] = 1;
 	r1->relation[0][1] = 1;
 	r1->relation[0][2] = 1;
@@ -49,6 +61,12 @@ int main(void)
 	r2->relation[0][1] = 1;
 	r2->relation[0][2] = 1;
 	r2->relation[0][3] = 1;
+
+	r3->relation[0][0] = 1;
+	r3->relation[0][4] = 1;
+	r3->relation[0][1] = 1;
+	r3->relation[0][2] = 1;
+	r3->relation[0][3] = 1;
 
 	relationArray *ra = new relationArray;
 	ra->relations.push_back(r1);
