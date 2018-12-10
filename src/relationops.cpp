@@ -4,7 +4,7 @@
 #include "../header/helper_functions.h"
 #include "../header/daindex.h"
 #include "../header/results.h"
-
+#include <queue>
 #include <iostream>
 
 using namespace std;
@@ -60,8 +60,83 @@ uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 Query *queryReorder(Query *qr)
 {
 	Query *newQr = new Query;
+	int predCount = qr->p.size();
+	queryHelper *qHelp = new queryHelper[predCount];
 
-	newQr->p = qr->p;
+	std::vector<predicates *>::iterator it;
+
+	int i=0;
+	uint64_t joinCount=0;
+	for( it = qr->p.begin(); it != qr->p.end(); it++,i++)
+	{
+		if((*it)->type == JOIN)
+		{
+			qHelp[i].relation1 = (*it)->relation1;
+			qHelp[i].relation2 = (*it)->relation2;
+			qHelp[i].p = (*it);
+			joinCount++;
+		}
+	}
+
+	if(joinCount != 0)																	// bfs
+	{
+		std::queue<int> q;
+		std::vector<int> visited;
+
+		q.push(qHelp[0].relation1);
+		if(qHelp[0].relation2 != qHelp[0].relation1)	q.push(qHelp[0].relation2);
+		newQr->p.push_back(qHelp[0].p);
+
+		while( !q.empty() && newQr->p.size() != joinCount )
+		{
+			int front = q.front();
+			visited.push_back(front);
+			q.pop();
+
+			for(uint64_t j=0 ; j < joinCount; j++)
+			{
+				if(qHelp[j].relation1 == front || qHelp[j].relation2 == front)
+				{
+					int flg1=0;
+					for(uint64_t k=0 ; k < newQr->p.size() ; k++)
+					{
+						if(qHelp[j].p == newQr->p.at(k))	flg1=1;
+					}
+
+					if(flg1==0)	newQr->p.push_back(qHelp[j].p);
+
+
+					flg1=0;
+					if( qHelp[j].relation1 == front )
+					{
+						for(uint64_t k=0; k< visited.size(); k++)
+						{
+							if(visited.at(k) == qHelp[j].relation2)	flg1=1;
+						}
+						if(flg1==0)	q.push(qHelp[j].relation2);
+					}
+					else
+					{
+						for(uint64_t k=0; k< visited.size(); k++)
+						{
+							if(visited.at(k) == qHelp[j].relation1)	flg1=1;
+						}
+						if(flg1==0)	q.push(qHelp[j].relation1);
+					}
+				}
+			}
+		}
+
+
+	}
+
+
+
+
+	for(  it = qr->p.begin(); it != qr->p.end(); it++ )
+		if( (*it)->type != JOIN )
+			newQr->p.push_back(*it);
+
 	newQr->relations = qr->relations;
 	newQr->checksums = qr->checksums;
 	return newQr;

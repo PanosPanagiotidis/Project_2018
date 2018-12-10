@@ -32,6 +32,12 @@ typedef struct Query{
 
 }Query;
 
+typedef struct queryHelper{
+		int relation1;
+		int relation2;
+		predicates *p;
+}queryHelper;
+
 typedef struct queryBatch{
 	std::vector<Query*> queries;
 	//Query **queries;
