@@ -66,7 +66,8 @@ int main(void)
 	std:vector<Query*>::iterator q;
 	for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
 	//for(int i=0; i< qBatch->queryCount; i++)
-		tra = queryExecute((*q),ra);								// Execute each query in batch
+		tra = queryExecute((*q),ra);							// Execute each query in batch
+		cout << tra->size;
 		getChecksum(tra,ra,(*q)->checksums);
 	}
 

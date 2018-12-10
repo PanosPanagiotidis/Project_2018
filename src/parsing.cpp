@@ -95,7 +95,7 @@ Query* ParseQuery(string q){
 	istringstream isa(token);
 
 	while(getline(isa,s,'&')){
-		cout << s<< endl;
+
 		c = -1;
 		array = NULL;
 		start = NULL;
@@ -156,7 +156,6 @@ Query* ParseQuery(string q){
 
 
 		}else if(array[ac] == '>'){
-			cout << "gt filter in " <<endl;
 			pr->type = GT_FILTER;
 			ac++;
 			pr->filter = atoi(array+ac);

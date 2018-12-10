@@ -16,7 +16,6 @@ tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 
 	std::vector<predicates*>::iterator it;
 	for( it = qr->p.begin(); it != qr->p.end(); it++){
-		cout << (*it)->type << endl;
 		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
 		else							relation_filter((*it),relArray,tRes);
 	}
@@ -32,19 +31,19 @@ uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 	int total_size = 0;
 	int count = 0;
 
-	while(temp->next!=NULL){
+	while(temp!=NULL){
 		total_size += temp->size;
 		temp = temp->next;
 	}
 
 	ts = total_size;
-
+	cout << total_size << " total size " <<endl;
 	for(int i = 0 ; i < total_size ; i++){
 		r_convd[0] = new uint64_t[total_size];
 		r_convd[1] = new uint64_t[total_size];
 
 		r_convd[0][i] = r->results_array[count].key;
-		r_convd[2][i] = r->results_array[count].payload;
+		r_convd[1][i] = r->results_array[count].payload;
 
 		count++;
 
@@ -251,7 +250,6 @@ void specialCase(relationArray *rArray, tempResults *tr, int relationId, int col
 
 void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 {	
-	cout << "we joinin " << endl;
 	int relationId1 = pred->relation1;
 	int relationId2 = pred->relation2;
 	int columnId1   = pred->column1;
