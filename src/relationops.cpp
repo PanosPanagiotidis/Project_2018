@@ -258,7 +258,7 @@ void specialCase(relationArray *rArray, tempResults *tr, int relationId, int col
 
 
 void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
-{	
+{
 	int relationId1 = pred->relation1;
 	int relationId2 = pred->relation2;
 	int columnId1   = pred->column1;
@@ -371,7 +371,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 					for(uint64_t i = 0; i < resultSize; i++)
 					{
-						for(uint64_t j = 0; j < (*it).relationID.size(); j++ )
+						for(uint64_t j = 0; j < (*it).size; j++ )
 						{
 							if( joinResults[0][i] == (*it2)[j] )
 							{
@@ -399,6 +399,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 					(*it).relationID.push_back(relationID2);
 					(*it).size = newSize;
+
 																						// TODO: cleanup the memory mess
 																						// before doing this:
 					(*it).rowID = newRowID;
@@ -422,7 +423,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 					for(uint64_t i = 0; i < resultSize; i++)
 					{
-						for(uint64_t j = 0; j < (*it).relationID.size(); j++ )
+						for(uint64_t j = 0; j < (*it).size; j++ )
 						{
 							if( joinResults[1][i] == (*it2)[j] )
 							{
