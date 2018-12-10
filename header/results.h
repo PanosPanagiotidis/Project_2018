@@ -8,9 +8,6 @@
 
 typedef struct result{
 	std::vector<toumble*> results_array;
-	//toumble *results_array;
-	//struct result *next;
-	//int size;
 }result;
 
 

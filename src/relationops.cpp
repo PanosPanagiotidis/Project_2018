@@ -10,8 +10,22 @@
 using namespace std;
 
 
+void deleteTR(tempResults** tr){
+	for(int i = 0 ; i < (*tr)->res.size() ; i++){
 
-tempResultArray *queryExecute(Query *qr, relationArray *relArray)
+			for(int a = 0 ; a < ((*tr)->res.at(i)).rowID.size() ; a++){
+				delete[]((*tr)->res.at(i).rowID.at(a));
+			}
+
+			vector<uint64_t*>().swap((*tr)->res.at(i).rowID);
+			vector<int>().swap((*tr)->res.at(i).relationID);
+		
+	}
+	vector<tempResultArray>().swap((*tr)->res);
+
+}
+
+tempResults *queryExecute(Query *qr, relationArray *relArray)
 {
 	//Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
@@ -25,7 +39,8 @@ tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 	}
 	//delete orderedQuery;
 
-	return &(tRes->res.at(0));
+
+	return tRes;
 }
 
 Query *editQuery(Query *qr)
@@ -338,14 +353,10 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 
 	}
 
+	destroy_results(&res);
 
-
-	// for(uint64_t i=0; i < resultSize; i++)
-	// {
-	// 	cout << "Col1: " << joinResults[0][i] << " Col2: " << joinResults[1][i] << endl;
-	// }
-
-	//cout << endl;
+	Destroy_Table_Data(&tableInfo1);
+	Destroy_Table_Data(&tableInfo2);
 
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
 }

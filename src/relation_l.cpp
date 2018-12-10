@@ -72,7 +72,7 @@ Relations* load_relations(const char* fileName)
 	}
 
 
-	//munmap(tempadr,length);
+	munmap(tempadr,length);
 
 	return R;
 }

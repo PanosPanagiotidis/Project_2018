@@ -16,12 +16,12 @@ typedef struct tempResults{
 }tempResults;
 
 
-tempResultArray *queryExecute(Query *, relationArray *);
+tempResults *queryExecute(Query *, relationArray *);
 
 Query *queryReorder(Query *);															// Reorders predicates in a query
 
 uint64_t *createRowID(uint64_t);
-
+void deleteTR(tempResults** );
 void relation_join(predicates *, relationArray *, tempResults *);
 void relation_filter(predicates *,relationArray *, tempResults *);
 uint64_t *tempResultsLookup(tempResults *,int, uint64_t *);

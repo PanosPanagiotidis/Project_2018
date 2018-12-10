@@ -21,8 +21,7 @@ queryBatch * QueryInput(){
 	while(getline(cin,line)){
 		if(line == "F") break;
 		if(line == ""){
-			cout << "no empty strings " <<endl;
-			continue;
+			return NULL;
 		}
 		queryInput.push_back(line);
 	}

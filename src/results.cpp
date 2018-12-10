@@ -130,15 +130,12 @@ void print_results(result* r){
 
 
 
-// void destroy_results(result** r){
-// 	result *temp;
+void destroy_results(result** r){
 
+	for(int i = 0 ; i < (*r)->results_array.size();i++){
+		delete((*r)->results_array.at(i));
+	}
 
-// 	while((*r) != NULL){
-// 		free((*r)->results_array);
-// 		temp = (*r);
-// 		(*r) = (*r)->next;
-// 		free(temp);
-// 	}
+	vector<toumble*>().swap((*r)->results_array);
 
-// }
+}

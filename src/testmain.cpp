@@ -82,18 +82,22 @@ int main(void)
 
 	sleep(1);
 	while(1){
-	queryBatch *qBatch = QueryInput();									// Read & Store a batch of queries
-	tempResultArray *tra;
+		queryBatch *qBatch = QueryInput();									// Read & Store a batch of queries
+		if (qBatch == NULL) break;
+		tempResults *tra;
 
+		std:vector<Query*>::iterator q;
+		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
+		//for(int i=0; i< qBatch->queryCount; i++)
+			tra = queryExecute((*q),rArray);							// Execute each query in batch
+			getChecksum(&(tra->res.at(0)),rArray,(*q)->checksums);
+			deleteTR(&tra);
+		}
 
-
-	std:vector<Query*>::iterator q;
-	for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
-	//for(int i=0; i< qBatch->queryCount; i++)
-		tra = queryExecute((*q),rArray);							// Execute each query in batch
-		getChecksum(tra,rArray,(*q)->checksums);
+		deleteQuery(&qBatch);
 	}
-}
+
+	deleteRelations(&rArray);
 
 /*
 	std::vector<Relations *>::iterator it;
