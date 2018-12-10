@@ -28,38 +28,17 @@ uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 	uint64_t** r_convd = new uint64_t*[2];
 
 	result *temp=r;
-	int total_size = 0;
-	int count = 0;
+	int total_size = r->results_array.size();
 
-	while(temp!=NULL){
-		total_size += temp->size;
-		temp = temp->next;
-	}
 
 	ts = total_size;
 	r_convd[0] = new uint64_t[total_size];
 	r_convd[1] = new uint64_t[total_size];
 
-	cout << "r size is " << r->size << endl;
-
-	for(int i = 0 ; i < ts ; i++){
-
-		if((count >= r->size)){
-			r = r->next;
-			count = 0;
-		}
-
-
-
-
-		r_convd[0][i] = r->results_array[count].key;
-		r_convd[1][i] = r->results_array[count].payload;
-
-		count++;
-
-
+	for(int i = 0 ; i < total_size ; i++){
+		r_convd[0][i] = r->results_array.at(i)->key;
+		r_convd[1][i] = r->results_array.at(i)->payload;
 	}
-
 
 	return r_convd;
 
@@ -170,20 +149,25 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 		for(uint64_t row=0; row < *size; row++)
 		{
 			uint64_t rid = rowids[row];
+			//cout << "pred->type is " << pred->type<<endl;
+			//0 1|1.0=0.0&1.0=2.0&1.0>4|1.0
 			switch (pred->type) {
-				case EQ_FILTER:
+				case 1:
 					if( filter == currentRelation->relation[columnId][rid])
 						results.push_back(rid);
 					break;
 
-				case GT_FILTER:
-					if( filter <= currentRelation->relation[columnId][rid])
+				case 2:
+					if( filter <= currentRelation->relation[columnId][rid]){
+						cout << "payload is " << currentRelation->relation[columnId][rid] << endl;
 						results.push_back(rid);
+					}
 					break;
 
-				case LT_FILTER:
-					if( filter >= currentRelation->relation[columnId][rid])
+				case 3:
+					if( filter >= currentRelation->relation[columnId][rid]){
 						results.push_back(rid);
+					}
 					break;
 
 				default:
@@ -191,7 +175,8 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 			}
 		}
-
+		if(results.size() == 0)
+			cout <<"RESULTS IS EMPTY -------------------" << endl;
 		tempResultsFilterUpdate(results,relationId,tr);
 	}
 	else
@@ -566,7 +551,7 @@ int tempResultsFilterUpdate(std::vector<uint64_t> &results, int relationId, temp
 					delete *tmp;
 
 				(*it).rowID = newRowId;													// and assign new one to tempresults
-
+				cout << "SIZE IS " << (*it).rowID.size() <<endl;
 				return 0;
 			}
 		}

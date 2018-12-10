@@ -57,8 +57,8 @@ int main(void)
 	r1->relation[0][3] = 1;
 
 	r2->relation[0][0] = 1;
-	r2->relation[0][4] = 1;
-	r2->relation[0][1] = 1;
+	r2->relation[0][4] = 10;
+	r2->relation[0][1] = 8;
 	r2->relation[0][2] = 1;
 	r2->relation[0][3] = 1;
 
@@ -71,6 +71,7 @@ int main(void)
 	relationArray *ra = new relationArray;
 	ra->relations.push_back(r1);
 	ra->relations.push_back(r2);
+	ra->relations.push_back(r3);
 
 	//relationArray *ra = init_relations();
 
