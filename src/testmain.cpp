@@ -9,10 +9,10 @@
 int main(void)
 {
 
-/*
+
 
 	relationArray *rArray = init_relations();											// Read & Store the relations
-*/
+/*
 	vector<uint64_t> rowdID1 = create_column(10,1);
 	vector<uint64_t> rowdID2 = create_column(20,1);
 	vector<uint64_t> rowdID3 = create_column(20,1);
@@ -27,7 +27,7 @@ int main(void)
 
 	r1->relation = new uint64_t*[1];
 	for(int i = 0 ; i < 5 ; i++){
-		r1->relation[i] = new uint64_t[5];
+		r1->relation[i] = new uint64_t[7];
 	}
 
 	r2->relation = new uint64_t*[1];
@@ -41,7 +41,7 @@ int main(void)
 	}
 
 
-	r1->size = 5;
+	r1->size = 8;
 	r2->size = 5;
 	r3->size = 5;
 
@@ -55,6 +55,8 @@ int main(void)
 	r1->relation[0][2] = 12;
 	r1->relation[0][3] = 14;
 	r1->relation[0][4] = 12;
+	r1->relation[0][5] = 12;
+	r1->relation[0][6] = 12;
 
 	r2->relation[0][0] = 1;
 	r2->relation[0][1] = 8;
@@ -76,17 +78,17 @@ int main(void)
 	//relationArray *ra = init_relations();
 
 	//sleep(1);
-
+*/
 	queryBatch *qBatch = QueryInput();									// Read & Store a batch of queries
-	tempResultArray *tra = new tempResultArray;
+	tempResultArray *tra;
 
 
 
 	std:vector<Query*>::iterator q;
 	for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
 	//for(int i=0; i< qBatch->queryCount; i++)
-		tra = queryExecute((*q),ra);							// Execute each query in batch
-		getChecksum(tra,ra,(*q)->checksums);
+		tra = queryExecute((*q),rArray);							// Execute each query in batch
+		getChecksum(tra,rArray,(*q)->checksums);
 	}
 
 /*

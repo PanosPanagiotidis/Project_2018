@@ -9,13 +9,17 @@
 
 using namespace std;
 
+
+
 tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 {
 	Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
 
+	Query *qur = editQuery(qr);
+
 	std::vector<predicates*>::iterator it;
-	for( it = qr->p.begin(); it != qr->p.end(); it++){
+	for( it = qur->p.begin(); it != qur->p.end(); it++){
 		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
 		else							relation_filter((*it),relArray,tRes);
 	}
@@ -23,6 +27,17 @@ tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 
 	return &(tRes->res.at(0));
 }
+
+Query *editQuery(Query *qr)
+{
+	for(uint64_t i=0; i<qr->p.size(); i++)
+	{
+		qr->p.at(i)->relation1 = qr->relations.at(qr->p.at(i)->relation1);
+		if(qr->p.at(i)->type == JOIN) 		qr->p.at(i)->relation2 = qr->relations.at(qr->p.at(i)->relation2);
+	}
+	return qr;
+}
+
 
 uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 	uint64_t** r_convd = new uint64_t*[2];
@@ -634,13 +649,10 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	for(check = cv.begin(); check != cv.end(); check++)
 	{	checksum = 0;
 		for(j = 0; j < tr->relationID.size() ; j++)
-		//for(rid = tr->relationID.begin(); rid != tr->relationID.end(); rid++)
 		{
 			if((*check)->rel_views == tr->relationID.at(j)) //relid = check id.get results now
 			{
-
 				for(i = 0 ; i < tr->size ; i++)
-				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
 				{
 					uint64_t* temp = tr->rowID.at(j);
 					row = temp[i];
@@ -665,6 +677,7 @@ cout << endl;
 
 	return 0;	//idk temporary
 }
+
 
 
 
