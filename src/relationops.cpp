@@ -37,6 +37,9 @@ uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 	}
 
 	ts = total_size;
+	r_convd[0] = new uint64_t[total_size];
+	r_convd[1] = new uint64_t[total_size];
+	
 	for(int i = 0 ; i < total_size ; i++){
 		if(count > r->size && r!=NULL){
 			r = r->next;
@@ -45,8 +48,7 @@ uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 		else break;
 
 
-		r_convd[0] = new uint64_t[total_size];
-		r_convd[1] = new uint64_t[total_size];
+
 
 		r_convd[0][i] = r->results_array[count].key;
 		r_convd[1][i] = r->results_array[count].payload;
