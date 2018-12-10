@@ -39,13 +39,15 @@ uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 	ts = total_size;
 	r_convd[0] = new uint64_t[total_size];
 	r_convd[1] = new uint64_t[total_size];
-	
-	for(int i = 0 ; i < total_size ; i++){
-		if(count > r->size && r!=NULL){
+
+	cout << "r size is " << r->size << endl;
+
+	for(int i = 0 ; i < ts ; i++){
+
+		if((count >= r->size)){
 			r = r->next;
 			count = 0;
 		}
-		else break;
 
 
 
@@ -58,7 +60,6 @@ uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 
 	}
 
-	cout << "total size is " << ts<<endl;
 
 	return r_convd;
 
