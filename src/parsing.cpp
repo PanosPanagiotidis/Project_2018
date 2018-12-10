@@ -21,8 +21,7 @@ queryBatch * QueryInput(){
 	while(getline(cin,line)){
 		if(line == "F") break;
 		if(line == ""){
-			cout << "no empty strings " <<endl;
-			continue;
+			return NULL;
 		}
 		queryInput.push_back(line);
 	}
@@ -95,10 +94,11 @@ Query* ParseQuery(string q){
 	istringstream isa(token);
 
 	while(getline(isa,s,'&')){
+
 		c = -1;
 		array = NULL;
 		start = NULL;
-		array = strdup(q.c_str());
+		array = strdup(s.c_str());
 
 		ac = 0;
 
@@ -136,7 +136,7 @@ Query* ParseQuery(string q){
 				exit(1);
 			}
 			if(c == 1){
-				pr->filter = JOIN;
+				pr->type = JOIN;
 				ac++;
 				pr->relation2 = atoi(array+ac);
 
@@ -174,36 +174,60 @@ Query* ParseQuery(string q){
 	start = NULL;
 	q.erase(pos,q.find("|")+1);
 	int size = count (q.begin(),q.end(),'.');
-	array = strdup(q.c_str());
+	
 	start = array;
 
-	ac = 0;
 
+	istringstream isc(q);
 
-	for(int i = 0 ; i < size ; i++){
+	while(getline(isc,s,' ')){
+		ac = 0;
+		array = strdup(s.c_str());
+
 
 		checksum_views *cv = new checksum_views;
 		cv->rel_cols = -1;
 		cv->rel_views = -1;
 
 		cv->rel_views = query->relations.at(atoi(array+ac));
-		//cout << "rel->views is" << cv ->rel_views << endl;// DELET DIS
-		while(isalnum(array[ac])){
+		//cout << "cv->rel_views"<< cv->rel_views <<endl;
+		while(isalnum(array[ac]))
 			ac++;
-		}
 		ac++;
 
-		cv->rel_cols =	atoi(array+ac);
+		cv->rel_cols = atoi(array+ac);
+		//cout << "cv->relcols"<<cv->rel_cols<<endl;
+		query->checksums.push_back(cv);		
 
-		while(isalnum(array[ac])){
-			ac++;
-		}
-
-		query->checksums.push_back(cv);
+		free(array);
 
 	}
 
-	free(array);
+
+
+	// for(int i = 0 ; i < size ; i++){
+
+	// 	checksum_views *cv = new checksum_views;
+	// 	cv->rel_cols = -1;
+	// 	cv->rel_views = -1;
+
+	// 	cv->rel_views = query->relations.at(atoi(array+ac));
+	// 	//cout << "rel->views is" << cv ->rel_views << endl;// DELET DIS
+	// 	while(isalnum(array[ac])){
+	// 		ac++;
+	// 	}
+	// 	ac++;
+
+	// 	cv->rel_cols =	atoi(array+ac);
+
+	// 	while(isalnum(array[ac])){
+	// 		ac++;
+	// 	}
+
+
+
+	// }
+
 	return query;
 
 }

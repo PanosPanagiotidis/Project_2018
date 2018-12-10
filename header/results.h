@@ -1,19 +1,13 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #ifndef __RESULTS_H__
 #define __RESULTS_H__
 
 #include "structs.h"
 #include "daindex.h"
+#include <vector>
 
 
 typedef struct result{
-	toumble *results_array;
-	struct result *next;
-	int size;
+	std::vector<toumble*> results_array;
 }result;
 
 
@@ -23,8 +17,5 @@ void destroy_results(result** );
 
 void print_results(result* );
 
-#endif
 
-#ifdef __cplusplus
-}
 #endif
