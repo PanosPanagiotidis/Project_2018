@@ -33,5 +33,6 @@ uint64_t **convert_to_arrays(result *,uint64_t &ts);
 
 void tempResultsJoinUpdate(uint64_t **,int ,int, int, int, uint64_t, tempResults *);
 void jointest(void);
+void specialCase(relationArray *, tempResults *, int, int ,int);
 
 #endif
