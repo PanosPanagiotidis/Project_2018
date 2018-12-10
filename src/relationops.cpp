@@ -249,7 +249,8 @@ void specialCase(relationArray *rArray, tempResults *tr, int relationId, int col
 
 
 void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
-{
+{	
+	cout << "we joinin" <<endl;
 	int relationId1 = pred->relation1;
 	int relationId2 = pred->relation2;
 	int columnId1   = pred->column1;
@@ -608,7 +609,7 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 				for(i = 0 ; i < tr->size ; i++)
 				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
 				{
-					cout << "rowID size is " << tr->rowID.size()<<endl;
+					// cout << "rowID size is " << tr->rowID.size()<<endl;
 					uint64_t* temp = tr->rowID.at(j);
 					row = temp[i];
 					relID = tr->relationID.at(j);
