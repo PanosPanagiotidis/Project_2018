@@ -13,7 +13,7 @@ using namespace std;
 
 tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 {
-	Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
+	//Query *orderedQuery = queryReorder(qr);												// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
 
 	Query *qur = editQuery(qr);
@@ -23,7 +23,7 @@ tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
 		else							relation_filter((*it),relArray,tRes);
 	}
-	delete orderedQuery;
+	//delete orderedQuery;
 
 	return &(tRes->res.at(0));
 }
@@ -186,7 +186,6 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 			}
 		}
-
 		tempResultsFilterUpdate(results,relationId,tr);
 	}
 	else
@@ -341,12 +340,12 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 
 
 
-	for(uint64_t i=0; i < resultSize; i++)
-	{
-		cout << "Col1: " << joinResults[0][i] << " Col2: " << joinResults[1][i] << endl;
-	}
+	// for(uint64_t i=0; i < resultSize; i++)
+	// {
+	// 	cout << "Col1: " << joinResults[0][i] << " Col2: " << joinResults[1][i] << endl;
+	// }
 
-	cout << endl;
+	//cout << endl;
 
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
 }
@@ -582,7 +581,6 @@ int tempResultsFilterUpdate(std::vector<uint64_t> &results, int relationId, temp
 					uint64_t *newarr = new uint64_t[(*it).size];
 					newRowId.push_back(newarr);
 				}
-
 
 				for(uint64_t l = 0; l < (*it).size; l++)
 				{
