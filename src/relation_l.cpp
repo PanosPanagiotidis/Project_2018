@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include "../header/relation_loader.h"
 
+using namespace std;
 
 relationArray* init_relations()
 {
@@ -52,25 +53,26 @@ Relations* load_relations(const char* fileName)
 	}
 
 	R->size=*reinterpret_cast<uint64_t*>(addr);
-	addr+=sizeof(R->size);
-	R->numColumns=*reinterpret_cast<int*>(addr);
-	addr+=sizeof(size_t);
+	addr+=sizeof(uint64_t);
+	R->numColumns=*reinterpret_cast<uint64_t*>(addr);
+	addr+=sizeof(uint64_t);
 
-	R->relation = new uint64_t*[R->numColumns];
+	R->relation = (uint64_t**)malloc(sizeof(uint64_t*)*R->numColumns);
 
 	for(uint64_t i = 0 ; i < R->numColumns ; i ++){
-		R->relation[i] = new uint64_t[R->size];
+		R->relation[i] = (uint64_t*)malloc(sizeof(uint64_t)*R->size);
 	}
 
 	for (unsigned i=0;i<R->numColumns;++i) {
 		for(unsigned j = 0 ; j < R->size ; j++){
-			R->relation[i][j] = *((uint64_t*)addr);
+
+			R->relation[i][j] = *reinterpret_cast<uint64_t*>(addr);
 			addr+=sizeof(uint64_t);
 		}
 	}
 
 
-	munmap(tempadr,length);
+	//munmap(tempadr,length);
 
 	return R;
 }

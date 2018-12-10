@@ -599,6 +599,9 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	vector<checksum_views*>::iterator check;
 	vector<uint64_t>::iterator rowit;
 	uint64_t j;
+	cout << "size of rowID "<<tr->rowID.size()<<endl;
+	cout << "size of relationids "<<tr->relationID.size()<<endl;
+	cout << "size of tr->size "<<tr->size<<endl;
 
 	for(check = cv.begin(); check != cv.end(); check++)
 	{	checksum = 0;
@@ -618,14 +621,14 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 					//cout << "number added is " << (ra->relations.at(relID))->relation[(*check)->rel_cols][row] << endl;
 					checksum += (ra->relations.at(relID))->relation[(*check)->rel_cols][row];
 				}
-				break;
+				// break;
 			}
 		}
 
 		if(checksum == 0)
 			cout << "NULL ";
 		else
-			cout << "checksum is "<< checksum << " ";
+			cout << checksum << " ";
 
 	}
 
