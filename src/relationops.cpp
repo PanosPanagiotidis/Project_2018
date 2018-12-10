@@ -156,12 +156,12 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 
 				case GT_FILTER:
-					if( filter <= currentRelation->relation[columnId][rid])
+					if( filter < currentRelation->relation[columnId][rid])
 						results.push_back(rid);
 					break;
 
 				case LT_FILTER:
-					if( filter >= currentRelation->relation[columnId][rid])
+					if( filter > currentRelation->relation[columnId][rid])
 						results.push_back(rid);
 					break;
 
@@ -185,12 +185,12 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 
 				case GT_FILTER:
-					if( filter <= currentRelation->relation[columnId][row])
+					if( filter < currentRelation->relation[columnId][row])
 						results.push_back(row);
 					break;
 
 				case LT_FILTER:
-					if( filter >= currentRelation->relation[columnId][row])
+					if( filter > currentRelation->relation[columnId][row])
 						results.push_back(row);
 					break;
 
@@ -318,6 +318,12 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	uint64_t resultSize;
 	uint64_t ** joinResults = convert_to_arrays(res,resultSize);
 
+	// for(uint64_t i=0; i < resultSize; i++)
+	// {
+	// 	cout << "Col1: " << joinResults[0][i] << " Col2: " << joinResults[1][i] << endl;
+	// }
+	//
+	// cout << endl;
 
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
 }
@@ -365,13 +371,13 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 					{
 						for(uint64_t j = 0; j < (*it).size; j++ )
 						{
-							if( joinResults[0][i] == (*it2)[j] )
+							if( joinResults[1][i] == (*it2)[j] )
 							{
+
 								uint64_t k;
 								for(k = 0; k < matrix.size()-1; k++)
 									(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
-								matrix.at(k).push_back(joinResults[1][i]);
-								break;
+								matrix.at(k).push_back(joinResults[0][i]);
 							}
 						}
 					}
@@ -389,6 +395,16 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 						newRowID.push_back(temp);
 					}
+
+					// for(uint64_t i = 0; i < matrix.size(); i++)
+					// {
+					// 	for(uint64_t j=0; j < newSize; j++)
+					// 	{
+					// 		cout << (matrix.at(i)).at(j) << " ";
+					// 	}
+					// 	cout << endl;
+					//
+					// }
 
 					(*it).relationID.push_back(relationID2);
 					(*it).size = newSize;
@@ -418,12 +434,12 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 					{
 						for(uint64_t j = 0; j < (*it).size; j++ )
 						{
-							if( joinResults[1][i] == (*it2)[j] )
+							if( joinResults[0][i] == (*it2)[j] )
 							{
 								uint64_t k;
 								for(k = 0; k < matrix.size()-1; k++)
 									(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
-								matrix.at(k).push_back(joinResults[0][i]);
+								matrix.at(k).push_back(joinResults[1][i]);
 								break;
 							}
 						}
@@ -599,9 +615,6 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	vector<checksum_views*>::iterator check;
 	vector<uint64_t>::iterator rowit;
 	uint64_t j;
-	cout << "size of rowID "<<tr->rowID.size()<<endl;
-	cout << "size of relationids "<<tr->relationID.size()<<endl;
-	cout << "size of tr->size "<<tr->size<<endl;
 
 	for(check = cv.begin(); check != cv.end(); check++)
 	{	checksum = 0;
