@@ -183,21 +183,21 @@ Query* ParseQuery(string q){
 
 	while(getline(isc,s,' ')){
 		ac = 0;
-		array = strdup(q.c_str());
+		array = strdup(s.c_str());
 
 
 		checksum_views *cv = new checksum_views;
 		cv->rel_cols = -1;
 		cv->rel_views = -1;
 
-		cv->rel_views = atoi(array+ac);
-
+		cv->rel_views = query->relations.at(atoi(array+ac));
+		//cout << "cv->rel_views"<< cv->rel_views <<endl;
 		while(isalnum(array[ac]))
 			ac++;
 		ac++;
 
 		cv->rel_cols = atoi(array+ac);
-
+		//cout << "cv->relcols"<<cv->rel_cols<<endl;
 		query->checksums.push_back(cv);		
 
 		free(array);

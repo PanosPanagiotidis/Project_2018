@@ -11,7 +11,7 @@ int main(void)
 
 
 
-	relationArray *rArray = init_relations();											// Read & Store the relations
+	//relationArray *rArray = init_relations();											// Read & Store the relations
 /*
 	vector<uint64_t> rowdID1 = create_column(10,1);
 	vector<uint64_t> rowdID2 = create_column(20,1);
@@ -75,10 +75,13 @@ int main(void)
 	ra->relations.push_back(r2);
 	ra->relations.push_back(r3);
 
-	//relationArray *ra = init_relations();
 
-	//sleep(1);
 */
+
+	relationArray *rArray = init_relations();
+
+	sleep(1);
+	while(1){
 	queryBatch *qBatch = QueryInput();									// Read & Store a batch of queries
 	tempResultArray *tra;
 
@@ -90,6 +93,7 @@ int main(void)
 		tra = queryExecute((*q),rArray);							// Execute each query in batch
 		getChecksum(tra,rArray,(*q)->checksums);
 	}
+}
 
 /*
 	std::vector<Relations *>::iterator it;
