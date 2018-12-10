@@ -149,6 +149,7 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 		for(uint64_t row=0; row < *size; row++)
 		{
 			uint64_t rid = rowids[row];
+			// cout << "RID is "  << rid << endl;
 			switch (pred->type) {
 				case EQ_FILTER:
 					if( filter == currentRelation->relation[columnId][rid])
@@ -303,27 +304,34 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 
 	daIndex **indx;
 	result *res;
-
+	uint64_t resultSize;
+	uint64_t ** joinResults;
 	if(size1 < size2)
 	{
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
 		res = getResults(tableInfo1,tableInfo2,indx);
+		joinResults = convert_to_arrays(res,resultSize);
+
+		uint64_t * tmp = joinResults[1];
+		joinResults[1] = joinResults[0];
+		joinResults[0] = tmp;
 	}
 	else
 	{
 		indx = DAIndexArrayCreate(tableInfo2->bck_array);
 		res = getResults(tableInfo2,tableInfo1,indx);
+		joinResults = convert_to_arrays(res,resultSize);
+
 	}
 
-	uint64_t resultSize;
-	uint64_t ** joinResults = convert_to_arrays(res,resultSize);
 
-	// for(uint64_t i=0; i < resultSize; i++)
-	// {
-	// 	cout << "Col1: " << joinResults[0][i] << " Col2: " << joinResults[1][i] << endl;
-	// }
-	//
-	// cout << endl;
+
+	for(uint64_t i=0; i < resultSize; i++)
+	{
+		cout << "Col1: " << joinResults[0][i] << " Col2: " << joinResults[1][i] << endl;
+	}
+
+	cout << endl;
 
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
 }
@@ -371,13 +379,13 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 					{
 						for(uint64_t j = 0; j < (*it).size; j++ )
 						{
-							if( joinResults[1][i] == (*it2)[j] )
+							if( joinResults[0][i] == (*it2)[j] )
 							{
 
 								uint64_t k;
 								for(k = 0; k < matrix.size()-1; k++)
 									(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
-								matrix.at(k).push_back(joinResults[0][i]);
+								matrix.at(k).push_back(joinResults[1][i]);
 							}
 						}
 					}
@@ -434,12 +442,12 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 					{
 						for(uint64_t j = 0; j < (*it).size; j++ )
 						{
-							if( joinResults[0][i] == (*it2)[j] )
+							if( joinResults[1][i] == (*it2)[j] )
 							{
 								uint64_t k;
 								for(k = 0; k < matrix.size()-1; k++)
 									(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
-								matrix.at(k).push_back(joinResults[1][i]);
+								matrix.at(k).push_back(joinResults[0][i]);
 								break;
 							}
 						}
@@ -560,14 +568,21 @@ int tempResultsFilterUpdate(std::vector<uint64_t> &results, int relationId, temp
 					newRowId.push_back(newarr);
 				}
 
-				std::vector<uint64_t>::iterator it1;
 
-				uint64_t f=0;
-				for(it1 = results.begin(); it1 != results.end(); it1++,f++)
+				for(uint64_t l = 0; l < (*it).size; l++)
 				{
-					while( (*it1) != ((*it).rowID.at(i))[k])	k++;					// Go though old temp results
-					for(uint64_t j=0; j<(*it).relationID.size(); j++)
-						(newRowId.at(j))[f] = (*it).rowID.at(i)[j];						// Copy filtered rows to new temp results
+					uint64_t chk = (*it).rowID.at(i)[l];
+					uint64_t f=0;
+
+					std::vector<uint64_t>::iterator it1;
+					for( it1 = results.begin(); it1 != results.end(); it1++,f++)
+					{
+						if((*it1) == chk)
+						{
+							for( uint64_t j=0; j<(*it).relationID.size(); j++)
+								newRowId.at(j)[f] = (*it).rowID.at(j)[l];
+						}
+					}
 				}
 
 				std::vector<uint64_t *>::iterator tmp;

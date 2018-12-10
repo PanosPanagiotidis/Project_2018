@@ -58,12 +58,12 @@ int main(void)
 
 	r2->relation[0][0] = 1;
 	r2->relation[0][1] = 8;
-	r2->relation[0][2] = 18;
+	r2->relation[0][2] = 12;
 	r2->relation[0][3] = 1;
 	r2->relation[0][4] = 10;
 
 	r3->relation[0][0] = 1;
-	r3->relation[0][1] = 1;
+	r3->relation[0][1] = 12;
 	r3->relation[0][2] = 1;
 	r3->relation[0][3] = 1;
 	r3->relation[0][4] = 1;
