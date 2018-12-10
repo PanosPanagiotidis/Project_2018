@@ -335,6 +335,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	result *res;
 	uint64_t resultSize;
 	uint64_t ** joinResults;
+	Table_Info* indexed;
 	if(size1 < size2)
 	{
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
@@ -344,21 +345,29 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 		uint64_t * tmp = joinResults[1];
 		joinResults[1] = joinResults[0];
 		joinResults[0] = tmp;
+		indexed = tableInfo1;
 	}
 	else
 	{
 		indx = DAIndexArrayCreate(tableInfo2->bck_array);
 		res = getResults(tableInfo2,tableInfo1,indx);
 		joinResults = convert_to_arrays(res,resultSize);
+		indexed = tableInfo2;
 
 	}
 
 	destroy_results(&res);
+	delete(res);
 
 	Destroy_Table_Data(&tableInfo1);
 	Destroy_Table_Data(&tableInfo2);
 
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
+
+	DAIndexArrayDestroy(indx,indexed->bck_array->size);
+	delete[] (rowID2);
+	delete[] (rowID1);
+
 }
 
 
@@ -551,6 +560,8 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 			return;																// Just once
 		}
 	}
+
+	
 }
 
 

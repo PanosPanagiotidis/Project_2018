@@ -92,6 +92,7 @@ int main(void)
 			tra = queryExecute((*q),rArray);							// Execute each query in batch
 			getChecksum(&(tra->res.at(0)),rArray,(*q)->checksums);
 			deleteTR(&tra);
+			delete(tra);
 		}
 
 		deleteQuery(&qBatch);
