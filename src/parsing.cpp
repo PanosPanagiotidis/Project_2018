@@ -175,36 +175,60 @@ Query* ParseQuery(string q){
 	start = NULL;
 	q.erase(pos,q.find("|")+1);
 	int size = count (q.begin(),q.end(),'.');
-	array = strdup(q.c_str());
+	
 	start = array;
 
-	ac = 0;
 
+	istringstream isc(q);
 
-	for(int i = 0 ; i < size ; i++){
+	while(getline(isc,s,' ')){
+		ac = 0;
+		array = strdup(q.c_str());
+
 
 		checksum_views *cv = new checksum_views;
 		cv->rel_cols = -1;
 		cv->rel_views = -1;
 
-		cv->rel_views = query->relations.at(atoi(array+ac));
-		//cout << "rel->views is" << cv ->rel_views << endl;// DELET DIS
-		while(isalnum(array[ac])){
+		cv->rel_views = atoi(array+ac);
+
+		while(isalnum(array[ac]))
 			ac++;
-		}
 		ac++;
 
-		cv->rel_cols =	atoi(array+ac);
+		cv->rel_cols = atoi(array+ac);
 
-		while(isalnum(array[ac])){
-			ac++;
-		}
+		query->checksums.push_back(cv);		
 
-		query->checksums.push_back(cv);
+		free(array);
 
 	}
 
-	free(array);
+
+
+	// for(int i = 0 ; i < size ; i++){
+
+	// 	checksum_views *cv = new checksum_views;
+	// 	cv->rel_cols = -1;
+	// 	cv->rel_views = -1;
+
+	// 	cv->rel_views = query->relations.at(atoi(array+ac));
+	// 	//cout << "rel->views is" << cv ->rel_views << endl;// DELET DIS
+	// 	while(isalnum(array[ac])){
+	// 		ac++;
+	// 	}
+	// 	ac++;
+
+	// 	cv->rel_cols =	atoi(array+ac);
+
+	// 	while(isalnum(array[ac])){
+	// 		ac++;
+	// 	}
+
+
+
+	// }
+
 	return query;
 
 }
