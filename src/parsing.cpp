@@ -95,10 +95,11 @@ Query* ParseQuery(string q){
 	istringstream isa(token);
 
 	while(getline(isa,s,'&')){
+		cout << s<< endl;
 		c = -1;
 		array = NULL;
 		start = NULL;
-		array = strdup(q.c_str());
+		array = strdup(s.c_str());
 
 		ac = 0;
 
@@ -136,7 +137,7 @@ Query* ParseQuery(string q){
 				exit(1);
 			}
 			if(c == 1){
-				pr->filter = JOIN;
+				pr->type = JOIN;
 				ac++;
 				pr->relation2 = atoi(array+ac);
 
@@ -155,6 +156,7 @@ Query* ParseQuery(string q){
 
 
 		}else if(array[ac] == '>'){
+			cout << "gt filter in " <<endl;
 			pr->type = GT_FILTER;
 			ac++;
 			pr->filter = atoi(array+ac);
