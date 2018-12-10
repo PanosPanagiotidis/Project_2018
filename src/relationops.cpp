@@ -16,8 +16,8 @@ tempResultArray *queryExecute(Query *qr, relationArray *relArray)
 
 	std::vector<predicates*>::iterator it;
 	for( it = qr->p.begin(); it != qr->p.end(); it++){
-		if( (*it)->type == JOIN)		continue;										// Each predicate is either a join or a filter
-		else	relation_filter((*it),relArray,tRes);
+		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
+		else							relation_filter((*it),relArray,tRes);
 	}
 	delete orderedQuery;
 
@@ -249,7 +249,7 @@ void specialCase(relationArray *rArray, tempResults *tr, int relationId, int col
 
 
 void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
-{	
+{
 	cout << "we joinin" <<endl;
 	int relationId1 = pred->relation1;
 	int relationId2 = pred->relation2;
