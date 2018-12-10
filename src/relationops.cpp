@@ -143,7 +143,6 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 	uint64_t *rowids = tempResultsLookup(tr, relationId, size);							// Also check if relation exists on tempResults
 
 	std::vector<uint64_t> results;														// Result vector
-
 	if(rowids != NULL )																	// If relation exists on tempResults
 	{
 
@@ -320,7 +319,6 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	uint64_t ** joinResults = convert_to_arrays(res,resultSize);
 
 
-	cout << "ALLALAL" << endl;
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
 }
 
@@ -373,6 +371,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 								for(k = 0; k < matrix.size()-1; k++)
 									(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
 								matrix.at(k).push_back(joinResults[1][i]);
+								break;
 							}
 						}
 					}
@@ -425,6 +424,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 								for(k = 0; k < matrix.size()-1; k++)
 									(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
 								matrix.at(k).push_back(joinResults[0][i]);
+								break;
 							}
 						}
 					}
@@ -480,6 +480,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 						uint64_t k;
 						for(k = 0; k < matrix.size(); k++)
 							(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
+						break;
 					}
 				}
 			}
@@ -534,7 +535,6 @@ int tempResultsFilterUpdate(std::vector<uint64_t> &results, int relationId, temp
 		{
 			if( (*it).relationID.at(i) == relationId )									// If found
 			{
-
 				uint64_t k=0;
 				std::vector<uint64_t *> newRowId;
 
@@ -560,7 +560,7 @@ int tempResultsFilterUpdate(std::vector<uint64_t> &results, int relationId, temp
 					delete *tmp;
 
 				(*it).rowID = newRowId;													// and assign new one to tempresults
-
+				(*it).size  = results.size();
 				return 0;
 			}
 		}
