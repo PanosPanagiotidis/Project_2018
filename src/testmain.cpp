@@ -81,7 +81,7 @@ int main(void)
 	tempResultArray *tra = new tempResultArray;
 
 
-	
+
 	std:vector<Query*>::iterator q;
 	for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
 	//for(int i=0; i< qBatch->queryCount; i++)

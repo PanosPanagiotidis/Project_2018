@@ -132,6 +132,7 @@ Query *queryReorder(Query *qr)
 
 void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 {
+
 	int relationId = pred->relation1;
 	int columnId = pred->column1;
 	uint64_t filter = pred->filter;
@@ -149,25 +150,20 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 		for(uint64_t row=0; row < *size; row++)
 		{
 			uint64_t rid = rowids[row];
-			//cout << "pred->type is " << pred->type<<endl;
-			//0 1|1.0=0.0&1.0=2.0&1.0>4|1.0
 			switch (pred->type) {
-				case 1:
+				case EQ_FILTER:
 					if( filter == currentRelation->relation[columnId][rid])
 						results.push_back(rid);
 					break;
 
-				case 2:
-					if( filter <= currentRelation->relation[columnId][rid]){
-						cout << "payload is " << currentRelation->relation[columnId][rid] << endl;
+				case GT_FILTER:
+					if( filter <= currentRelation->relation[columnId][rid])
 						results.push_back(rid);
-					}
 					break;
 
-				case 3:
-					if( filter >= currentRelation->relation[columnId][rid]){
+				case LT_FILTER:
+					if( filter >= currentRelation->relation[columnId][rid])
 						results.push_back(rid);
-					}
 					break;
 
 				default:
@@ -175,8 +171,7 @@ void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
 					break;
 			}
 		}
-		if(results.size() == 0)
-			cout <<"RESULTS IS EMPTY -------------------" << endl;
+
 		tempResultsFilterUpdate(results,relationId,tr);
 	}
 	else
@@ -242,6 +237,17 @@ void specialCase(relationArray *rArray, tempResults *tr, int relationId, int col
 }
 
 
+uint64_t *conjurePayload(uint64_t *column, uint64_t *rowID, uint64_t size)
+{
+	uint64_t *temp = new uint64_t[size];
+
+	for(uint64_t i=0; i<size; i++)
+		temp[i] = column[rowID[i]];
+
+	return temp;
+
+}
+
 void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 {
 	int relationId1 = pred->relation1;
@@ -269,8 +275,9 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	else
 	{
 		foundFlag1++;
-		uint64_t *payloadColumn1 = rArray->relations.at(relationId1)->relation[columnId1];
+		uint64_t *payloadColumn1 = conjurePayload(rArray->relations.at(relationId1)->relation[columnId1],rowID1,size1);
 		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1);
+
 	}
 
 
@@ -285,7 +292,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	else
 	{
 		foundFlag2++;
-		uint64_t *payloadColumn2 = rArray->relations.at(relationId2)->relation[columnId2];
+		uint64_t *payloadColumn2 = conjurePayload(rArray->relations.at(relationId2)->relation[columnId2],rowID2,size2);
 		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2);
 	}
 
@@ -312,6 +319,8 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	uint64_t resultSize;
 	uint64_t ** joinResults = convert_to_arrays(res,resultSize);
 
+
+	cout << "ALLALAL" << endl;
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
 }
 
@@ -551,7 +560,7 @@ int tempResultsFilterUpdate(std::vector<uint64_t> &results, int relationId, temp
 					delete *tmp;
 
 				(*it).rowID = newRowId;													// and assign new one to tempresults
-				cout << "SIZE IS " << (*it).rowID.size() <<endl;
+
 				return 0;
 			}
 		}
@@ -598,17 +607,14 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 		{
 			if((*check)->rel_views == tr->relationID.at(j)) //relid = check id.get results now
 			{
-				cout << "size is " << tr->rowID.size()<< endl;
-				cout << tr->size << " is tr size " <<endl;
+
 				for(i = 0 ; i < tr->size ; i++)
 				//for(rowit = tr->rowID.at((*rid)).start() ; rowit != tr->rowID.at((*rid)).end(); rowit++)
 				{
-					cout << "rowID size is " << tr->rowID.size()<<endl;
 					uint64_t* temp = tr->rowID.at(j);
 					row = temp[i];
 					relID = tr->relationID.at(j);
-					cout << (*check)->rel_cols << " rel cols" << endl;
-					cout << row << " row" << endl;
+
 					//cout << "number added is " << (ra->relations.at(relID))->relation[(*check)->rel_cols][row] << endl;
 					checksum += (ra->relations.at(relID))->relation[(*check)->rel_cols][row];
 				}
