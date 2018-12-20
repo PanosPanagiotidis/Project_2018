@@ -20,6 +20,7 @@ tempResults *queryExecute(Query *, relationArray *);
 
 Query *queryReorder(Query *);															// Reorders predicates in a query
 
+void filtered_relation(predicates* ,relationArray* );
 uint64_t *createRowID(uint64_t);
 void deleteTR(tempResults** );
 void relation_join(predicates *, relationArray *, tempResults *);

@@ -166,7 +166,8 @@ Query* ParseQuery(string q){
 
 		free(array);
 
-		query->p.push_back(pr);
+		if(pr->type != JOIN) query->p.insert(query->p.begin(),pr);
+		else query->p.push_back(pr);
 
 	}
 

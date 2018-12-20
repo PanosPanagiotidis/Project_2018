@@ -35,7 +35,7 @@ tempResults *queryExecute(Query *qr, relationArray *relArray)
 	std::vector<predicates*>::iterator it;
 	for( it = qur->p.begin(); it != qur->p.end(); it++){
 		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
-		else							relation_filter((*it),relArray,tRes);
+		else							filtered_relation((*it),relArray);
 	}
 	//delete orderedQuery;
 
@@ -158,6 +158,62 @@ Query *queryReorder(Query *qr)
 	newQr->relations = qr->relations;
 	newQr->checksums = qr->checksums;
 	return newQr;
+}
+
+void filtered_relation(predicates *pred,relationArray* rArray)
+{
+	int relationId = pred->relation1;
+	int columnId = pred->column1;
+	uint64_t filter = pred->filter;
+	cout << relationId << endl;
+	cout << columnId << endl;
+	cout << filter << endl;
+
+	Relations *currentRelation = rArray->relations.at(relationId);
+	uint64_t **filtered;
+	//uint64_t size;
+
+	vector<uint64_t> results;
+
+	for (uint64_t row = 0 ; row < currentRelation->size ; row++)
+	{
+		uint64_t rid = row;
+		switch(pred->type){
+			case EQ_FILTER:
+				if(filter == currentRelation->relation[columnId][rid])
+					results.push_back(rid);
+				break;
+			case LT_FILTER:
+				if(filter > currentRelation->relation[columnId][rid])
+					results.push_back(rid);
+				break;
+			case GT_FILTER:
+				if(filter < currentRelation->relation[columnId][rid])
+					results.push_back(rid);
+				break;
+			default:
+				break;
+		}
+	}
+
+	filtered = (uint64_t**)malloc(sizeof(uint64_t*)*currentRelation->numColumns);
+
+	for (int i = 0 ; i < currentRelation->numColumns ; i++)
+	{	
+		filtered[i] = (uint64_t*)malloc(sizeof(uint64_t)*(results.size()));
+		for(int j = 0 ; j < results.size() ; j ++)
+		{
+			uint64_t rid = results.at(j);
+			filtered[i][j] = currentRelation->relation[i][rid];
+		}
+		
+	}
+
+	currentRelation->relation = filtered;
+	currentRelation->size = results.size();
+	cout << results.size() << endl;
+	
+
 }
 
 void relation_filter(predicates *pred, relationArray *rArray, tempResults *tr)
