@@ -18,13 +18,12 @@ typedef struct tempResults{
 
 tempResults *queryExecute(Query *, relationArray *);
 
-Query *queryReorder(Query *);															// Reorders predicates in a query
+void queryReorder(Query *);															// Reorders predicates in a query
 
 void filtered_relation(predicates* ,relationArray* );
 uint64_t *createRowID(uint64_t);
 void deleteTR(tempResults** );
 void relation_join(predicates *, relationArray *, tempResults *);
-void relation_filter(predicates *,relationArray *, tempResults *);
 uint64_t *tempResultsLookup(tempResults *,int, uint64_t *);
 uint64_t getChecksum(tempResultArray* ,relationArray* ,std::vector<checksum_views*> );
 
@@ -36,5 +35,11 @@ void tempResultsJoinUpdate(uint64_t **,int ,int, int, int, uint64_t, tempResults
 void jointest(void);
 void specialCase(relationArray *, tempResults *, int, int ,int);
 Query *editQuery(Query *);
+
+
+
+// Debug stuff
+
+void printJoinResults(uint64_t **, relationArray *, int, int, int);
 
 #endif

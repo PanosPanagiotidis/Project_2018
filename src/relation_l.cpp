@@ -11,15 +11,20 @@ using namespace std;
 
 relationArray* init_relations()
 {
-	std::string line;
-	relationArray *R = new relationArray;
-	   		std::cout << "Enter file path" << std::endl;
-   	while (getline(std::cin, line)) {
-      if (line == "Done" || line == "DONE" || line == "done") break;
-      R->relations.push_back(load_relations(line.c_str()));
-   	}
-
-   	return R;
+    std::string line;
+    ifstream is("files.txt");
+    relationArray *R = new relationArray;
+       //         std::cout << "Enter file path" << std::endl;
+       // while (getline(std::cin, line)) {
+    //   if (line == "Done" || line == "DONE" || line == "done") break;
+    //   R->relations.push_back(load_relations(line.c_str()));
+       // }
+    while(getline(is,line)){
+        if(is.eof())
+            break;
+        R->relations.push_back(load_relations(line.c_str()));
+    }
+       return R;
 }
 
 Relations* load_relations(const char* fileName)
