@@ -73,15 +73,24 @@ daIndex *DAIndexCreate(bucket *buck)													// Creates and returns the inde
 
 void DAIndexArrayDestroy(daIndex **indArray, int size)
 {
-	for(int i=0; i< size; i++)	DAIndexDestroy(indArray[i]);
+	if(indArray == NULL)	return;
+	for(int i=0; i< size; i++)
+	{
+		if(indArray[i] == NULL)	break;
+		DAIndexDestroy(indArray[i]);
+	}
 	free(indArray);
 }
 
 
 void DAIndexDestroy(daIndex *indx)														// Frees all memory allocated for a daIndex
 {
-	free(indx->chain->array);
-	free(indx->chain);
+	if( indx == NULL)	return;
+	if( indx->chain != NULL)
+	{
+		free(indx->chain->array);
+		free(indx->chain);
+	}
 	free(indx->bucket->table);
 	free(indx->bucket);
 	free(indx);

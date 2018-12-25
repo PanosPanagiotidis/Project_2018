@@ -398,7 +398,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 					(*it).relationID.push_back(relationID2);
 					(*it).size = newSize;
-
+					cout << "newsize is " << newSize << endl;
 																						// TODO: cleanup the memory mess
 																						// before doing this:
 					(*it).rowID = newRowID;
