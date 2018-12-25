@@ -194,6 +194,8 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	int columnId1   = pred->column1;
 	int columnId2   = pred->column2;
 
+	cout << "Join: " << relationId1 << " and " << relationId2 << endl;
+
 	uint64_t size1, size2;
 	uint64_t *rowID1, *rowID2;
 	Table_Info *tableInfo1, *tableInfo2;
@@ -272,11 +274,11 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	Destroy_Table_Data(&tableInfo1);
 	Destroy_Table_Data(&tableInfo2);
 
+	cout << "results count: " << resultSize << endl;
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
 
 	//printJoinResults(joinResults, rArray, relationId1, relationId2, resultSize);
 
-	cout << "results count: " << resultSize << endl;
 
 	DAIndexArrayDestroy(indx,indexed->bck_array->size);
 	delete[] (rowID2);
@@ -403,13 +405,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 																						// before doing this:
 					(*it).rowID = newRowID;
 					return;																// Just once
-
-
-
-
-
 				}
-
 		}
 
 	}
@@ -420,25 +416,69 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 			std::vector<int>::iterator it1;
 			std::vector<uint64_t *>::iterator it2 = (*it).rowID.begin();
 			for( it1 = (*it).relationID.begin(); it1 != (*it).relationID.end(); it1++,it2++)
-				if( (*it1) == relationID2 )
+				if( (*it1) == relationID1 )
 				{
+
 					std::vector< std::vector<uint64_t> > matrix;						// Create a 2d array
 					matrix.resize((*it).relationID.size()+1);							// with as many columns as tempresult struct plus one to fit new column
 
+
+					unordered_map<uint64_t,uint64_t> disCount;							// Unordered map to count appearances of each rowid in joinresults
 					for(uint64_t i = 0; i < resultSize; i++)
-					{
-						for(uint64_t j = 0; j < (*it).size; j++ )
+						disCount[joinResults[1][i]]++;
+
+
+					for(uint64_t i = 0; i < resultSize; i++)
+						if( disCount[joinResults[1][i]] == 1 )
 						{
-							if( joinResults[1][i] == (*it2)[j] )
+							for(uint64_t j = 0; j < (*it).size; j++ )
 							{
-								uint64_t k;
-								for(k = 0; k < matrix.size()-1; k++)
-									(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
-								matrix.at(k).push_back(joinResults[0][i]);
-								break;
+								if( joinResults[1][i] == (*it2)[j] )
+								{
+
+									uint64_t k;
+									for(k = 0; k < matrix.size()-1; k++)
+										(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
+									matrix.at(k).push_back(joinResults[0][i]);
+									break;
+								}
 							}
 						}
-					}
+						else if( disCount[joinResults[1][i]] != 0 )
+						{
+
+							std::vector< std::vector<uint64_t> > uniqueR;
+							for(uint64_t j = 0; j < (*it).size; j++ )
+							{
+								if( joinResults[1][i] == (*it2)[j] )
+								{
+									std::vector< uint64_t > tempv;
+									for(uint64_t k = 0; k < matrix.size()-1; k++)
+										tempv.push_back((((*it).rowID.at(k))[j]));
+									tempv.push_back(joinResults[0][i]);
+
+									for(uint64_t k = 0; k < uniqueR.size(); k++)
+										if(uniqueR.at(k) == tempv )
+											continue;
+
+									uniqueR.push_back(tempv);
+								}
+							}
+
+							uint64_t times = disCount[joinResults[1][i]]/uniqueR.size();
+
+							for(uint64_t j = 0; j < times; j++)
+							{
+								for(uint64_t k = 0; k < uniqueR.size(); k++)
+								{
+										for(uint64_t o = 0; o < matrix.size(); o++)
+										{
+											matrix.at(o).push_back((uniqueR.at(k)).at(o));
+										}
+								}
+							}
+							disCount[joinResults[1][i]] = 0;							// Mark as 0 to not add dupes
+						}
 
 					std::vector<uint64_t *> newRowID;
 					uint64_t newSize;
@@ -454,14 +494,16 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 						newRowID.push_back(temp);
 					}
 
-					(*it).relationID.push_back(relationID1);
+					(*it).relationID.push_back(relationID2);
 					(*it).size = newSize;
+					cout << "newsize is " << newSize << endl;
 																						// TODO: cleanup the memory mess
 																						// before doing this:
 					(*it).rowID = newRowID;
 					return;																// Just once
 				}
 		}
+
 	}
 	else
 	{
