@@ -6,6 +6,7 @@
 #include "../header/results.h"
 #include <queue>
 #include <iostream>
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -319,23 +320,67 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 			for( it1 = (*it).relationID.begin(); it1 != (*it).relationID.end(); it1++,it2++)
 				if( (*it1) == relationID1 )
 				{
+
 					std::vector< std::vector<uint64_t> > matrix;						// Create a 2d array
 					matrix.resize((*it).relationID.size()+1);							// with as many columns as tempresult struct plus one to fit new column
 
-					for(uint64_t i = 0; i < resultSize; i++)
-					{
-						for(uint64_t j = 0; j < (*it).size; j++ )
-						{
-							if( joinResults[0][i] == (*it2)[j] )
-							{
 
-								uint64_t k;
-								for(k = 0; k < matrix.size()-1; k++)
-									(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
-								matrix.at(k).push_back(joinResults[1][i]);
+					unordered_map<uint64_t,uint64_t> disCount;							// Unordered map to count appearances of each rowid in joinresults
+					for(uint64_t i = 0; i < resultSize; i++)
+						disCount[joinResults[0][i]]++;
+
+
+					for(uint64_t i = 0; i < resultSize; i++)
+						if( disCount[joinResults[0][i]] == 1 )
+						{
+							for(uint64_t j = 0; j < (*it).size; j++ )
+							{
+								if( joinResults[0][i] == (*it2)[j] )
+								{
+
+									uint64_t k;
+									for(k = 0; k < matrix.size()-1; k++)
+										(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
+									matrix.at(k).push_back(joinResults[1][i]);
+									break;
+								}
 							}
 						}
-					}
+						else if( disCount[joinResults[0][i]] != 0 )
+						{
+
+							std::vector< std::vector<uint64_t> > uniqueR;
+							for(uint64_t j = 0; j < (*it).size; j++ )
+							{
+								if( joinResults[0][i] == (*it2)[j] )
+								{
+									std::vector< uint64_t > tempv;
+									for(uint64_t k = 0; k < matrix.size()-1; k++)
+										tempv.push_back((((*it).rowID.at(k))[j]));
+									tempv.push_back(joinResults[1][i]);
+
+									for(uint64_t k = 0; k < uniqueR.size(); k++)
+										if(uniqueR.at(k) == tempv )
+											continue;
+
+									uniqueR.push_back(tempv);
+								}
+							}
+
+							uint64_t times = disCount[joinResults[0][i]]/uniqueR.size();
+
+							for(uint64_t j = 0; j < times; j++)
+							{
+								for(uint64_t k = 0; k < uniqueR.size(); k++)
+								{
+										for(uint64_t o = 0; o < matrix.size(); o++)
+										{
+											matrix.at(o).push_back((uniqueR.at(k)).at(o));
+										}
+								}
+							}
+							disCount[joinResults[0][i]] = 0;							// Mark as 0 to not add dupes
+						}
 
 					std::vector<uint64_t *> newRowID;
 					uint64_t newSize;
@@ -351,16 +396,6 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 						newRowID.push_back(temp);
 					}
 
-					// for(uint64_t i = 0; i < matrix.size(); i++)
-					// {
-					// 	for(uint64_t j=0; j < newSize; j++)
-					// 	{
-					// 		cout << (matrix.at(i)).at(j) << " ";
-					// 	}
-					// 	cout << endl;
-					//
-					// }
-
 					(*it).relationID.push_back(relationID2);
 					(*it).size = newSize;
 
@@ -368,6 +403,11 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 																						// before doing this:
 					(*it).rowID = newRowID;
 					return;																// Just once
+
+
+
+
+
 				}
 
 		}
