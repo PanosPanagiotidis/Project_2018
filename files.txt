@@ -11,4 +11,5 @@ workloads/small/r9
 workloads/small/r10
 workloads/small/r11
 workloads/small/r12
+workloads/small/r13
 DONE

@@ -26,8 +26,58 @@ void deleteTR(tempResults** tr){
 
 }
 
-tempResults *queryExecute(Query *qr, relationArray *relArray)
-{
+void copy_filtered(predicates *pred,relationArray *rArray,std::vector<Relations*>& originals,std::vector<uint64_t>& rels){
+
+	int relationId = pred->relation1;
+	int columnId = pred->column1;
+	uint64_t filter = pred->filter;
+
+	Relations* cur = rArray->relations.at(relationId);
+	Relations* n = new Relations;
+	n->relation = new uint64_t*[cur->numColumns];
+	for(uint64_t i = 0 ; i < cur->numColumns ; i++)
+	{
+		n->relation[i] = new uint64_t[cur->size];
+		for(uint64_t j = 0 ; j < cur->size ; j++){
+			n->relation[i][j] = cur->relation[i][j];
+		}
+	}
+
+	n->size = cur->size;
+	n->numColumns = cur->numColumns;
+
+	originals.push_back(n);
+	rels.push_back(relationId);
+
+
+}
+
+void replace_filtered(relationArray* rArray,std::vector<Relations*>& originals,std::vector<uint64_t>& rels)
+{	
+	uint64_t size;
+	uint64_t cols;
+	uint64_t rel;
+	for(uint64_t i = 0 ; i < rels.size(); i++){
+		rel = rels.at(i);
+		size = rArray->relations.at(rel)->size;
+		cols = rArray->relations.at(rel)->numColumns;
+
+		for(uint64_t k = 0 ; k < cols ; k++){
+			delete[] rArray->relations.at(rel)->relation[k];
+		}
+		delete[] rArray->relations.at(rel)->relation;
+
+		rArray->relations.at(rel)->relation = originals.at(i)->relation;
+		rArray->relations.at(rel)->size = originals.at(i)->size;
+		rArray->relations.at(rel)->numColumns = originals.at(i)->numColumns;
+	}
+}
+
+
+tempResults *queryExecute(Query *qr, relationArray *relArray,std::vector<Relations*>& originals,std::vector<uint64_t>& rels)
+{	
+	// std::vector<Relations*> originals;
+	// std::vector<uint64_t> rels;
 	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
 
@@ -36,9 +86,15 @@ tempResults *queryExecute(Query *qr, relationArray *relArray)
 	std::vector<predicates*>::iterator it;
 	for( it = qur->p.begin(); it != qur->p.end(); it++){
 		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
-		else							filtered_relation((*it),relArray);
-	}
+		else
+		{	
+			copy_filtered((*it),relArray,originals,rels);
+			filtered_relation((*it),relArray);
+		}
 
+	}
+	//replace_filtered(relArray,originals,rels);
+	
 
 	return tRes;
 }
@@ -194,7 +250,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	int columnId1   = pred->column1;
 	int columnId2   = pred->column2;
 
-	cout << "Join: " << relationId1 << " and " << relationId2 << endl;
+	//cout << "Join: " << relationId1 << " and " << relationId2 << endl;
 
 	uint64_t size1, size2;
 	uint64_t *rowID1, *rowID2;
@@ -243,6 +299,8 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 		return;
 	}
 
+	// cout << "rel 1 is " << relationId1 << " with size " << size1 << endl;
+	// cout << "rel 2 is " << relationId2 << " with size " << size2 << endl;
 	daIndex **indx;
 	result *res;
 	uint64_t resultSize;
@@ -268,22 +326,22 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 
 	}
 
-	destroy_results(&res);
-	delete(res);
 
-	Destroy_Table_Data(&tableInfo1);
-	Destroy_Table_Data(&tableInfo2);
 
-	cout << "results count: " << resultSize << endl;
+	// cout << "results count: " << resultSize << endl;
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
 
-	//printJoinResults(joinResults, rArray, relationId1, relationId2, resultSize);
+	// printJoinResults(joinResults, rArray, relationId1, relationId2, resultSize);
 
 
-	DAIndexArrayDestroy(indx,indexed->bck_array->size);
 	delete[] (rowID2);
 	delete[] (rowID1);
 
+	destroy_results(&res);
+	delete(res);
+	DAIndexArrayDestroy(indx,indexed->bck_array->size);
+	Destroy_Table_Data(&tableInfo1);
+	Destroy_Table_Data(&tableInfo2);
 }
 
 
@@ -400,7 +458,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 					(*it).relationID.push_back(relationID2);
 					(*it).size = newSize;
-					cout << "newsize is " << newSize << endl;
+					//cout << "newsize is " << newSize << endl;
 																						// TODO: cleanup the memory mess
 																						// before doing this:
 					(*it).rowID = newRowID;
@@ -496,7 +554,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 					(*it).relationID.push_back(relationID2);
 					(*it).size = newSize;
-					cout << "newsize is " << newSize << endl;
+					//cout << "newsize is " << newSize << endl;
 																						// TODO: cleanup the memory mess
 																						// before doing this:
 					(*it).rowID = newRowID;

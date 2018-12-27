@@ -1,5 +1,5 @@
 #include "../header/helper_functions.h"
-#define N 4
+#define N 10
 
 Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size)		// Initializes the variables and structs of table info, a=keys, b=payloads
 {

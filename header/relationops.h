@@ -16,7 +16,7 @@ typedef struct tempResults{
 }tempResults;
 
 
-tempResults *queryExecute(Query *, relationArray *);
+tempResults *queryExecute(Query *, relationArray *,std::vector<Relations*>& ,std::vector<uint64_t>&);
 
 void queryReorder(Query *);															// Reorders predicates in a query
 
@@ -36,6 +36,8 @@ void jointest(void);
 void specialCase(relationArray *, tempResults *, int, int ,int);
 Query *editQuery(Query *);
 
+void copy_filtered(predicates *,relationArray *,std::vector<Relations*>& ,std::vector<uint64_t>& );
+void replace_filtered(relationArray* ,std::vector<Relations*>& ,std::vector<uint64_t>& );
 
 
 // Debug stuff

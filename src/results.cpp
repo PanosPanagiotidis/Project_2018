@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define N 4
+#define N 10
 
 
 /*

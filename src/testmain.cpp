@@ -86,13 +86,19 @@ int main(void)
 		if (qBatch == NULL) break;
 		tempResults *tra;
 
+		std::vector<Relations*> originals;
+		std::vector<uint64_t> rels;
 		std:vector<Query*>::iterator q;
 		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
 		//for(int i=0; i< qBatch->queryCount; i++)
-			tra = queryExecute((*q),rArray);							// Execute each query in batch
+			tra = queryExecute((*q),rArray,originals,rels);							// Execute each query in batch
 			getChecksum(&(tra->res.at(0)),rArray,(*q)->checksums);
 			deleteTR(&tra);
 			delete(tra);
+			replace_filtered(rArray,originals,rels);
+
+			vector<Relations*>().swap(originals);
+			vector<uint64_t>().swap(rels);
 		}
 
 		deleteQuery(&qBatch);
