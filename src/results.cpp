@@ -1,6 +1,6 @@
 #include "stdio.h"
-#include "results.h"
-#include "daindex.h"
+#include "../header/results.h"
+#include "../header/daindex.h"
 #include <stdlib.h>
 #include <iostream>
 #include <vector>

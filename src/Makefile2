@@ -1,17 +1,14 @@
 CC=g++
 HDIR=-I'./header/'
-CFLAGS = -g -o3 -Wall -pedantic -Wunreachable-code
+CFLAGS = -g
 
-JOIN: ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o
-	$(CC) $(CFLAGS)	-o $@.out ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o
-
-testmain.o:	./src/testmain.cpp
-	$(CC) $(CFLAGS) -c ./src/testmain.cpp
+JOIN: helper_functions.o results.o daindex.o parsing.o relationops.o relation_l.o
+	$(CC) $(CFLAGS)	-o JOIN helper_functions.o results.o daindex.o parsing.o relationops.o relation_l.o
 
 helper_functions.o:	./src/helper_functions.c
 	$(CC) $(CFLAGS) -c ./src/helper_functions.c
 
-results.o:	./src/results.cpp ./header/daindex.h
+results.o:	./src/results.cpp ./header/daindex.h ./header/results.h
 	$(CC) $(CFLAGS) -c ./src/results.cpp
 
 daindex.o: 	./src/daindex.c

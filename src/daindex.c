@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "daindex.h"
+#include "../header/daindex.h"
 
 chainArray *chainArrayCreateInit(int size)												// Creates and initializes a chainArray
 {

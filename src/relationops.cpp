@@ -357,7 +357,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 	std::vector<tempResultArray>::iterator it;
 
 	if( foundFlag1 == 0 && foundFlag2 == 0)												// Neither relation exists on tempresults
-	{																					// Create a new tempresult array with both
+	{				cout << "found none " << endl;																	// Create a new tempresult array with both
 		tempResultArray temp;
 
 		temp.rowID.push_back(joinResults[0]);
@@ -372,7 +372,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 	}
 	else if( foundFlag1 == 1 && foundFlag2 == 0)										// Only Relation 1  exists on tempresults
-	{
+	{cout << "foundflag1 " << endl;
 		for( it = tpr->res.begin(); it != tpr->res.end(); it++)
 		{
 			std::vector<int>::iterator it1;
@@ -468,7 +468,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 	}
 	else if( foundFlag1 == 0 && foundFlag2 == 1)										// Only Relation 2  exists on tempresults
-	{
+	{cout << "foundflag2 " << endl;
 		for( it = tpr->res.begin(); it != tpr->res.end(); it++)
 		{
 			std::vector<int>::iterator it1;
@@ -564,9 +564,9 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 	}
 	else
-	{
+	{ cout<<"found both " << endl;
 		// Maybe check if both in same temmpResultArray for debug test if something comes up
-
+					uint64_t newSize = 0;
 		for( it = tpr->res.begin(); it != tpr->res.end(); it++)
 		{
 			std::vector<int>::iterator it1;
@@ -587,7 +587,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 				for(uint64_t j = 0; j < (*it).relationID.size(); j++)
 				{
 					if( joinResults[0][i] == ((*it).rowID.at(relationPos1))[j] && joinResults[1][i] == ((*it).rowID.at(relationPos2))[j] )
-					{
+					{	newSize++;
 						uint64_t k;
 						for(k = 0; k < matrix.size(); k++)
 							(matrix.at(k)).push_back(((*it).rowID.at(k))[j]);
@@ -602,13 +602,14 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 			{
 				uint64_t *temp = new uint64_t[matrix.size()];
 
-				for(uint64_t k = 0; k < matrix.size(); k++)
+				for(uint64_t k = 0; k < matrix.size(); k++){
 					temp[k] = (matrix.at(i)).at(k);
+				}
 
 				newRowID.push_back(temp);
 			}
-																				// TODO: cleanup the memory mess
-																				// before doing this:
+			cout << " newSize is " << newSize << endl;																	// TODO: cleanup the memory mess
+			(*it).size = newSize;																	// before doing this:
 			(*it).rowID = newRowID;
 			return;																// Just once
 		}
