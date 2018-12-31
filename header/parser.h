@@ -51,5 +51,6 @@ Query *ParseQuery(string );
 int* get_relation_array(char* ,int* );
 Query* create_query(char* );
 checksum_views* get_views(char* );
+int isEqualPred(predicates *,predicates *);
 
 #endif

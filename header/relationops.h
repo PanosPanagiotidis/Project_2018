@@ -43,5 +43,7 @@ void replace_filtered(relationArray* ,std::vector<Relations*>& ,std::vector<uint
 // Debug stuff
 
 void printJoinResults(uint64_t **, relationArray *, int, int, int);
+void queryPrint(Query *);
+void printTPR(tempResults *, relationArray *);
 
 #endif
