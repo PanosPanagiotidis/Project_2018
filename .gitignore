@@ -53,5 +53,5 @@ Temporary Items
 
 # Debug mains
 
-#test*.c
+*.glocal
 bucketing.c
