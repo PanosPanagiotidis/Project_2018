@@ -21,13 +21,12 @@ threadpool* threadpool_init(int num_threads){
 	tp->working = 0;
 	
 	//init job q here
-	Job_Q* q = NULL;
-	q = jobq_init();
+	tp->Q = jobq_init();
 
 
-	pthread_mutex_init(&(tp->count_lock),NULL);
+	pthread_mutex_init(&(tp->access),NULL);
 	pthread_cond_init(&(tp->all_idle),NULL);
-
+	pthread_cond_init(&(tp->hasjobs),NULL);
 	for(int i = 0 ; i < num_threads ; i++){
 		tp->threads[i] = new thread_info;
 		tp->threads[i]->pool = tp;
@@ -50,26 +49,88 @@ Job_Q* jobq_init(void){
 	q->len = 0;
 	q->first = NULL;
 	q->last = NULL;
-	pthread_mutex_init(&(q->access),NULL);
 
 	return q;
 
 }
 
-void threadpool_wait(threadpool* tp){
+Job* getJob(){
 
+	Job* task = tp->Q->first;
+	switch(tp->Q->len){
+		case 0:
+			break;//no jobs
+		case 1:
+			tp->Q->first = NULL;
+			tp->Q->last = NULL;
+			tp->Q->len = 0;
+			break;
+		default:
+			tp->Q->first = task->prev;
+			tp->Q->len--;
+	}
+
+
+	return task;
 }
 
-
 void* thread_work(void* arg){
-	pthread_mutex_lock(&tp->count_lock);
-	tp->working++;
-	pthread_mutex_unlock(&tp->count_lock);
-	cout << "thread with TID " << pthread_self() << endl;
-	
-	pthread_mutex_lock(&tp->count_lock);
-	tp->working++;
-	pthread_mutex_unlock(&tp->count_lock);
 
+	while(1){
+
+		pthread_mutex_lock(&tp->access);
+		while(tp->Q->len == 0){
+			pthread_cond_wait(&tp->hasjobs,&tp->access);
+		}
+
+		void *(*func_buff)(void*);
+		void* args;
+		Job* task = getJob();
+
+		if(task){
+			func_buff = task->function;
+			args = task->arg;
+			free(task);
+		}
+
+		pthread_mutex_unlock(&tp->access);
+
+		func_buff(args);
+
+	}
 	return NULL;
+}
+
+// void* print_thread_info(void* arg){
+// 	cout << "hi there " << endl;
+// 	return NULL;
+// }
+
+int add_work(Job_Q* q,void *(*function_p)(void*),void* args){
+	Job* newJob;
+	newJob = new Job;
+
+	newJob->function = function_p;
+	newJob->arg = args;
+
+	pthread_mutex_lock(&tp->access);
+
+	pthread_cond_broadcast(&tp->hasjobs);
+	newJob->prev = NULL;
+
+	switch(q->len){
+		case 0:
+			q->first = newJob;
+			q->last = newJob;
+			break;
+
+		default:
+		q->last->prev=newJob;
+		q->last = newJob;
+
+	}
+
+	q->len++;
+
+	pthread_mutex_unlock(&tp->access);
 }

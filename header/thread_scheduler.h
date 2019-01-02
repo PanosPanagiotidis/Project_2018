@@ -10,12 +10,11 @@
 
 typedef struct Job{
 	struct Job* prev;
-	void (*function)(void* arg);
+	void *(*function)(void* arg);
 	void* arg;
 }Job;
 
 typedef struct Job_Q{
-	pthread_mutex_t access;
 	Job* first;
 	Job* last;
 	int len;
@@ -31,8 +30,9 @@ typedef struct thread_info{
 typedef struct threadpool{
 	thread_info** threads;
 	int working;
-	pthread_mutex_t count_lock;
+	pthread_mutex_t access;
 	pthread_cond_t all_idle;
+	pthread_cond_t hasjobs;
 	int num_threads;
 	Job_Q *Q;
 }threapool;
@@ -40,3 +40,6 @@ typedef struct threadpool{
 threadpool* threadpool_init(int );
 Job_Q* jobq_init(void );
 void* thread_work(void* );
+// void* print_thread_info(void *);
+int add_work(Job_Q* ,void *(*function_p)(void*),void* );
+Job* getJob();
