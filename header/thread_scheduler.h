@@ -6,7 +6,14 @@
 #include <errno.h>
 #include <time.h>
 
-
+typedef struct histArg{
+	uint64_t* payloads;
+	uint64_t* rowId;
+	uint64_t fromRow;
+	uint64_t toROw;
+	uint64_t** thread_hists;
+	uint64_t loc;
+}histArg;
 
 typedef struct Job{
 	struct Job* prev;
@@ -43,3 +50,5 @@ void* thread_work(void* );
 // void* print_thread_info(void *);
 int add_work(Job_Q* ,void *(*function_p)(void*),void* );
 Job* getJob();
+
+uint64_t* rebuild_hist(uint64_t** ,uint64_t );

@@ -3,6 +3,8 @@
 
 using namespace std;
 
+#define N 10
+
 pthread_mutex_t w;
 
 threadpool* tp;
@@ -101,6 +103,27 @@ void* thread_work(void* arg){
 	return NULL;
 }
 
+void* histogramJob(void* arg){
+	uint64_t size = 1 << N;
+	uint64_t mask = (1<<N) -1;
+	uint64_t LSB;
+
+	histArg *params = (histArg*)arg;
+
+	uint64_t* histogram = new uint64_t[size];
+	for(int i = 0 ; i < size ; i++)
+		histogram[i] = 0;
+
+	for(int i = params->from ; i <= params->to ;i++){
+		LSB = params->payloads+i & mask;
+		histogram[LSB]++;
+	}
+
+	params->thread_hists[loc] = histogram;
+
+
+}
+
 // void* print_thread_info(void* arg){
 // 	cout << "hi there " << endl;
 // 	return NULL;
@@ -133,4 +156,17 @@ int add_work(Job_Q* q,void *(*function_p)(void*),void* args){
 	q->len++;
 
 	pthread_mutex_unlock(&tp->access);
+}
+
+uint64_t* rebuild_hist(uint64_t** thread_hists,uint64_t histsize){
+	uint64_t size = 1<<N;
+	uint64_t histogram = new uint64_t*[size];
+	for(int i = 0 ; i < histsize ; i++){
+		histogram[i] = 0;
+		for(int j = 0 ; j < size ; j++){
+			histogram[j] += thread_hists[i][j];
+		}
+
+	}
+	return histogram;
 }
