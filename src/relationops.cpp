@@ -81,18 +81,17 @@ tempResults *queryExecute(Query *qr, relationArray *relArray,std::vector<Relatio
 	// std::vector<uint64_t> rels;
 
 	//queryPrint(qr);
-	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
+	//queryReorder(qr);																	// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
-	Query *qur = editQuery(qr);
-
+	//Query *qur = editQuery(qr);
 	//queryPrint(qr);
 	std::vector<predicates*>::iterator it;
-	for( it = qur->p.begin(); it != qur->p.end(); it++){
-		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
+	for( it = qr->p.begin(); it != qr->p.end(); it++){
+		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes,qr->relations);				// Each predicate is either a join or a filter
 		else
 		{
 			copy_filtered((*it),relArray,originals,rels);
-			filtered_relation((*it),relArray);
+			filtered_relation((*it),relArray,qr->relations);
 		}
 
 	}
@@ -168,12 +167,11 @@ void queryReorder(Query *qr)
 }
 
 
-void filtered_relation(predicates *pred,relationArray* rArray)
+void filtered_relation(predicates *pred,relationArray* rArray,std::vector<int>relations)
 {
 	int relationId = pred->relation1;
 	int columnId = pred->column1;
 	uint64_t filter = pred->filter;
-
 	Relations *currentRelation = rArray->relations.at(relationId);
 	uint64_t **filtered;
 	//uint64_t size;
@@ -221,7 +219,7 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 }
 
 void fringeCase(relationArray *rArray, tempResults *tr, int relationId1, int relationId2, int columnId1, int columnId2)
-{
+{ 
 	Relations *currRelation1 = rArray->relations.at(relationId1);						// Fetch RELATIONS
 	Relations *currRelation2 = rArray->relations.at(relationId2);
 
@@ -281,12 +279,31 @@ uint64_t *conjurePayload(uint64_t *column, uint64_t *rowID, uint64_t size)
 
 }
 
-void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
+Relations* copy_relation(Relations *R){
+	Relations *temp = new Relations;
+
+	temp->size = R->size;
+	temp->numColumns = R->numColumns;
+
+	temp->relation = new uint64_t*[temp->numColumns];
+
+	for(uint64_t i = 0 ; i < temp->numColumns ; i++){
+		temp->relation[i] = new uint64_t[temp->size];
+		for(uint64_t j = 0 ; j < temp->size; j++){
+			temp->relation[i][j] = R->relation[i][j];
+		}
+	}
+
+	return temp;
+}
+
+void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr,std::vector<int> relations)
 {
 	int relationId1 = pred->relation1;
 	int relationId2 = pred->relation2;
 	int columnId1   = pred->column1;
 	int columnId2   = pred->column2;
+
 
 	//cout << "Join: " << relationId1 << " and " << relationId2 << endl;
 
@@ -295,8 +312,11 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	Table_Info *tableInfo1, *tableInfo2;
 	int foundFlag1 = 0, foundFlag2 = 0;
 
-	Relations * currentRelation1 = rArray->relations.at(relationId1);
-	Relations * currentRelation2 = rArray->relations.at(relationId2);
+	Relations * currentRelation1 = copy_relation(rArray->relations.at(relationId1));
+	Relations * currentRelation2 = copy_relation(rArray->relations.at(relationId2));
+
+	rArray->relations.at(relationId1) = currentRelation1;
+	rArray->relations.at(relationId2) = currentRelation2;
 
 	rowID1 = tempResultsLookup(tpr,relationId1, &size1);
 	rowID2 = tempResultsLookup(tpr,relationId2, &size2);
@@ -347,7 +367,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	uint64_t resultSize;
 	uint64_t ** joinResults;
 	Table_Info* indexed;
-	if(size1 < size2)
+	if(size1 <= size2)
 	{
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
 		res = getResults(tableInfo1,tableInfo2,indx);
@@ -360,6 +380,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}
 	else
 	{
+
 		indx = DAIndexArrayCreate(tableInfo2->bck_array);
 		res = getResults(tableInfo2,tableInfo1,indx);
 		joinResults = convert_to_arrays(res,resultSize);
@@ -369,8 +390,8 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 
 
 
-	//cout << "results count: " << resultSize << endl;
-	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr);
+	cout << "results count: " << resultSize << endl;
+	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr,relations);
 
 	//printJoinResults(joinResults, rArray, relationId1, relationId2, resultSize);
 
@@ -396,14 +417,15 @@ uint64_t *createRowID(uint64_t rSize)
 	return rowID;
 }
 
-void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relationID2, int foundFlag1, int foundFlag2, uint64_t resultSize, tempResults *tpr)
+void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relationID2, int foundFlag1, int foundFlag2, uint64_t resultSize, tempResults *tpr,std::vector<int>relations)
 {
 	std::vector<tempResultArray>::iterator it;
+	// relationID1 = relations.at(relationID1);
+	// relationID2 = relations.at(relationID2);
 
 	if( foundFlag1 == 0 && foundFlag2 == 0)												// Neither relation exists on tempresults
-	{																					// Create a new tempresult array with both
+	{																				// Create a new tempresult array with both
 		tempResultArray temp;
-
 		temp.rowID.push_back(joinResults[0]);
 
 		temp.rowID.push_back(joinResults[1]);
@@ -728,7 +750,6 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	uint64_t i;
 	uint64_t row;
 	int relID;
-
 	vector<int>::iterator rid;
 	vector<checksum_views*>::iterator check;
 	vector<uint64_t>::iterator rowit;

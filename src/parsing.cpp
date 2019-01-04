@@ -190,7 +190,7 @@ Query* ParseQuery(string q){
 		cv->rel_cols = -1;
 		cv->rel_views = -1;
 
-		cv->rel_views = query->relations.at(atoi(array+ac));
+		cv->rel_views = atoi(array+ac);
 		//cout << "cv->rel_views"<< cv->rel_views <<endl;
 		while(isalnum(array[ac]))
 			ac++;

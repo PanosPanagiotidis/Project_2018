@@ -80,7 +80,7 @@ int main(void)
 
 	relationArray *rArray = init_relations();
 
-	sleep(1);
+	//sleep(1);
 	while(1){
 		queryBatch *qBatch = QueryInput();									// Read & Store a batch of queries
 		if (qBatch == NULL) break;
@@ -90,12 +90,17 @@ int main(void)
 		std::vector<uint64_t> rels;
 		std:vector<Query*>::iterator q;
 		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
+				relationArray* localDupe;
+				localDupe = new relationArray;
+				for(int i = 0;i < (*q)->relations.size(); i++){
+					localDupe->relations.push_back(rArray->relations.at((*q)->relations.at(i)));
+				}
 		//for(int i=0; i< qBatch->queryCount; i++)
-			tra = queryExecute((*q),rArray,originals,rels);							// Execute each query in batch
-			getChecksum(&(tra->res.at(0)),rArray,(*q)->checksums);
+			tra = queryExecute((*q),localDupe,originals,rels);							// Execute each query in batch
+			getChecksum(&(tra->res.at(0)),localDupe,(*q)->checksums);
 			deleteTR(&tra);
 			delete(tra);
-			replace_filtered(rArray,originals,rels);
+			replace_filtered(localDupe,originals,rels);
 
 			vector<Relations*>().swap(originals);
 			vector<uint64_t>().swap(rels);
