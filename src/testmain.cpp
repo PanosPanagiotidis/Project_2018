@@ -88,17 +88,16 @@ int main(void)
 
 		std::vector<Relations*> originals;
 		std::vector<uint64_t> rels;
-		std:vector<Query*>::iterator q;
-		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
-		//for(int i=0; i< qBatch->queryCount; i++)
-			tra = queryExecute((*q),rArray,originals,rels);							// Execute each query in batch
-			getChecksum(&(tra->res.at(0)),rArray,(*q)->checksums);
+		std::vector<Query*>::iterator q;
+		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++)
+		{
+			relationArray *localTempArray = createTempRelArray(rArray,(*q));
+			tra = queryExecute((*q),localTempArray);							// Execute each query in batch
+
+			getChecksum(&(tra->res.at(0)),localTempArray,(*q)->checksums);
 			deleteTR(&tra);
 			delete(tra);
-			replace_filtered(rArray,originals,rels);
-
-			vector<Relations*>().swap(originals);
-			vector<uint64_t>().swap(rels);
+			deleteRelations(&localTempArray);
 		}
 
 		deleteQuery(&qBatch);
@@ -106,25 +105,5 @@ int main(void)
 
 	deleteRelations(&rArray);
 
-/*
-	std::vector<Relations *>::iterator it;
-
-	for(it = rArray->relations.begin(); it != rArray->relations.end(); it++)
-	{
-		uint64_t **rt = (*it)->relation;
-		for(uint64_t i=0; i<(*it)->numColumns; i++, cout << endl)
-			for(uint64_t j=0; j<(*it)->size; j++ )
-			{
-				cout << rt[i][j] << " ";
-			}
-	}
-
-	relation_join(NULL,NULL);
-*/
-	//jointest();
-
 	return 0;
 }
-
-// 0 1|0.1>2000|1.1
-// F

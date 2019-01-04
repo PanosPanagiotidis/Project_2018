@@ -10,7 +10,54 @@
 
 using namespace std;
 
-int hack;
+tempResults *queryExecute(Query *qr, relationArray *relArray)
+{
+	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
+	tempResults *tRes = new tempResults;
+	Query *qur = editQuery(qr);
+
+
+	//relationArray *relArray = createTempRelArray(oRelArray,qr);
+
+	std::vector<predicates*>::iterator it;
+	for( it = qur->p.begin(); it != qur->p.end(); it++)
+	{
+		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
+		else							filtered_relation((*it),relArray);
+	}
+
+	return tRes;
+}
+
+relationArray *createTempRelArray(relationArray *rArray, Query *qr)
+{
+	relationArray *newArray = new relationArray;
+
+	for(uint64_t i = 0; i < qr->relations.size(); i++)
+	{
+		int realID = qr->relations.at(i);
+
+		Relations *originalRel = rArray->relations.at(realID);
+		Relations *rel = new Relations;
+
+		rel->size = originalRel->size;
+		rel->numColumns = originalRel->numColumns;
+		rel->relation   = new uint64_t *[rel->numColumns];
+
+		for(uint64_t j = 0; j < rel->numColumns; j++)
+		{
+			rel->relation[j] = new uint64_t[rel->size];
+			for(uint64_t k = 0; k < rel->size; k++)
+				rel->relation[j][k] = originalRel->relation[j][k];
+		}
+
+
+		newArray->relations.push_back(rel);
+	}
+
+	return newArray;
+}
+
 
 void deleteTR(tempResults** tr){
 	for(uint64_t i = 0 ; i < (*tr)->res.size() ; i++){
@@ -23,86 +70,12 @@ void deleteTR(tempResults** tr){
 			vector<int>().swap((*tr)->res.at(i).relationID);
 
 	}
+
 	vector<tempResultArray>().swap((*tr)->res);
 
 }
 
-void copy_filtered(predicates *pred,relationArray *rArray,std::vector<Relations*>& originals,std::vector<uint64_t>& rels){
-
-	int relationId = pred->relation1;
-	int columnId = pred->column1;
-	uint64_t filter = pred->filter;
-
-	Relations* cur = rArray->relations.at(relationId);
-	Relations* n = new Relations;
-	n->relation = new uint64_t*[cur->numColumns];
-	for(uint64_t i = 0 ; i < cur->numColumns ; i++)
-	{
-		n->relation[i] = new uint64_t[cur->size];
-		for(uint64_t j = 0 ; j < cur->size ; j++){
-			n->relation[i][j] = cur->relation[i][j];
-		}
-	}
-
-	n->size = cur->size;
-	n->numColumns = cur->numColumns;
-
-	originals.push_back(n);
-	rels.push_back(relationId);
-
-
-}
-
-void replace_filtered(relationArray* rArray,std::vector<Relations*>& originals,std::vector<uint64_t>& rels)
-{
-	uint64_t size;
-	uint64_t cols;
-	uint64_t rel;
-	for(uint64_t i = 0 ; i < rels.size(); i++){
-		rel = rels.at(i);
-		size = rArray->relations.at(rel)->size;
-		cols = rArray->relations.at(rel)->numColumns;
-
-		for(uint64_t k = 0 ; k < cols ; k++){
-			delete[] rArray->relations.at(rel)->relation[k];
-		}
-		delete[] rArray->relations.at(rel)->relation;
-
-		rArray->relations.at(rel)->relation = originals.at(i)->relation;
-		rArray->relations.at(rel)->size = originals.at(i)->size;
-		rArray->relations.at(rel)->numColumns = originals.at(i)->numColumns;
-	}
-}
-
-
-tempResults *queryExecute(Query *qr, relationArray *relArray,std::vector<Relations*>& originals,std::vector<uint64_t>& rels)
-{
-	// std::vector<Relations*> originals;
-	// std::vector<uint64_t> rels;
-
-	//queryPrint(qr);
-	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
-	tempResults *tRes = new tempResults;
-	Query *qur = editQuery(qr);
-
-	//queryPrint(qr);
-	std::vector<predicates*>::iterator it;
-	for( it = qur->p.begin(); it != qur->p.end(); it++){
-		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
-		else
-		{
-			copy_filtered((*it),relArray,originals,rels);
-			filtered_relation((*it),relArray);
-		}
-
-	}
-	//replace_filtered(relArray,originals,rels);
-
-
-	return tRes;
-}
-
-Query *editQuery(Query *qr)																// Edits queries so that the correct relationID is used
+Query *editQuery(Query *qr)																// Removes duplicate predicates
 {
 
 	std::vector<predicates *>::iterator it1, it2, it3;
@@ -119,13 +92,6 @@ Query *editQuery(Query *qr)																// Edits queries so that the correct 
 				qr->p.erase(it3);
 			}
 		}
-	}
-
-
-	for(uint64_t i=0; i<qr->p.size(); i++)
-	{
-		qr->p.at(i)->relation1 = qr->relations.at(qr->p.at(i)->relation1);
-		if(qr->p.at(i)->type == JOIN) 		qr->p.at(i)->relation2 = qr->relations.at(qr->p.at(i)->relation2);
 	}
 	return qr;
 }
@@ -176,7 +142,6 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 
 	Relations *currentRelation = rArray->relations.at(relationId);
 	uint64_t **filtered;
-	//uint64_t size;
 
 	vector<uint64_t> results;
 
@@ -728,7 +693,6 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	uint64_t i;
 	uint64_t row;
 	int relID;
-
 	vector<int>::iterator rid;
 	vector<checksum_views*>::iterator check;
 	vector<uint64_t>::iterator rowit;

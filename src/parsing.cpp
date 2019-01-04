@@ -175,7 +175,7 @@ Query* ParseQuery(string q){
 	start = NULL;
 	q.erase(pos,q.find("|")+1);
 	int size = count (q.begin(),q.end(),'.');
-	
+
 	start = array;
 
 
@@ -190,7 +190,7 @@ Query* ParseQuery(string q){
 		cv->rel_cols = -1;
 		cv->rel_views = -1;
 
-		cv->rel_views = query->relations.at(atoi(array+ac));
+		cv->rel_views = atoi(array+ac);
 		//cout << "cv->rel_views"<< cv->rel_views <<endl;
 		while(isalnum(array[ac]))
 			ac++;
@@ -198,7 +198,7 @@ Query* ParseQuery(string q){
 
 		cv->rel_cols = atoi(array+ac);
 		//cout << "cv->relcols"<<cv->rel_cols<<endl;
-		query->checksums.push_back(cv);		
+		query->checksums.push_back(cv);
 
 		free(array);
 
