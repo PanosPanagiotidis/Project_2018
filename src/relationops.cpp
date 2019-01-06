@@ -4,14 +4,18 @@
 #include "../header/helper_functions.h"
 #include "../header/daindex.h"
 #include "../header/results.h"
+#include "../header/thread_scheduler.h"
 #include <queue>
 #include <iostream>
 #include <bits/stdc++.h>
 
 using namespace std;
 
-tempResults *queryExecute(Query *qr, relationArray *relArray)
-{
+threadpool* thread_pool;
+
+tempResults *queryExecute(Query *qr, relationArray *relArray,threadpool* tp)
+{	
+	thread_pool = tp;
 	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
 	Query *qur = editQuery(qr);
@@ -273,7 +277,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	{
 		rowID1 = createRowID(currentRelation1->size);
 		size1  = currentRelation1->size;
-		tableInfo1 = init_table_info(rowID1,currentRelation1->relation[columnId1],size1);
+		tableInfo1 = init_table_info(rowID1,currentRelation1->relation[columnId1],size1,thread_pool);
 	}
 	else	foundFlag1++;
 
@@ -283,7 +287,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	{
 		rowID2 = createRowID(currentRelation2->size);
 		size2  = currentRelation2->size;
-		tableInfo2 = init_table_info(rowID2,currentRelation2->relation[columnId2],size2);
+		tableInfo2 = init_table_info(rowID2,currentRelation2->relation[columnId2],size2,thread_pool);
 	}
 	else	foundFlag2++;
 
@@ -297,12 +301,12 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	else if(foundFlag1 == 1)
 	{
 		uint64_t *payloadColumn1 = conjurePayload(rArray->relations.at(relationId1)->relation[columnId1],rowID1,size1);
-		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1);
+		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1,thread_pool);
 	}
 	else
 	{
 		uint64_t *payloadColumn2 = conjurePayload(rArray->relations.at(relationId2)->relation[columnId2],rowID2,size2);
-		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2);
+		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2,thread_pool);
 	}
 
 
@@ -733,54 +737,54 @@ cout << endl;
 
 
 
-void jointest()
-{
-	cout << "ok" << std::endl;
+// void jointest()
+// {
+// 	cout << "ok" << std::endl;
 
-	uint64_t * rowID1 = new uint64_t[3];
-	uint64_t * rowID2 = new uint64_t[5];
+// 	uint64_t * rowID1 = new uint64_t[3];
+// 	uint64_t * rowID2 = new uint64_t[5];
 
-	rowID1[0] = 1;
-	rowID1[1] = 2;
-	rowID1[2] = 3;
+// 	rowID1[0] = 1;
+// 	rowID1[1] = 2;
+// 	rowID1[2] = 3;
 
-	rowID2[0] = 1;
-	rowID2[1] = 2;
-	rowID2[2] = 3;
-	rowID2[3] = 4;
-	rowID2[4] = 5;
+// 	rowID2[0] = 1;
+// 	rowID2[1] = 2;
+// 	rowID2[2] = 3;
+// 	rowID2[3] = 4;
+// 	rowID2[4] = 5;
 
-	uint64_t *arr1 = new uint64_t[3];
-	uint64_t *arr2 = new uint64_t[5];
+// 	uint64_t *arr1 = new uint64_t[3];
+// 	uint64_t *arr2 = new uint64_t[5];
 
-	arr1[0] = 5;
-	arr1[1] = 1;
-	arr1[2] = 9;
+// 	arr1[0] = 5;
+// 	arr1[1] = 1;
+// 	arr1[2] = 9;
 
-	arr2[0] = 7;
-	arr2[1] = 6;
-	arr2[2] = 1;
-	arr2[3] = 9;
-	arr2[4] = 1;
+// 	arr2[0] = 7;
+// 	arr2[1] = 6;
+// 	arr2[2] = 1;
+// 	arr2[3] = 9;
+// 	arr2[4] = 1;
 
-	Table_Info *tableInfo1 = init_table_info(rowID1, arr1, 3);
-	Table_Info *tableInfo2 = init_table_info(rowID2, arr2, 5);
+// 	Table_Info *tableInfo1 = init_table_info(rowID1, arr1, 3);
+// 	Table_Info *tableInfo2 = init_table_info(rowID2, arr2, 5);
 
-	daIndex **indx = DAIndexArrayCreate(tableInfo2->bck_array);
+// 	daIndex **indx = DAIndexArrayCreate(tableInfo2->bck_array);
 
-	for(int i=0; i<16; i++)
-	{
-		cout << "bucket" << i << endl;
-		for(int j=0;j<indx[i]->bucket->size;j++)
-			cout << indx[i]->bucket->table[j] << endl;
-		cout << endl;
-	}
+// 	for(int i=0; i<16; i++)
+// 	{
+// 		cout << "bucket" << i << endl;
+// 		for(int j=0;j<indx[i]->bucket->size;j++)
+// 			cout << indx[i]->bucket->table[j] << endl;
+// 		cout << endl;
+// 	}
 
-	result *res = getResults(tableInfo2,tableInfo1,indx);
+// 	result *res = getResults(tableInfo2,tableInfo1,indx);
 
-	print_results(res);
+// 	print_results(res);
 
-}
+// }
 
 int isEqualPred(predicates *p1, predicates *p2)
 {

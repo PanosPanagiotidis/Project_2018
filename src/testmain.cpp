@@ -4,6 +4,7 @@
 #include "../header/parser.h"
 #include "../header/relationops.h"
 #include "../header/randarr.h"
+#include "../header/includes.h"
 #include <unistd.h>
 
 int main(void)
@@ -81,6 +82,9 @@ int main(void)
 	relationArray *rArray = init_relations();
 
 	sleep(1);
+
+	threadpool* tp = threadpool_init(NUM_THREADS);
+
 	while(1){
 		queryBatch *qBatch = QueryInput();									// Read & Store a batch of queries
 		if (qBatch == NULL) break;
@@ -92,7 +96,7 @@ int main(void)
 		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++)
 		{
 			relationArray *localTempArray = createTempRelArray(rArray,(*q));
-			tra = queryExecute((*q),localTempArray);							// Execute each query in batch
+			tra = queryExecute((*q),localTempArray,tp);							// Execute each query in batch
 
 			getChecksum(&(tra->res.at(0)),localTempArray,(*q)->checksums);
 			deleteTR(&tra);

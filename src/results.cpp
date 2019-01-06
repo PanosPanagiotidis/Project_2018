@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
+#include "../header/includes.h"
 
 using namespace std;
 
-#define N 10
+
 
 
 /*

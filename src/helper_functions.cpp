@@ -1,8 +1,11 @@
 #include "../header/helper_functions.h"
-#define N 10
+#include <iostream>
+// #define N 10
+using namespace std;
 
-Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size)		// Initializes the variables and structs of table info, a=keys, b=payloads
+Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREAD_POOL)		// Initializes the variables and structs of table info, a=keys, b=payloads
 {
+	// extern threadpool* THREAD_POOL;
 	uint64_t LSB;
 	uint64_t mask = (1 << N) - 1; //Mask the least significant bits.Payload & mask = LSB
 
@@ -15,26 +18,26 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size)		// Initializes 
 	}
 
 	ti->rows = size;
-	ti->tuples_table= (toumble**)malloc(sizeof(toumble*)*size);			// Creating tuple array (rowID,value)
+	// ti->tuples_table= (toumble**)malloc(sizeof(toumble*)*size);			// Creating tuple array (rowID,value)
 
-	if(ti->tuples_table == NULL){
-		fprintf(stderr,"Error allocating space for Tuples Table\n");
-		exit(0);
-	}
+	// if(ti->tuples_table == NULL){
+	// 	fprintf(stderr,"Error allocating space for Tuples Table\n");
+	// 	exit(0);
+	// }
 
-	for(int i = 0; i < size; i++)	//creating a tuples array for each combo of rowId + payload
-	{
-		ti->tuples_table[i] = (toumble*)malloc(sizeof(toumble));
+	// for(int i = 0; i < size; i++)	//creating a tuples array for each combo of rowId + payload
+	// {
+	// 	ti->tuples_table[i] = (toumble*)malloc(sizeof(toumble));
 
-		if(ti->tuples_table[i] == NULL){
-			fprintf(stderr,"Error allocating space for tuple\n");
-			exit(0);
-		}
+	// 	if(ti->tuples_table[i] == NULL){
+	// 		fprintf(stderr,"Error allocating space for tuple\n");
+	// 		exit(0);
+	// 	}
 
-		ti->tuples_table[i]->key = a[i];
+	// 	ti->tuples_table[i]->key = a[i];
 
-		ti->tuples_table[i]->payload = b[i];
-	}
+	// 	ti->tuples_table[i]->payload = b[i];
+	// }
 
 	ti->histSize = 1 << N; //16
 	ti->histogram= (uint64_t*)calloc(ti->histSize,sizeof(uint64_t));
@@ -58,12 +61,62 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size)		// Initializes 
 		exit(0);
 	}
 
+	//split the table to threads
+	uint64_t row_from = 0;
+	uint64_t row_to = 0;
+	int jobs = 0;
+	int chunk = size/NUM_THREADS;
+	int leftovers = size%NUM_THREADS;
+	row_to+=chunk;
+	jobs = NUM_THREADS;
 
-	for(int i = 0; i < ti->rows; i++)
-	{
-		LSB = ti->tuples_table[i]->payload & mask;
-		ti->histogram[LSB]++;
+	uint64_t** hists = new uint64_t*[NUM_THREADS];
+
+	for(int i = 0 ; i < NUM_THREADS ; i++)
+		hists[i] = new uint64_t[ti->histSize];
+
+	if(size < NUM_THREADS){
+		jobs = size;
 	}
+
+	histArg** arg_table;
+	arg_table = new histArg*[jobs];
+
+	for(int i = 0 ;i < jobs ; i++){
+		arg_table[i] = new histArg;
+		arg_table[i]->payloads = b;
+		arg_table[i]->rowId = a;
+
+		arg_table[i]->fromRow = row_from;
+		arg_table[i]->toRow = row_to;
+
+		row_from+=chunk;
+		if(i == jobs -1 && leftovers > 0)
+			row_to+=leftovers;
+		else
+			row_to+=chunk;
+
+		arg_table[i]->thread_hists = hists;
+		arg_table[i]->loc = i;
+
+	}
+
+	for(int i = 0 ; i < jobs ;i++){
+
+		add_work(THREAD_POOL->Q,&histogramJob,arg_table[i]);
+
+	}
+
+
+	thread_wait();
+	ti->histogram = rebuild_hist(hists,NUM_THREADS);
+
+
+	// for(int i = 0; i < ti->rows; i++)
+	// {
+	// 	LSB = b[i] & mask;
+	// 	ti->histogram[LSB]++;
+	// }
 
 
 
@@ -93,11 +146,11 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size)		// Initializes 
 	}
 
 	for(int i = 0 ; i < size ; i++){ //Reordering of Id and Payload arrays.Afterwards stored in new arrays
-		LSB = ti->tuples_table[i]->payload & mask;
+		LSB = b[i] & mask;
 
-		ti->R_Payload[ti->pSumDsp[LSB]] = ti->tuples_table[i]->payload;
+		ti->R_Payload[ti->pSumDsp[LSB]] = b[i];
 
-		ti->R_Id[ti->pSumDsp[LSB]] = ti->tuples_table[i]->key;
+		ti->R_Id[ti->pSumDsp[LSB]] = a[i];
 
 		ti->pSumDsp[LSB]++;
 	}
@@ -180,15 +233,15 @@ void Destroy_Table_Data(Table_Info** ti){
 				free((*ti)->bck_array->bck[i]);
 	}
 
-	for(i = 0 ; i < (*ti)->rows ; i++){
-		free((*ti)->tuples_table[i]);
-	}
+	// for(i = 0 ; i < (*ti)->rows ; i++){
+	// 	free((*ti)->tuples_table[i]);
+	// }
 
 
 	free((*ti)->bck_array->bck);
 	free((*ti)->bck_array);
 	free((*ti)->histogram);
-	free((*ti)->tuples_table);
+	// free((*ti)->tuples_table);
 	free((*ti)->R_Payload);
 	free((*ti)->R_Id);
 	free((*ti)->pSumDsp);

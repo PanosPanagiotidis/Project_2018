@@ -4,6 +4,7 @@
 #include "../header/parser.h"
 #include "../header/relation_loader.h"
 #include "../header/results.h"
+#include "../header/thread_scheduler.h"
 
 typedef struct tempResultArray{
 	std::vector<uint64_t *> rowID;
@@ -16,7 +17,7 @@ typedef struct tempResults{
 }tempResults;
 
 
-tempResults *queryExecute(Query *, relationArray *);
+tempResults *queryExecute(Query *, relationArray *,threadpool* );
 
 void queryReorder(Query *);															// Reorders predicates in a query
 

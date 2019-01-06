@@ -1,11 +1,13 @@
 #include "../header/thread_scheduler.h"
 #include <iostream>
 
+
 using namespace std;
 
-#define N 10
+// #define N 10
 
 pthread_mutex_t w;
+
 
 threadpool* tp;
 
@@ -21,7 +23,7 @@ threadpool* threadpool_init(int num_threads){
 	tp->num_threads = num_threads;
 
 	tp->working = 0;
-	
+	tp->alive = 0;
 	//init job q here
 	tp->Q = jobq_init();
 
@@ -85,43 +87,64 @@ void* thread_work(void* arg){
 			pthread_cond_wait(&tp->hasjobs,&tp->access);
 		}
 
+		tp->working++;
+
+
 		void *(*func_buff)(void*);
 		void* args;
 		Job* task = getJob();
 
+		pthread_mutex_unlock(&tp->access);
 		if(task){
 			func_buff = task->function;
 			args = task->arg;
 			free(task);
 		}
 
-		pthread_mutex_unlock(&tp->access);
-
+		
 		func_buff(args);
 
+		pthread_mutex_lock(&tp->access);
+
+		tp->working--;
+		if(tp->working == 0){
+			pthread_cond_signal(&tp->all_idle);
+		}
+
+		pthread_mutex_unlock(&tp->access);
 	}
+
+
 	return NULL;
 }
 
 void* histogramJob(void* arg){
+
 	uint64_t size = 1 << N;
 	uint64_t mask = (1<<N) -1;
 	uint64_t LSB;
-
-	histArg *params = (histArg*)arg;
+	histArg *params = static_cast<histArg*>(arg);
 
 	uint64_t* histogram = new uint64_t[size];
 	for(int i = 0 ; i < size ; i++)
 		histogram[i] = 0;
 
-	for(int i = params->from ; i <= params->to ;i++){
-		LSB = params->payloads+i & mask;
+	for(int i = params->fromRow ; i < params->toRow ;i++){
+		LSB = params->payloads[i] & mask;
 		histogram[LSB]++;
 	}
 
-	params->thread_hists[loc] = histogram;
+	params->thread_hists[params->loc] = histogram;
 
 
+}
+
+void thread_wait(){
+	pthread_mutex_lock(&tp->access);
+	while(tp->Q->len > 0 || tp->working > 0){
+		pthread_cond_wait(&tp->all_idle,&tp->access);
+	}
+	pthread_mutex_unlock(&tp->access);
 }
 
 // void* print_thread_info(void* arg){
@@ -138,7 +161,6 @@ int add_work(Job_Q* q,void *(*function_p)(void*),void* args){
 
 	pthread_mutex_lock(&tp->access);
 
-	pthread_cond_broadcast(&tp->hasjobs);
 	newJob->prev = NULL;
 
 	switch(q->len){
@@ -155,14 +177,19 @@ int add_work(Job_Q* q,void *(*function_p)(void*),void* args){
 
 	q->len++;
 
+	pthread_cond_broadcast(&tp->hasjobs);
 	pthread_mutex_unlock(&tp->access);
 }
 
 uint64_t* rebuild_hist(uint64_t** thread_hists,uint64_t histsize){
 	uint64_t size = 1<<N;
-	uint64_t histogram = new uint64_t*[size];
-	for(int i = 0 ; i < histsize ; i++){
+	uint64_t* histogram = new uint64_t[size];
+
+	for(int i = 0 ; i < size ;i++)
 		histogram[i] = 0;
+
+	for(int i = 0 ; i < histsize ; i++){
+		// histogram[i] = 0;
 		for(int j = 0 ; j < size ; j++){
 			histogram[j] += thread_hists[i][j];
 		}
