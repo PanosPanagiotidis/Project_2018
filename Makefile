@@ -3,8 +3,8 @@ HDIR=-I'./header/'
 CFLAGS = -g -o3 -pg
 CPPFLAGS = -g -o3 -pg
 
-all: ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o
-	$(CC) $(CFLAGS)	-o JOIN.out ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o -lpthread
+all: ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o 
+	$(CC) $(CFLAGS)	-o JOIN.out ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./header/includes.h -lpthread
 
 testmain.o:	./src/testmain.cpp
 	$(CC) $(CPPFLAGS) -c ./src/testmain.cpp
@@ -12,8 +12,8 @@ testmain.o:	./src/testmain.cpp
 helper_functions.o:	./src/helper_functions.cpp ./src/thread_scheduler.h
 	$(CC) $(CPPFLAGS) -c ./src/helper_functions.cpp 
 
-results.o:	./src/results.cpp ./header/daindex.h
-	$(CC) $(CPPFLAGS) -c ./src/results.cpp
+results.o:	./src/results.cpp ./header/daindex.h 
+	$(CC) $(CPPFLAGS) -c ./src/results.cpp ./header/includes.h
 
 daindex.o: 	./src/daindex.c
 	$(CC) $(CFLAGS) -c ./src/daindex.c
@@ -27,8 +27,8 @@ relation_l.o:	./src/relation_l.cpp
 relationops.o: ./src/relationops.cpp
 	$(CC) $(CPPFLAGS) -c ./src/relationops.cpp 
 
-thread_scheduler.o: ./src/thread_scheduler.cpp
-	$(CC) $(CPPFLAGS) -c ./src/thread_scheduler.cpp -lpthread
+thread_scheduler.o: ./src/thread_scheduler.cpp ./header/includes.h
+	$(CC) $(CPPFLAGS) -c ./src/thread_scheduler.cpp ./header/includes.h -lpthread
 
 clean:
 	$(RM) *.out

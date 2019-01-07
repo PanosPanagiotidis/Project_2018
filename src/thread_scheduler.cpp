@@ -6,13 +6,12 @@ using namespace std;
 
 // #define N 10
 
-pthread_mutex_t w;
+pthread_mutex_t w = PTHREAD_MUTEX_INITIALIZER;
 
 
 threadpool* tp;
 
 threadpool* threadpool_init(int num_threads){
-	pthread_mutex_init(&w,NULL);
 	tp = new threadpool;
 	if (tp == NULL){
 		cout << "error on threadpool init.No memory to allocate" << endl;
@@ -28,6 +27,7 @@ threadpool* threadpool_init(int num_threads){
 	tp->Q = jobq_init();
 
 
+	pthread_mutex_init(&(tp->dsp),NULL);
 	pthread_mutex_init(&(tp->access),NULL);
 	pthread_cond_init(&(tp->all_idle),NULL);
 	pthread_cond_init(&(tp->hasjobs),NULL);
@@ -136,7 +136,33 @@ void* histogramJob(void* arg){
 
 	params->thread_hists[params->loc] = histogram;
 
+	return NULL;
+}
 
+
+void* partitionJob(void* arg){
+	uint64_t mask = (1<<N) -1;
+	hashArg *params = static_cast<hashArg*>(arg);
+	uint64_t LSB;
+	uint64_t pl;
+	uint64_t loc;
+	for(int i = params->fromRow ; i < params->toRow ; i++){
+		pthread_mutex_lock(&w);
+		pl = params->payloads[i];
+		LSB = pl & mask;
+		loc = params->dsp[LSB];
+		params->dsp[LSB]++;
+		pthread_mutex_unlock(&w);
+
+		
+		params->stored_payloads[loc] = pl;
+
+		params->stored_rows[loc] = params->rowId[i];
+
+		
+	}
+		//	pthread_mutex_unlock(&w);
+	return NULL;
 }
 
 void thread_wait(){

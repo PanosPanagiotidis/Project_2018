@@ -23,6 +23,18 @@ typedef struct histArg{
 	int loc;
 }histArg;
 
+typedef struct hashArg{
+	uint64_t* stored_payloads;
+	uint64_t* stored_rows;
+	uint64_t* histogram;
+	uint64_t* rowId;
+	uint64_t* payloads;
+	uint64_t fromRow;
+	uint64_t toRow;
+	uint64_t* dsp;
+	int loc;
+}hashArg;
+
 typedef struct Job{
 	struct Job* prev;
 	void* (*function)(void* );
@@ -47,6 +59,7 @@ typedef struct threadpool{
 	int working;
 	int alive;
 	pthread_mutex_t access;
+	pthread_mutex_t dsp;
 	pthread_cond_t all_idle;
 	pthread_cond_t hasjobs;
 	int num_threads;
@@ -58,6 +71,7 @@ Job_Q* jobq_init(void );
 void* thread_work(void* );
 void thread_wait(void );
 void* histogramJob(void* );
+void* partitionJob(void* );
 // void* print_thread_info(void *);
 int add_work(Job_Q* ,void *(*function_p)(void*),void* );
 Job* getJob();

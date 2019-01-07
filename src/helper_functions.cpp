@@ -3,6 +3,9 @@
 // #define N 10
 using namespace std;
 
+
+
+
 Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREAD_POOL)		// Initializes the variables and structs of table info, a=keys, b=payloads
 {
 	// extern threadpool* THREAD_POOL;
@@ -67,22 +70,28 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	int jobs = 0;
 	int chunk = size/NUM_THREADS;
 	int leftovers = size%NUM_THREADS;
-	row_to+=chunk;
+	row_from-=chunk;
 	jobs = NUM_THREADS;
 
-	uint64_t** hists = new uint64_t*[NUM_THREADS];
 
-	for(int i = 0 ; i < NUM_THREADS ; i++)
-		hists[i] = new uint64_t[ti->histSize];
 
 	if(size < NUM_THREADS){
 		jobs = size;
 	}
+	uint64_t** hists = new uint64_t*[jobs];
+
+	for(int i = 0 ; i < jobs ; i++)
+		hists[i] = new uint64_t[ti->histSize];
+
 
 	histArg** arg_table;
 	arg_table = new histArg*[jobs];
 
 	for(int i = 0 ;i < jobs ; i++){
+		row_from+=chunk;
+		row_to+=chunk;
+		if(i == jobs-1 && leftovers > 0)
+			row_to+=leftovers;
 		arg_table[i] = new histArg;
 		arg_table[i]->payloads = b;
 		arg_table[i]->rowId = a;
@@ -90,11 +99,6 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 		arg_table[i]->fromRow = row_from;
 		arg_table[i]->toRow = row_to;
 
-		row_from+=chunk;
-		if(i == jobs -1 && leftovers > 0)
-			row_to+=leftovers;
-		else
-			row_to+=chunk;
 
 		arg_table[i]->thread_hists = hists;
 		arg_table[i]->loc = i;
@@ -109,7 +113,15 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 
 
 	thread_wait();
-	ti->histogram = rebuild_hist(hists,NUM_THREADS);
+
+	ti->histogram = rebuild_hist(hists,jobs);
+
+	for(int i = 0 ; i < jobs ;i++){
+		delete[] hists[i];
+		delete arg_table[i];
+	}
+
+	delete[] arg_table;
 
 
 	// for(int i = 0; i < ti->rows; i++)
@@ -145,15 +157,51 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 		exit(0);
 	}
 
-	for(int i = 0 ; i < size ; i++){ //Reordering of Id and Payload arrays.Afterwards stored in new arrays
-		LSB = b[i] & mask;
+	hashArg** harg_table = new hashArg*[jobs];
+	row_from = 0;
+	row_from -=chunk;
+	row_to = 0;
 
-		ti->R_Payload[ti->pSumDsp[LSB]] = b[i];
+	for(int i = 0 ;i < jobs ; i++){
 
-		ti->R_Id[ti->pSumDsp[LSB]] = a[i];
+		row_from+=chunk;
+		row_to+=chunk;
+		if(i == jobs -1 && leftovers > 0)
+			row_to+=leftovers;
 
-		ti->pSumDsp[LSB]++;
+		harg_table[i] = new hashArg;
+		harg_table[i]->payloads = b;
+		harg_table[i]->rowId = a;
+		harg_table[i]->stored_payloads = ti->R_Payload;
+		harg_table[i]->stored_rows = ti->R_Id;
+		harg_table[i]->fromRow = row_from;
+		harg_table[i]->toRow = row_to;
+		harg_table[i]->dsp = ti->pSumDsp;
+
+		
+
+		harg_table[i]->loc = i;
+
 	}
+
+	for(int i = 0 ; i < jobs ;i++){
+
+		add_work(THREAD_POOL->Q,&partitionJob,harg_table[i]);
+
+	}
+
+	// for(int i = 0 ; i < size ; i++){ //Reordering of Id and Payload arrays.Afterwards stored in new arrays
+	// 	LSB = b[i] & mask;
+
+	// 	ti->R_Payload[ti->pSumDsp[LSB]] = b[i];
+
+	// 	ti->R_Id[ti->pSumDsp[LSB]] = a[i];
+
+	// 	ti->pSumDsp[LSB]++;
+	// }
+
+	thread_wait();
+
 
 	bucket_array *A = ti->bck_array;
 
