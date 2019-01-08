@@ -9,10 +9,21 @@
 #include <errno.h>
 #include <time.h>
 #include <stdint.h>
-
-
-
+#include "../header/structs.h"
+#include "../header/daindex.h"
 #include "../header/includes.h"
+#include <vector>
+
+using namespace std;
+
+typedef struct rlist{
+	toumble* ts;
+	struct rlist* next;
+	uint64_t size;
+}rlist;
+
+
+
 
 typedef struct histArg{
 	uint64_t* payloads;
@@ -34,6 +45,7 @@ typedef struct hashArg{
 	uint64_t* dsp;
 	int loc;
 }hashArg;
+
 
 typedef struct Job{
 	struct Job* prev;
@@ -66,12 +78,22 @@ typedef struct threadpool{
 	Job_Q *Q;
 }threadpool;
 
+typedef struct joinArg{
+	Table_Info* indexed;
+	Table_Info* nonIndexed;
+	daIndex** Index;
+	int bucket;
+	rlist* partials;
+
+}joinArg;
+
 threadpool* threadpool_init(int );
 Job_Q* jobq_init(void );
 void* thread_work(void* );
 void thread_wait(void );
 void* histogramJob(void* );
 void* partitionJob(void* );
+void* joinJob(void* );
 // void* print_thread_info(void *);
 int add_work(Job_Q* ,void *(*function_p)(void*),void* );
 Job* getJob();

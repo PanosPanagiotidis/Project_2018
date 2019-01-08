@@ -319,7 +319,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	if(size1 < size2)
 	{
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
-		res = getResults(tableInfo1,tableInfo2,indx);
+		res = getResults(tableInfo1,tableInfo2,indx,thread_pool);
 		joinResults = convert_to_arrays(res,resultSize);
 
 		uint64_t * tmp = joinResults[1];
@@ -330,7 +330,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	else
 	{
 		indx = DAIndexArrayCreate(tableInfo2->bck_array);
-		res = getResults(tableInfo2,tableInfo1,indx);
+		res = getResults(tableInfo2,tableInfo1,indx,thread_pool);
 		joinResults = convert_to_arrays(res,resultSize);
 		indexed = tableInfo2;
 
@@ -347,7 +347,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	delete[] (rowID2);
 	delete[] (rowID1);
 
-	destroy_results(&res);
+	//destroy_results(&res);
 	delete(res);
 	DAIndexArrayDestroy(indx,indexed->bck_array->size);
 	Destroy_Table_Data(&tableInfo1);

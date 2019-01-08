@@ -1,4 +1,4 @@
-#include "../header/helper_functions.h"
+#include "../header/thread_scheduler.h"
 #include <iostream>
 // #define N 10
 using namespace std;
@@ -103,13 +103,10 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 		arg_table[i]->thread_hists = hists;
 		arg_table[i]->loc = i;
 
-	}
-
-	for(int i = 0 ; i < jobs ;i++){
-
 		add_work(THREAD_POOL->Q,&histogramJob,arg_table[i]);
 
 	}
+
 
 
 	thread_wait();
@@ -130,13 +127,14 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	// 	ti->histogram[LSB]++;
 	// }
 
-
+	//cout << "This is a new table " << endl;
 
 	ti->pSum[0] = 0;											// Creating pSum
 
 	for(int i = 1; i < ti->histSize; i++)
 	{
 		ti->pSum[i] = ti->pSum[i-1] + ti->histogram[i-1];
+		// cout << "ti->pSum is " << ti->pSum[i] << endl;
 		ti->pSumDsp[i] = ti->pSumDsp[i-1] + ti->histogram[i-1];
 	}
 
@@ -177,18 +175,11 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 		harg_table[i]->fromRow = row_from;
 		harg_table[i]->toRow = row_to;
 		harg_table[i]->dsp = ti->pSumDsp;
-
-		
-
 		harg_table[i]->loc = i;
 
-	}
-
-	for(int i = 0 ; i < jobs ;i++){
-
 		add_work(THREAD_POOL->Q,&partitionJob,harg_table[i]);
-
 	}
+
 
 	// for(int i = 0 ; i < size ; i++){ //Reordering of Id and Payload arrays.Afterwards stored in new arrays
 	// 	LSB = b[i] & mask;

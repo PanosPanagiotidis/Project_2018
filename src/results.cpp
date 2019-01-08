@@ -1,10 +1,8 @@
 #include "stdio.h"
-#include "../header/results.h"
-#include "../header/daindex.h"
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
-#include "../header/includes.h"
+#include "../header/results.h"
 
 using namespace std;
 
@@ -18,9 +16,10 @@ using namespace std;
 *	and tuple.payload being the Indexed columns Id
 */
 
-result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
+result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadpool* tp){
 
 	int key,payload;
+	int jobs = 1<<N;
 
 	result *r = new result;
 
@@ -44,69 +43,115 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index){
 
 	uint64_t mask = (1 << N) - 1;
 
+	// cout << "psum " << endl;
+	// for(int i = 0 ; i < jobs ; i++){
+	// 	cout << nonIndexed->pSum[i]<<endl;
+	// }
 
-	result *head = r;
+	// cout << "-------------"<<endl;
+	rlist** partials = new rlist*[jobs];
+	for(int i = 0 ; i < jobs ; i++)
+		partials[i] = new rlist;
 
-	for(int i = 0 ; i < nonIndexed->rows ;i++){
-		payload = nonIndexed->R_Payload[i];
-		key = nonIndexed->R_Id[i];
+	joinArg** args = new joinArg*[jobs];
 
+	for(int i = 0 ; i < jobs ; i++){
+		args[i] = new joinArg;
 
-		LSB = payload & mask; // Least Significant Bytes kept to go directly to the bucket in question
+		args[i]->indexed = T;
+		args[i]->nonIndexed= nonIndexed;
+		args[i]->Index = Index;
+		args[i]->partials=partials[i];
+		args[i]->bucket = i;
 
-		hash2_value = payload % HASHFUNC_RANGE;//Position in bucket array to find results
-
-		chain_pos = Index[LSB]->bucket->table[hash2_value];
-
-		if(chain_pos == 0) continue;
-
-		while(chain_pos != 0)
-		{
-			r_key = chain_pos - 1;		//item in chain
-
-			if(T->bck_array->bck[LSB]->tuplesArray[r_key]->payload == payload)
-			{
-				toumble* t = new toumble;
-				t->key = key;
-				t->payload = T->bck_array->bck[LSB]->tuplesArray[r_key]->key;
-				r->results_array.push_back(t);
-
-				// if(counter == result_size-1)
-				// 	{
-				// 		counter = 0;
-				// 		result *temp = (result*)malloc(sizeof(result));
-
-				// 		if(temp == NULL){
-				// 			fprintf(stderr,"Error allocating space for result struct\n");
-				// 			exit(0);
-				// 		}
-
-				// 		temp->results_array = (toumble*)malloc(sizeof(toumble)*result_size);
-
-				// 		if(temp->results_array == NULL){
-				// 			fprintf(stderr,"Error allocating space for results array\n");
-				// 			exit(0);
-				// 		}
-
-				// 		temp->size = 0;
-				// 		temp->next = NULL;
-				// 		r->next = temp;
-				// 		r = temp;
-				// 	}
-
-				// r->results_array[counter].key = key; //non Indexed Column key/rowId
-				// r->results_array[counter].payload = T->bck_array->bck[LSB]->tuplesArray[r_key]->key;	//Indexed Column key/rowId
-
-				// counter++;
-				// r->size++;
-			}
-
-			chain_pos = Index[LSB]->chain->array[chain_pos];
-
-
-		}
-
+		add_work(tp->Q,&joinJob,args[i]);
 	}
+
+
+	thread_wait();
+
+	
+	for(int i = 0 ; i < jobs ; i++){
+		while(partials[i] != NULL){
+			for(int j = 0 ; j < partials[i]->size ;j++){
+				toumble* temp = new toumble;
+				temp->key = partials[i]->ts[j].key;
+				temp->payload = partials[i]->ts[j].payload;
+				r->results_array.push_back(temp);
+			}
+			partials[i] = partials[i]->next;
+		}
+	}
+	
+	// vector<toumble*>::iterator t1;
+	
+	// for(t1 = partials.begin(); t1 != partials.end(); t1++){
+	// 	r->results_array.push_back(*t1);
+	// }
+
+
+	//result *head = r;
+
+	// for(int i = 0 ; i < nonIndexed->rows ;i++){
+	// 	payload = nonIndexed->R_Payload[i];
+	// 	key = nonIndexed->R_Id[i];
+
+
+	// 	LSB = payload & mask; // Least Significant Bytes kept to go directly to the bucket in question
+
+	// 	hash2_value = payload % HASHFUNC_RANGE;//Position in bucket array to find results
+
+	// 	chain_pos = Index[LSB]->bucket->table[hash2_value];
+
+	// 	if(chain_pos == 0) continue;
+
+	// 	while(chain_pos != 0)
+	// 	{
+	// 		r_key = chain_pos - 1;		//item in chain
+
+	// 		if(T->bck_array->bck[LSB]->tuplesArray[r_key]->payload == payload)
+	// 		{
+	// 			toumble* t = new toumble;
+	// 			t->key = key;
+	// 			t->payload = T->bck_array->bck[LSB]->tuplesArray[r_key]->key;
+	// 			r->results_array.push_back(t);
+
+	// 			// if(counter == result_size-1)
+	// 			// 	{
+	// 			// 		counter = 0;
+	// 			// 		result *temp = (result*)malloc(sizeof(result));
+
+	// 			// 		if(temp == NULL){
+	// 			// 			fprintf(stderr,"Error allocating space for result struct\n");
+	// 			// 			exit(0);
+	// 			// 		}
+
+	// 			// 		temp->results_array = (toumble*)malloc(sizeof(toumble)*result_size);
+
+	// 			// 		if(temp->results_array == NULL){
+	// 			// 			fprintf(stderr,"Error allocating space for results array\n");
+	// 			// 			exit(0);
+	// 			// 		}
+
+	// 			// 		temp->size = 0;
+	// 			// 		temp->next = NULL;
+	// 			// 		r->next = temp;
+	// 			// 		r = temp;
+	// 			// 	}
+
+	// 			// r->results_array[counter].key = key; //non Indexed Column key/rowId
+	// 			// r->results_array[counter].payload = T->bck_array->bck[LSB]->tuplesArray[r_key]->key;	//Indexed Column key/rowId
+
+	// 			// counter++;
+	// 			// r->size++;
+	// 		}
+
+	// 		chain_pos = Index[LSB]->chain->array[chain_pos];
+
+
+	// 	}
+
+	// }
 	return r;
 }
 

@@ -165,6 +165,84 @@ void* partitionJob(void* arg){
 	return NULL;
 }
 
+void* joinJob(void* arg){
+	joinArg* params = static_cast<joinArg*>(arg);
+	uint64_t mask = (1<<N)-1;
+	uint64_t max = 1<<N;
+	uint64_t LSB;
+	int bck = params->bucket;
+	int row_to;
+	int row_from;
+
+	row_from = params->nonIndexed->pSum[bck];
+
+	if(bck == max-1)
+		row_to = params->nonIndexed->rows;
+	else
+		row_to = params->nonIndexed->pSum[bck+1];
+
+	// cout << "bck is " << bck <<"max is " << max << endl;
+	// cout << "row_from " << row_from << endl;
+	// cout << "row_to " << row_to << endl;
+	uint64_t* payloads = params->nonIndexed->R_Payload;
+	uint64_t* rows = params->nonIndexed->R_Id;
+	daIndex** index = params->Index;
+	rlist* results = params->partials;
+	uint64_t rsize = (128*1000)/sizeof(toumble);
+
+	// results = new rlist;
+	results->next = NULL;
+	results->size = 0;
+	results->ts = new toumble[rsize];
+	//keep head here
+	rlist *head = results;
+	uint64_t value;
+	uint64_t key;
+
+	uint64_t hash2;
+	uint64_t chain_pos;
+	uint64_t rkey;
+	//std::vector<toumble*> locals;
+	for(int i = row_from ; i < row_to ;i++){
+
+		value = payloads[i];
+		key = rows[i];
+
+		LSB = value & mask;
+		hash2 = value % HASHFUNC_RANGE;
+		chain_pos = index[LSB]->bucket->table[hash2];
+
+		if(chain_pos == 0) continue;
+
+		while(chain_pos != 0){
+
+			rkey = chain_pos-1;
+			if(params->indexed->bck_array->bck[LSB]->tuplesArray[rkey]->payload == value){
+
+				if(results->size == rsize){
+					results->next = new rlist;
+					results = results->next;
+					results->next = NULL;
+					results->ts = new toumble[rsize];
+					results->size = 0;
+				}
+				
+				results->ts[results->size].key = key;
+				results->ts[results->size].payload = params->indexed->bck_array->bck[LSB]->tuplesArray[rkey]->key;
+				results->size++;
+
+			}
+
+			chain_pos = params->Index[LSB]->chain->array[chain_pos];
+		}
+	}
+
+	params->partials = head;
+
+	return NULL;
+
+}
+
 void thread_wait(){
 	pthread_mutex_lock(&tp->access);
 	while(tp->Q->len > 0 || tp->working > 0){
