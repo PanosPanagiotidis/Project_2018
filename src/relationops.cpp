@@ -8,20 +8,18 @@
 #include <queue>
 #include <iostream>
 #include <bits/stdc++.h>
+#include <math.h>
 
 using namespace std;
 
 threadpool* thread_pool;
 
 tempResults *queryExecute(Query *qr, relationArray *relArray,threadpool* tp)
-{	
+{
 	thread_pool = tp;
 	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
 	Query *qur = editQuery(qr);
-
-
-	//relationArray *relArray = createTempRelArray(oRelArray,qr);
 
 	std::vector<predicates*>::iterator it;
 	for( it = qur->p.begin(); it != qur->p.end(); it++)
@@ -32,6 +30,202 @@ tempResults *queryExecute(Query *qr, relationArray *relArray,threadpool* tp)
 
 	return tRes;
 }
+
+columnStats **calculateJoinStats(relationArray *relArray, int relationID1, int columnID1, int relationID2, int columnID2)
+{
+	columnStats *relationStats1, *relationStats2;
+	Relations *relation1, *relation2;
+	double factor;
+
+	columnStats **results = new columnStats*[2];
+
+	if( relationID1 != relationID2 )
+	{
+		relation1 = relArray->relations.at(relationID1);
+		relation2 = relArray->relations.at(relationID2);
+
+		relationStats1 = new columnStats[relation1->numColumns];
+		relationStats2 = new columnStats[relation2->numColumns];
+
+
+		for( uint64_t i = 0; i < relation1->numColumns; i++)
+		{
+			relationStats1[i].minVal = relation1->relationStats[i].minVal;
+			relationStats1[i].maxVal = relation1->relationStats[i].maxVal;
+			relationStats1[i].valueCount = relation1->relationStats[i].valueCount;
+			relationStats1[i].uniqueCount = relation1->relationStats[i].uniqueCount;
+		}
+
+		for( uint64_t i = 0; i < relation2->numColumns; i++)
+		{
+			relationStats2[i].minVal = relation2->relationStats[i].minVal;
+			relationStats2[i].maxVal = relation2->relationStats[i].maxVal;
+			relationStats2[i].valueCount = relation2->relationStats[i].valueCount;
+			relationStats2[i].uniqueCount = relation2->relationStats[i].uniqueCount;
+		}
+
+
+		// Applying filters as needed
+		uint64_t original;
+
+
+		if( relationStats1[columnID1].maxVal > relationStats2[columnID2].maxVal )
+		{
+			factor = ( (double) (relationStats2[columnID2].maxVal - relationStats1[columnID1].minVal))/( (double) (relationStats1[columnID1].maxVal - relationStats1[columnID1].minVal));
+			original = relationStats1[columnID1].valueCount;
+
+			relationStats1[columnID1].maxVal = relationStats2[columnID2].maxVal;
+			relationStats1[columnID1].valueCount = (uint64_t) factor*relationStats1[columnID1].valueCount;
+			relationStats1[columnID1].uniqueCount = (uint64_t) factor*relationStats1[columnID1].uniqueCount;
+
+			for( uint64_t i = 0 ; i < relation1->numColumns ; i++ )
+			{
+				factor = (1 - pow((1 - ((double) relationStats1[columnID1].valueCount)/((double) original)),(((double)relationStats1[i].valueCount)/((double)relationStats1[i].uniqueCount))));
+				relationStats1[i].uniqueCount = (uint64_t) factor*relationStats1[i].uniqueCount;
+				relationStats1[i].valueCount  = relationStats1[columnID1].valueCount;
+			}
+
+		}
+		else if( relationStats1[columnID1].maxVal < relationStats2[columnID2].maxVal )
+		{
+			factor = ((double)(relationStats1[columnID1].maxVal - relationStats2[columnID2].minVal))/((double)(relationStats2[columnID2].maxVal - relationStats2[columnID2].minVal));
+			original = relationStats2[columnID2].valueCount;
+
+			relationStats2[columnID2].maxVal = relationStats1[columnID1].maxVal;
+			relationStats2[columnID2].valueCount = (uint64_t) factor*relationStats2[columnID2].valueCount;
+			relationStats2[columnID2].uniqueCount = (uint64_t) factor*relationStats2[columnID2].uniqueCount;
+
+			for( uint64_t i = 0 ; i < relation2->numColumns ; i++ )
+			{
+				factor = (1 - pow((1 - ((double)relationStats2[columnID2].valueCount)/((double) original)),(((double)relationStats2[i].valueCount)/((double)relationStats2[i].uniqueCount))));
+				relationStats2[i].uniqueCount = (uint64_t) factor*relationStats2[i].uniqueCount;
+				relationStats2[i].valueCount  = relationStats2[columnID1].valueCount;
+			}
+
+		}
+
+
+		if( relationStats1[columnID1].minVal > relationStats2[columnID2].minVal )
+		{
+			factor = ( (double) (relationStats2[columnID2].maxVal - relationStats1[columnID1].minVal))/((double) (relationStats2[columnID2].maxVal - relationStats2[columnID2].minVal));
+			original = relationStats2[columnID2].valueCount;
+
+			relationStats2[columnID2].minVal = relationStats1[columnID1].minVal;
+			relationStats2[columnID2].valueCount = (uint64_t) factor*relationStats2[columnID2].valueCount;
+			relationStats2[columnID2].uniqueCount = (uint64_t) factor*relationStats2[columnID2].uniqueCount;
+
+			for( uint64_t i = 0 ; i < relation2->numColumns ; i++ )
+			{
+				factor = (1 - pow((1 - ((double) relationStats2[columnID2].valueCount)/((double) original)),(((double) relationStats2[i].valueCount)/((double) relationStats2[i].uniqueCount))));
+				relationStats2[i].uniqueCount = (uint64_t) factor*relationStats2[i].uniqueCount;
+				relationStats2[i].valueCount  = relationStats2[columnID1].valueCount;
+			}
+
+		}
+		else if( relationStats1[columnID1].minVal < relationStats2[columnID2].minVal )
+		{
+			factor = ((double) (relationStats1[columnID1].maxVal - relationStats2[columnID2].minVal))/((double) (relationStats1[columnID1].maxVal - relationStats1[columnID1].minVal));
+			original = relationStats1[columnID1].valueCount;
+
+			relationStats1[columnID1].minVal = relationStats2[columnID2].minVal;
+			relationStats1[columnID1].valueCount = (uint64_t) factor*relationStats1[columnID1].valueCount;
+			relationStats1[columnID1].uniqueCount = (uint64_t) factor*relationStats1[columnID1].uniqueCount;
+
+			for( uint64_t i = 0 ; i < relation1->numColumns ; i++ )
+			{
+				factor = (1 - pow((1 - ((double) relationStats1[columnID1].valueCount)/((double) original)),(((double) relationStats1[i].valueCount)/((double) relationStats1[i].uniqueCount))));
+				relationStats1[i].uniqueCount = (uint64_t) factor*relationStats1[i].uniqueCount;
+				relationStats1[i].valueCount  = relationStats1[columnID1].valueCount;
+			}
+
+		}
+
+
+		uint64_t original1 = relationStats1[columnID1].uniqueCount;
+		uint64_t original2 = relationStats2[columnID2].uniqueCount;
+
+		factor = ((double) (relationStats2[columnID2].valueCount))/((double) (relationStats1[columnID1].maxVal - relationStats1[columnID1].minVal + 1));
+
+		relationStats1[columnID1].valueCount = (uint64_t) ((relationStats1[columnID1].valueCount)*factor);
+		relationStats2[columnID2].valueCount = relationStats1[columnID1].valueCount;
+
+		factor = ((double) (relationStats2[columnID2].uniqueCount))/((double) (relationStats1[columnID1].maxVal - relationStats1[columnID1].minVal + 1));
+
+		relationStats1[columnID1].uniqueCount = (uint64_t) ((relationStats1[columnID1].uniqueCount)*factor);
+		relationStats2[columnID2].uniqueCount = relationStats1[columnID1].uniqueCount;
+
+
+		for(uint64_t i = 0; i < relation1->numColumns; i++)
+			if( i != columnID1 )
+			{
+				factor = ( 1 - pow(( 1 - ((double) relationStats1[columnID1].uniqueCount)/((double) original1) ),(((double) relationStats1[i].valueCount)/((double) relationStats1[i].uniqueCount))) );
+				relationStats1[i].valueCount = relationStats1[columnID1].valueCount;
+				relationStats1[i].uniqueCount = (uint64_t) (relationStats1[i].uniqueCount*factor);
+			}
+
+		for(uint64_t i = 0; i < relation2->numColumns; i++ )
+			if( i != columnID2)
+			{
+
+				factor = ( 1 - pow(( 1 - ((double) relationStats2[columnID2].uniqueCount)/((double) original2) ),(((double) relationStats2[i].valueCount)/((double) relationStats2[i].uniqueCount))) );
+				relationStats2[i].valueCount = relationStats2[columnID2].valueCount;
+				relationStats2[i].uniqueCount = (uint64_t) (relationStats2[i].uniqueCount*factor);
+			}
+
+
+		results[0] = relationStats1;
+		results[1] = relationStats2;
+
+	}
+	else
+	{
+		relation1 = relArray->relations.at(relationID1);
+		relationStats1 = new columnStats[relation1->numColumns];
+
+		for( uint64_t i = 0; i < relation1->numColumns; i++)
+		{
+			relationStats1[i].minVal = relation1->relationStats[i].minVal;
+			relationStats1[i].maxVal = relation1->relationStats[i].maxVal;
+			relationStats1[i].valueCount = relation1->relationStats[i].valueCount;
+			relationStats1[i].uniqueCount = relation1->relationStats[i].uniqueCount;
+		}
+
+
+		if( columnID1 != columnID2 )
+		{
+			relationStats1[columnID1].maxVal = max(relationStats1[columnID1].maxVal,relationStats1[columnID2].maxVal);
+			relationStats1[columnID2].maxVal = relationStats1[columnID1].maxVal;
+
+			relationStats1[columnID1].minVal = min(relationStats1[columnID1].minVal,relationStats1[columnID2].minVal);
+			relationStats1[columnID2].minVal = relationStats1[columnID1].minVal;
+
+			uint64_t original = relationStats1[columnID1].valueCount;
+
+			relationStats1[columnID1].valueCount = (uint64_t) (((double) (original))/((double) (relationStats1[columnID1].maxVal - relationStats1[columnID1].minVal + 1)));
+			relationStats1[columnID2].valueCount = relationStats1[columnID1].valueCount;
+
+			factor = 1 - pow(( 1 - (((double) relationStats1[columnID1].valueCount)/((double) original))),(((double) original)/(relationStats1[columnID1].uniqueCount)));
+
+			relationStats1[columnID1].uniqueCount = (uint64_t) factor*relationStats1[columnID1].uniqueCount;
+			relationStats1[columnID2].uniqueCount = relationStats1[columnID1].uniqueCount;
+
+		}
+		else
+		{
+			relationStats1[columnID1].valueCount = (uint64_t) (((double) ((relationStats1[columnID1].valueCount)*(relationStats1[columnID1].valueCount)))/((double) (relationStats1[columnID1].maxVal - relationStats1[columnID1].minVal + 1)) );
+
+			for( uint64_t i = 0; i < relation1->numColumns; i++)
+				relationStats1[i].valueCount = relationStats1[columnID1].valueCount;
+
+		}
+
+		results[0] = relationStats1;
+		results[1] = NULL;
+	}
+
+	return results;
+}
+
 
 relationArray *createTempRelArray(relationArray *rArray, Query *qr)
 {
@@ -48,11 +242,18 @@ relationArray *createTempRelArray(relationArray *rArray, Query *qr)
 		rel->numColumns = originalRel->numColumns;
 		rel->relation   = new uint64_t *[rel->numColumns];
 
+		rel->relationStats = new columnStats[rel->numColumns];
 		for(uint64_t j = 0; j < rel->numColumns; j++)
 		{
 			rel->relation[j] = new uint64_t[rel->size];
 			for(uint64_t k = 0; k < rel->size; k++)
 				rel->relation[j][k] = originalRel->relation[j][k];
+
+			rel->relationStats[j].minVal = originalRel->relationStats[j].minVal;
+			rel->relationStats[j].maxVal = originalRel->relationStats[j].maxVal;
+			rel->relationStats[j].valueCount = originalRel->relationStats[j].valueCount;
+			rel->relationStats[j].uniqueCount = originalRel->relationStats[j].uniqueCount;
+
 		}
 
 
@@ -182,6 +383,71 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 		}
 
 	}
+
+	columnStats *rStats = currentRelation->relationStats;
+
+	switch (pred->type)
+	{
+		case EQ_FILTER:
+		{
+			rStats[columnId].minVal = filter;									// ColumnID Stats
+			rStats[columnId].maxVal = filter;
+			uint64_t original = rStats[columnId].valueCount;
+			rStats[columnId].valueCount = results.size();
+
+			if( results.size() == 0 )		rStats[columnId].uniqueCount = 0;
+			else							rStats[columnId].uniqueCount = 1;
+
+			for ( uint64_t i = 0 ; i < currentRelation->numColumns ; i++ )
+				if( i != columnId )
+				{
+					float factor = (1 - pow(( 1 - rStats[columnId].valueCount/original ),(rStats[i].valueCount/rStats[i].uniqueCount)));
+					rStats[i].uniqueCount = (uint64_t) (rStats[i].uniqueCount)*factor ;
+					rStats[i].valueCount = rStats[columnId].valueCount;
+				}
+
+			break;
+		}
+		case GT_FILTER:
+		{
+			rStats[columnId].uniqueCount = (uint64_t) ( ( (rStats[columnId].maxVal - filter)/(rStats[columnId].maxVal - rStats[columnId].minVal) )*(rStats[columnId].uniqueCount) );
+			rStats[columnId].minVal = filter;
+			uint64_t original = rStats[columnId].valueCount;
+			rStats[columnId].valueCount = results.size();
+
+			for( uint64_t i = 0 ; i < currentRelation->numColumns ; i++)
+				if( i != columnId )
+				{
+					float factor = (1 - pow(( 1 - rStats[columnId].valueCount/original ),(rStats[i].valueCount/rStats[i].uniqueCount)));
+					rStats[i].uniqueCount = (uint64_t) (rStats[i].uniqueCount)*factor ;
+					rStats[i].valueCount = rStats[columnId].valueCount;
+				}
+
+			break;
+		}
+		case LT_FILTER:
+		{
+			rStats[columnId].uniqueCount = (uint64_t) ( ( ( filter - rStats[columnId].minVal)/(rStats[columnId].maxVal - rStats[columnId].minVal) )*(rStats[columnId].uniqueCount) );
+			rStats[columnId].maxVal = filter;
+			uint64_t original = rStats[columnId].valueCount;
+			rStats[columnId].valueCount = results.size();
+
+			for( uint64_t i = 0 ; i < currentRelation->numColumns ; i++)
+				if( i != columnId )
+				{
+					float factor = (1 - pow(( 1 - rStats[columnId].valueCount/original ),(rStats[i].valueCount/rStats[i].uniqueCount)));
+					rStats[i].uniqueCount = (uint64_t) (rStats[i].uniqueCount)*factor ;
+					rStats[i].valueCount = rStats[columnId].valueCount;
+				}
+
+			break;
+		}
+		default:
+			break;
+	}
+
+
+
 
 	currentRelation->relation = filtered;
 	currentRelation->size = results.size();

@@ -68,13 +68,53 @@ Relations* load_relations(const char* fileName)
 		R->relation[i] = (uint64_t*)malloc(sizeof(uint64_t)*R->size);
 	}
 
-	for (unsigned i=0;i<R->numColumns;++i) {
-		for(unsigned j = 0 ; j < R->size ; j++){
+    R->relationStats = new columnStats[R->numColumns];
 
+	for (unsigned i = 0; i < R->numColumns; i++)
+    {
+        uint64_t minVal = *reinterpret_cast<uint64_t*>(addr);
+        uint64_t maxVal = *reinterpret_cast<uint64_t*>(addr);
+
+		for(unsigned j = 0; j < R->size; j++)
+        {
 			R->relation[i][j] = *reinterpret_cast<uint64_t*>(addr);
 			addr+=sizeof(uint64_t);
+
+            if(R->relation[i][j] > maxVal)  maxVal = R->relation[i][j];
+            if(R->relation[i][j] < minVal)  minVal = R->relation[i][j];
 		}
-	}
+
+        R->relationStats[i].minVal = minVal;
+        R->relationStats[i].maxVal = maxVal;
+        R->relationStats[i].valueCount = R->size;
+
+        char *unqArray;
+        uint64_t unqArraySize = maxVal - minVal + 1;
+        if( unqArraySize >= ALLOCATION_CAP )
+        {
+            unqArraySize = ALLOCATION_CAP;
+            unqArray = new char[unqArraySize] ();
+            for( uint64_t j = 0; i < R->size; i++)
+                unqArray[(R->relation[i][j] - R->relationStats[i].minVal) % unqArraySize] = 1;
+
+        }
+        else
+        {
+            unqArray = new char[unqArraySize] ();
+            for( uint64_t j = 0; i < R->size; i++)
+                unqArray[R->relation[i][j] - R->relationStats[i].minVal] = 1;
+
+        }
+
+        uint64_t uniqueCount = 0;
+
+        for(uint64_t j = 0; j < unqArraySize; j++)
+            if( unqArray[j] != 0 )  uniqueCount++;
+
+        R->relationStats[i].uniqueCount = uniqueCount;
+
+        delete[] unqArray;
+    }
 
 
 	munmap(tempadr,length);
@@ -84,7 +124,7 @@ Relations* load_relations(const char* fileName)
 
 void deleteRelations(relationArray** ra){
 
-	int i,j,z;
+	int i,j;
 
 	for(i = 0; i < (*ra)->relations.size();i++){
 
@@ -94,6 +134,7 @@ void deleteRelations(relationArray** ra){
 
 		}
 		delete[] ((*ra)->relations.at(i)->relation);
+        delete[] ((*ra)->relations.at(i)->relationStats);
 		delete((*ra)->relations.at(i));
 	}
 

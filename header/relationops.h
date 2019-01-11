@@ -37,7 +37,10 @@ void jointest(void);
 void fringeCase(relationArray *, tempResults *, int, int, int ,int);
 Query *editQuery(Query *);
 
+columnStats **calculateJoinStats(relationArray *,int,int,int,int);
+
 relationArray *createTempRelArray(relationArray *, Query *);
+
 
 // Debug stuff
 
