@@ -6,6 +6,7 @@
 #include "../header/randarr.h"
 #include "../header/includes.h"
 #include <unistd.h>
+#include <ctime>
 
 int main(void)
 {
@@ -82,7 +83,9 @@ int main(void)
 	relationArray *rArray = init_relations();
 
 	sleep(1);
-
+	std::clock_t start;
+	double duration;
+	start = std::clock();
 	threadpool* tp = threadpool_init(NUM_THREADS);
 
 	while(1){
@@ -99,15 +102,17 @@ int main(void)
 			tra = queryExecute((*q),localTempArray,tp);							// Execute each query in batch
 
 			getChecksum(&(tra->res.at(0)),localTempArray,(*q)->checksums);
-			deleteTR(&tra);
-			delete(tra);
+			// deleteTR(&tra);
+			// delete(tra);
 			deleteRelations(&localTempArray);
 		}
 
 		deleteQuery(&qBatch);
 	}
-
+	duration = (std::clock() - start)/(double) CLOCKS_PER_SEC;
+	cout << "Total Duration " << duration << endl;
 	deleteRelations(&rArray);
+
 
 	return 0;
 }

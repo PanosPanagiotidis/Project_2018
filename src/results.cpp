@@ -16,12 +16,13 @@ using namespace std;
 *	and tuple.payload being the Indexed columns Id
 */
 
-result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadpool* tp){
+result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadpool* tp,int flag){
 
 	int key,payload;
 	int jobs = 1<<N;
 
 	result *r = new result;
+	result *old = new result;
 
 	if(r == NULL){
 		fprintf(stderr,"Error allocating space for result struct \n");
@@ -50,10 +51,14 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadpo
 
 	// cout << "-------------"<<endl;
 	rlist** partials = new rlist*[jobs];
-	for(int i = 0 ; i < jobs ; i++)
+	rlist** olds = new rlist*[jobs];
+	for(int i = 0 ; i < jobs ; i++){
 		partials[i] = new rlist;
+		olds[i] = new rlist;
+	}
 
 	joinArg** args = new joinArg*[jobs];
+
 
 	for(int i = 0 ; i < jobs ; i++){
 		args[i] = new joinArg;
@@ -63,7 +68,8 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadpo
 		args[i]->Index = Index;
 		args[i]->partials=partials[i];
 		args[i]->bucket = i;
-
+		args[i]->olds = olds[i];
+		args[i]->flag = flag;
 		add_work(tp->Q,&joinJob,args[i]);
 	}
 
@@ -82,6 +88,18 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadpo
 			partials[i] = partials[i]->next;
 		}
 	}
+
+	for(int i = 0 ; i < jobs ; i++){
+		while(olds[i] != NULL){
+			for(int j = 0 ;j < olds[i]->size;j++){
+				toumble *t = new toumble;
+				t->key=olds[i]->ts[j].key;
+				old->results_array.push_back(t);
+			}
+			olds[i] = olds[i]->next;
+		}
+	}
+
 	
 	// vector<toumble*>::iterator t1;
 	
@@ -152,7 +170,11 @@ result* getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadpo
 	// 	}
 
 	// }
-	return r;
+	result** rets = new result*[2];
+	rets[0] = r;
+	rets[1] = old;
+
+	return rets;
 }
 
 /*

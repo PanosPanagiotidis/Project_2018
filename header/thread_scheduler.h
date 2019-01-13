@@ -23,8 +23,6 @@ typedef struct rlist{
 }rlist;
 
 
-
-
 typedef struct histArg{
 	uint64_t* payloads;
 	uint64_t* rowId;
@@ -84,6 +82,8 @@ typedef struct joinArg{
 	daIndex** Index;
 	int bucket;
 	rlist* partials;
+	rlist* olds;
+	int flag;
 
 }joinArg;
 

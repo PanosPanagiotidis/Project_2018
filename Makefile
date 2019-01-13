@@ -28,7 +28,7 @@ relation_l.o:	./src/relation_l.cpp
 	$(CC) $(CPPFLAGS) -c ./src/relation_l.cpp
 
 relationops.o: ./src/relationops.cpp
-	$(CC) $(CPPFLAGS) -c ./src/relationops.cpp 
+	$(CC) $(CPPFLAGS) -c ./src/relationops.cpp
 
 
 clean:

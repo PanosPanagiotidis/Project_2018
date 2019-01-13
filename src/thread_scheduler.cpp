@@ -188,14 +188,22 @@ void* joinJob(void* arg){
 	uint64_t* rows = params->nonIndexed->R_Id;
 	daIndex** index = params->Index;
 	rlist* results = params->partials;
+	rlist* olds = params->olds;
 	uint64_t rsize = (128*1000)/sizeof(toumble);
 
 	// results = new rlist;
 	results->next = NULL;
 	results->size = 0;
 	results->ts = new toumble[rsize];
+
+	olds->next = NULL;
+	olds->size = 0;
+	olds->ts = new toumble[rsize];
+
 	//keep head here
 	rlist *head = results;
+	rlist *oldhead = olds;
+
 	uint64_t value;
 	uint64_t key;
 
@@ -226,10 +234,22 @@ void* joinJob(void* arg){
 					results->ts = new toumble[rsize];
 					results->size = 0;
 				}
+
+				if(olds->size == rsize){
+					olds->next = new rlist;
+					olds = olds->next;
+					olds->next = NULL;
+					olds->ts = new toumble[rsize];
+					olds->size = 0;
+				}
 				
 				results->ts[results->size].key = key;
 				results->ts[results->size].payload = params->indexed->bck_array->bck[LSB]->tuplesArray[rkey]->key;
 				results->size++;
+
+					olds->ts[olds->size].key = i;
+
+				olds->size++;
 
 			}
 
@@ -238,6 +258,7 @@ void* joinJob(void* arg){
 	}
 
 	params->partials = head;
+	params->olds = oldhead;
 
 	return NULL;
 
