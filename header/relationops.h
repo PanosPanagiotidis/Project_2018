@@ -4,6 +4,7 @@
 #include "../header/parser.h"
 #include "../header/relation_loader.h"
 #include "../header/results.h"
+#include "../header/thread_scheduler.h"
 
 typedef struct tempResultArray{
 	std::vector<uint64_t *> rowID;
@@ -16,7 +17,7 @@ typedef struct tempResults{
 }tempResults;
 
 
-tempResults *queryExecute(Query *, relationArray *,std::vector<Relations*>& ,std::vector<uint64_t>&);
+tempResults *queryExecute(Query *, relationArray *,threadpool* );
 
 void queryReorder(Query *);															// Reorders predicates in a query
 Relations* copy_relation(Relations *);
@@ -31,14 +32,17 @@ int tempResultsFilterUpdate(std::vector<uint64_t> &,int,tempResults *);
 int tempResultsAdd(std::vector<uint64_t> &,int,tempResults *);
 uint64_t **convert_to_arrays(result *,uint64_t &ts);
 
+<<<<<<< HEAD
 void tempResultsJoinUpdate(uint64_t **,int ,int, int, int, uint64_t, tempResults *,std::vector<int> );
+=======
+void tempResultsJoinUpdate(uint64_t **,int ,int, int, int, uint64_t, tempResults *);
+void tempResultsJoinUpdate1(uint64_t **,int ,int, int, int, uint64_t, tempResults **,result* );
+>>>>>>> 4be1581ed3a7d039eb2636ff90e5b02ecb48eec7
 void jointest(void);
 void fringeCase(relationArray *, tempResults *, int, int, int ,int);
 Query *editQuery(Query *);
 
-void copy_filtered(predicates *,relationArray *,std::vector<Relations*>& ,std::vector<uint64_t>& );
-void replace_filtered(relationArray* ,std::vector<Relations*>& ,std::vector<uint64_t>& );
-
+relationArray *createTempRelArray(relationArray *, Query *);
 
 // Debug stuff
 

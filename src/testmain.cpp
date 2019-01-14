@@ -4,7 +4,9 @@
 #include "../header/parser.h"
 #include "../header/relationops.h"
 #include "../header/randarr.h"
+#include "../header/includes.h"
 #include <unistd.h>
+#include <ctime>
 
 int main(void)
 {
@@ -80,7 +82,16 @@ int main(void)
 
 	relationArray *rArray = init_relations();
 
+<<<<<<< HEAD
 	//sleep(1);
+=======
+	sleep(1);
+	std::clock_t start;
+	double duration;
+	start = std::clock();
+	threadpool* tp = threadpool_init(NUM_THREADS);
+
+>>>>>>> 4be1581ed3a7d039eb2636ff90e5b02ecb48eec7
 	while(1){
 		queryBatch *qBatch = QueryInput();									// Read & Store a batch of queries
 		if (qBatch == NULL) break;
@@ -88,6 +99,7 @@ int main(void)
 
 		std::vector<Relations*> originals;
 		std::vector<uint64_t> rels;
+<<<<<<< HEAD
 		std:vector<Query*>::iterator q;
 		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
 				relationArray* localDupe;
@@ -104,32 +116,26 @@ int main(void)
 
 			vector<Relations*>().swap(originals);
 			vector<uint64_t>().swap(rels);
+=======
+		std::vector<Query*>::iterator q;
+		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++)
+		{
+			relationArray *localTempArray = createTempRelArray(rArray,(*q));
+			tra = queryExecute((*q),localTempArray,tp);							// Execute each query in batch
+
+			getChecksum(&(tra->res.at(0)),localTempArray,(*q)->checksums);
+			// deleteTR(&tra);
+			// delete(tra);
+			deleteRelations(&localTempArray);
+>>>>>>> 4be1581ed3a7d039eb2636ff90e5b02ecb48eec7
 		}
 
 		deleteQuery(&qBatch);
 	}
-
+	duration = (std::clock() - start)/(double) CLOCKS_PER_SEC;
+	cout << "Total Duration " << duration << endl;
 	deleteRelations(&rArray);
 
-/*
-	std::vector<Relations *>::iterator it;
-
-	for(it = rArray->relations.begin(); it != rArray->relations.end(); it++)
-	{
-		uint64_t **rt = (*it)->relation;
-		for(uint64_t i=0; i<(*it)->numColumns; i++, cout << endl)
-			for(uint64_t j=0; j<(*it)->size; j++ )
-			{
-				cout << rt[i][j] << " ";
-			}
-	}
-
-	relation_join(NULL,NULL);
-*/
-	//jointest();
 
 	return 0;
 }
-
-// 0 1|0.1>2000|1.1
-// F

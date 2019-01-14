@@ -4,82 +4,69 @@
 #include "../header/helper_functions.h"
 #include "../header/daindex.h"
 #include "../header/results.h"
+#include "../header/thread_scheduler.h"
 #include <queue>
 #include <iostream>
 #include <bits/stdc++.h>
 
 using namespace std;
 
-int hack;
+threadpool* thread_pool;
+
+tempResults *queryExecute(Query *qr, relationArray *relArray,threadpool* tp)
+{	
+	thread_pool = tp;
+	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
+	tempResults *tRes = new tempResults;
+	Query *qur = editQuery(qr);
+
+
+	//relationArray *relArray = createTempRelArray(oRelArray,qr);
+
+	std::vector<predicates*>::iterator it;
+	for( it = qur->p.begin(); it != qur->p.end(); it++)
+	{
+		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
+		else							filtered_relation((*it),relArray);
+	}
+
+	return tRes;
+}
+
+relationArray *createTempRelArray(relationArray *rArray, Query *qr)
+{
+	relationArray *newArray = new relationArray;
+
+	for(uint64_t i = 0; i < qr->relations.size(); i++)
+	{
+		int realID = qr->relations.at(i);
+
+		Relations *originalRel = rArray->relations.at(realID);
+		Relations *rel = new Relations;
+
+		rel->size = originalRel->size;
+		rel->numColumns = originalRel->numColumns;
+		rel->relation   = new uint64_t *[rel->numColumns];
+
+		for(uint64_t j = 0; j < rel->numColumns; j++)
+		{
+			rel->relation[j] = new uint64_t[rel->size];
+			for(uint64_t k = 0; k < rel->size; k++)
+				rel->relation[j][k] = originalRel->relation[j][k];
+		}
+
+
+		newArray->relations.push_back(rel);
+	}
+
+	return newArray;
+}
+
 
 void deleteTR(tempResults** tr){
 	for(uint64_t i = 0 ; i < (*tr)->res.size() ; i++){
 
-			for(uint64_t a = 0 ; a < ((*tr)->res.at(i)).rowID.size() ; a++){
-				delete[]((*tr)->res.at(i).rowID.at(a));
-			}
-
-			vector<uint64_t*>().swap((*tr)->res.at(i).rowID);
-			vector<int>().swap((*tr)->res.at(i).relationID);
-
-	}
-	vector<tempResultArray>().swap((*tr)->res);
-
-}
-
-void copy_filtered(predicates *pred,relationArray *rArray,std::vector<Relations*>& originals,std::vector<uint64_t>& rels){
-
-	int relationId = pred->relation1;
-	int columnId = pred->column1;
-	uint64_t filter = pred->filter;
-
-	Relations* cur = rArray->relations.at(relationId);
-	Relations* n = new Relations;
-	n->relation = new uint64_t*[cur->numColumns];
-	for(uint64_t i = 0 ; i < cur->numColumns ; i++)
-	{
-		n->relation[i] = new uint64_t[cur->size];
-		for(uint64_t j = 0 ; j < cur->size ; j++){
-			n->relation[i][j] = cur->relation[i][j];
-		}
-	}
-
-	n->size = cur->size;
-	n->numColumns = cur->numColumns;
-
-	originals.push_back(n);
-	rels.push_back(relationId);
-
-
-}
-
-void replace_filtered(relationArray* rArray,std::vector<Relations*>& originals,std::vector<uint64_t>& rels)
-{
-	uint64_t size;
-	uint64_t cols;
-	uint64_t rel;
-	for(uint64_t i = 0 ; i < rels.size(); i++){
-		rel = rels.at(i);
-		size = rArray->relations.at(rel)->size;
-		cols = rArray->relations.at(rel)->numColumns;
-
-		for(uint64_t k = 0 ; k < cols ; k++){
-			delete[] rArray->relations.at(rel)->relation[k];
-		}
-		delete[] rArray->relations.at(rel)->relation;
-
-		rArray->relations.at(rel)->relation = originals.at(i)->relation;
-		rArray->relations.at(rel)->size = originals.at(i)->size;
-		rArray->relations.at(rel)->numColumns = originals.at(i)->numColumns;
-	}
-}
-
-
-tempResults *queryExecute(Query *qr, relationArray *relArray,std::vector<Relations*>& originals,std::vector<uint64_t>& rels)
-{
-	// std::vector<Relations*> originals;
-	// std::vector<uint64_t> rels;
-
+<<<<<<< HEAD
 	//queryPrint(qr);
 	//queryReorder(qr);																	// Reorders predicates in query for optimization purposes
 	tempResults *tRes = new tempResults;
@@ -93,15 +80,22 @@ tempResults *queryExecute(Query *qr, relationArray *relArray,std::vector<Relatio
 			copy_filtered((*it),relArray,originals,rels);
 			filtered_relation((*it),relArray,qr->relations);
 		}
+=======
+			for(uint64_t a = 0 ; a < ((*tr)->res.at(i)).rowID.size() ; a++){
+				delete[]((*tr)->res.at(i).rowID.at(a));
+			}
+
+			vector<uint64_t*>().swap((*tr)->res.at(i).rowID);
+			vector<int>().swap((*tr)->res.at(i).relationID);
+>>>>>>> 4be1581ed3a7d039eb2636ff90e5b02ecb48eec7
 
 	}
-	//replace_filtered(relArray,originals,rels);
 
+	vector<tempResultArray>().swap((*tr)->res);
 
-	return tRes;
 }
 
-Query *editQuery(Query *qr)																// Edits queries so that the correct relationID is used
+Query *editQuery(Query *qr)																// Removes duplicate predicates
 {
 
 	std::vector<predicates *>::iterator it1, it2, it3;
@@ -118,13 +112,6 @@ Query *editQuery(Query *qr)																// Edits queries so that the correct 
 				qr->p.erase(it3);
 			}
 		}
-	}
-
-
-	for(uint64_t i=0; i<qr->p.size(); i++)
-	{
-		qr->p.at(i)->relation1 = qr->relations.at(qr->p.at(i)->relation1);
-		if(qr->p.at(i)->type == JOIN) 		qr->p.at(i)->relation2 = qr->relations.at(qr->p.at(i)->relation2);
 	}
 	return qr;
 }
@@ -174,7 +161,6 @@ void filtered_relation(predicates *pred,relationArray* rArray,std::vector<int>re
 	uint64_t filter = pred->filter;
 	Relations *currentRelation = rArray->relations.at(relationId);
 	uint64_t **filtered;
-	//uint64_t size;
 
 	vector<uint64_t> results;
 
@@ -328,7 +314,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr,std
 	{
 		rowID1 = createRowID(currentRelation1->size);
 		size1  = currentRelation1->size;
-		tableInfo1 = init_table_info(rowID1,currentRelation1->relation[columnId1],size1);
+		tableInfo1 = init_table_info(rowID1,currentRelation1->relation[columnId1],size1,thread_pool);
 	}
 	else	foundFlag1++;
 
@@ -338,7 +324,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr,std
 	{
 		rowID2 = createRowID(currentRelation2->size);
 		size2  = currentRelation2->size;
-		tableInfo2 = init_table_info(rowID2,currentRelation2->relation[columnId2],size2);
+		tableInfo2 = init_table_info(rowID2,currentRelation2->relation[columnId2],size2,thread_pool);
 	}
 	else	foundFlag2++;
 
@@ -352,54 +338,89 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr,std
 	else if(foundFlag1 == 1)
 	{
 		uint64_t *payloadColumn1 = conjurePayload(rArray->relations.at(relationId1)->relation[columnId1],rowID1,size1);
-		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1);
+		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1,thread_pool);
 	}
 	else
 	{
 		uint64_t *payloadColumn2 = conjurePayload(rArray->relations.at(relationId2)->relation[columnId2],rowID2,size2);
-		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2);
+		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2,thread_pool);
 	}
 
 
-
+	int tempind = 0;
 	daIndex **indx;
-	result *res;
+	result **res;
 	uint64_t resultSize;
 	uint64_t ** joinResults;
 	Table_Info* indexed;
+<<<<<<< HEAD
 	if(size1 <= size2)
 	{
+=======
+	if(foundFlag2)
+	{	//cout << "flag2" << endl;
+>>>>>>> 4be1581ed3a7d039eb2636ff90e5b02ecb48eec7
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
-		res = getResults(tableInfo1,tableInfo2,indx);
-		joinResults = convert_to_arrays(res,resultSize);
+		res = getResults(tableInfo1,tableInfo2,indx,thread_pool,tempind);
+		joinResults = convert_to_arrays(res[0],resultSize);
 
 		uint64_t * tmp = joinResults[1];
 		joinResults[1] = joinResults[0];
 		joinResults[0] = tmp;
 		indexed = tableInfo1;
 	}
+<<<<<<< HEAD
 	else
 	{
 
+=======
+	else if(foundFlag1)
+	{	//cout << "flag1" << endl;
+>>>>>>> 4be1581ed3a7d039eb2636ff90e5b02ecb48eec7
 		indx = DAIndexArrayCreate(tableInfo2->bck_array);
-		res = getResults(tableInfo2,tableInfo1,indx);
-		joinResults = convert_to_arrays(res,resultSize);
+		res = getResults(tableInfo2,tableInfo1,indx,thread_pool,tempind);
+		joinResults = convert_to_arrays(res[0],resultSize);
 		indexed = tableInfo2;
 
 	}
+	else if (size1 < size2 && !foundFlag2 && !foundFlag1)
+	{//cout << "size1<=2 && not flags " << endl;
+		indx = DAIndexArrayCreate(tableInfo1->bck_array);
+		res = getResults(tableInfo1,tableInfo2,indx,thread_pool,tempind);
+		joinResults = convert_to_arrays(res[0],resultSize);
+
+		uint64_t * tmp = joinResults[1];
+		joinResults[1] = joinResults[0];
+		joinResults[0] = tmp;
+		indexed = tableInfo1;
+	}
+	else if(size2 <= size1  && !foundFlag2 && !foundFlag1)
+	{	//cout << "size2<=1 && not flags " << endl;
+		indx = DAIndexArrayCreate(tableInfo2->bck_array);
+		res = getResults(tableInfo2,tableInfo1,indx,thread_pool,tempind);
+		joinResults = convert_to_arrays(res[0],resultSize);
+		indexed = tableInfo2;
+	}
 
 
-
+<<<<<<< HEAD
 	cout << "results count: " << resultSize << endl;
 	tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr,relations);
+=======
+	//cout << "results count: " << resultSize << endl;
+	if(foundFlag2 || foundFlag1)
+		tempResultsJoinUpdate1(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, &tpr,res[1]);
+	else
+		tempResultsJoinUpdate1(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, &tpr,NULL);
+>>>>>>> 4be1581ed3a7d039eb2636ff90e5b02ecb48eec7
 
 	//printJoinResults(joinResults, rArray, relationId1, relationId2, resultSize);
 
 
-	delete[] (rowID2);
-	delete[] (rowID1);
+	// delete[] (rowID2);
+	// delete[] (rowID1);
 
-	destroy_results(&res);
+	//destroy_results(&res);
 	delete(res);
 	DAIndexArrayDestroy(indx,indexed->bck_array->size);
 	Destroy_Table_Data(&tableInfo1);
@@ -754,16 +775,18 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	vector<checksum_views*>::iterator check;
 	vector<uint64_t>::iterator rowit;
 	uint64_t j;
-
 	for(check = cv.begin(); check != cv.end(); check++)
 	{	checksum = 0;
 		for(j = 0; j < tr->relationID.size() ; j++)
-		{
+		{ 
 			if((*check)->rel_views == tr->relationID.at(j)) //relid = check id.get results now
 			{
 				for(i = 0 ; i < tr->size ; i++)
 				{
 					uint64_t* temp = tr->rowID.at(j);
+					// cout << "tr size " << tr->size << endl;
+					// cout << "i is " << i << endl;
+					//cout <<"temp[i] "<< "with i "  << i <<" " << temp[i] << endl;
 					row = temp[i];
 					relID = tr->relationID.at(j);
 
@@ -790,54 +813,54 @@ cout << endl;
 
 
 
-void jointest()
-{
-	cout << "ok" << std::endl;
+// void jointest()
+// {
+// 	cout << "ok" << std::endl;
 
-	uint64_t * rowID1 = new uint64_t[3];
-	uint64_t * rowID2 = new uint64_t[5];
+// 	uint64_t * rowID1 = new uint64_t[3];
+// 	uint64_t * rowID2 = new uint64_t[5];
 
-	rowID1[0] = 1;
-	rowID1[1] = 2;
-	rowID1[2] = 3;
+// 	rowID1[0] = 1;
+// 	rowID1[1] = 2;
+// 	rowID1[2] = 3;
 
-	rowID2[0] = 1;
-	rowID2[1] = 2;
-	rowID2[2] = 3;
-	rowID2[3] = 4;
-	rowID2[4] = 5;
+// 	rowID2[0] = 1;
+// 	rowID2[1] = 2;
+// 	rowID2[2] = 3;
+// 	rowID2[3] = 4;
+// 	rowID2[4] = 5;
 
-	uint64_t *arr1 = new uint64_t[3];
-	uint64_t *arr2 = new uint64_t[5];
+// 	uint64_t *arr1 = new uint64_t[3];
+// 	uint64_t *arr2 = new uint64_t[5];
 
-	arr1[0] = 5;
-	arr1[1] = 1;
-	arr1[2] = 9;
+// 	arr1[0] = 5;
+// 	arr1[1] = 1;
+// 	arr1[2] = 9;
 
-	arr2[0] = 7;
-	arr2[1] = 6;
-	arr2[2] = 1;
-	arr2[3] = 9;
-	arr2[4] = 1;
+// 	arr2[0] = 7;
+// 	arr2[1] = 6;
+// 	arr2[2] = 1;
+// 	arr2[3] = 9;
+// 	arr2[4] = 1;
 
-	Table_Info *tableInfo1 = init_table_info(rowID1, arr1, 3);
-	Table_Info *tableInfo2 = init_table_info(rowID2, arr2, 5);
+// 	Table_Info *tableInfo1 = init_table_info(rowID1, arr1, 3);
+// 	Table_Info *tableInfo2 = init_table_info(rowID2, arr2, 5);
 
-	daIndex **indx = DAIndexArrayCreate(tableInfo2->bck_array);
+// 	daIndex **indx = DAIndexArrayCreate(tableInfo2->bck_array);
 
-	for(int i=0; i<16; i++)
-	{
-		cout << "bucket" << i << endl;
-		for(int j=0;j<indx[i]->bucket->size;j++)
-			cout << indx[i]->bucket->table[j] << endl;
-		cout << endl;
-	}
+// 	for(int i=0; i<16; i++)
+// 	{
+// 		cout << "bucket" << i << endl;
+// 		for(int j=0;j<indx[i]->bucket->size;j++)
+// 			cout << indx[i]->bucket->table[j] << endl;
+// 		cout << endl;
+// 	}
 
-	result *res = getResults(tableInfo2,tableInfo1,indx);
+// 	result *res = getResults(tableInfo2,tableInfo1,indx);
 
-	print_results(res);
+// 	print_results(res);
 
-}
+// }
 
 int isEqualPred(predicates *p1, predicates *p2)
 {
@@ -1132,3 +1155,127 @@ void specialCase(relationArray *rArray, tempResults *tr, int relationId, int col
 	tempResultsAdd(results,relationId,tr);
 }
 */
+
+
+void tempResultsJoinUpdate1(uint64_t ** joinResults,int relationID1, int relationID2, int foundFlag1, int foundFlag2, uint64_t resultSize, tempResults **tpr,result* old)
+{
+	std::vector<tempResultArray>::iterator it;
+	vector<int> before;
+	int bf = 0;
+	if( foundFlag1 == 0 && foundFlag2 == 0)												// Neither relation exists on tempresults
+	{																					// Create a new tempresult array with both
+		tempResultArray temp;
+
+		temp.rowID.push_back(joinResults[0]);
+
+		temp.rowID.push_back(joinResults[1]);
+
+		temp.relationID.push_back(relationID1);
+		temp.relationID.push_back(relationID2);
+
+		temp.size = resultSize;
+
+		(*tpr)->res.push_back(temp);
+
+	}
+	else if (foundFlag1 == 1 && foundFlag2 ==0)
+	{
+		uint64_t s = 0;
+		
+
+		for( it = (*tpr)->res.begin(); it != (*tpr)->res.end(); it++)
+		{		s = (*it).size;
+				std::vector<int>::iterator it1;//relationid
+				std::vector<uint64_t *>::iterator it2 = (*it).rowID.begin();//swsto
+				for( it1 = (*it).relationID.begin(); it1 != (*it).relationID.end(); it1++,it2++){
+					if( (*it1) == relationID1 )//VRIKA TON PINAKA STA TEMP RESULTS
+						break;
+					else{
+						bf++;
+					}
+				}
+				int k = 0;
+
+
+				for(int i = 0 ; i < (*it).rowID.size();i++){
+					if(relationID1 == (*it).relationID.at(i)) continue;
+					k=0;
+
+					uint64_t* newrow = new uint64_t[resultSize];
+					uint64_t* og = (*it).rowID.at(i);
+					for(int j = 0 ; j < resultSize ; j++){
+						newrow[k] = og[old->results_array.at(j)->key];
+						k++;
+					}
+
+					(*it).rowID.at(i) = newrow;
+
+				}
+				
+				// for(int i = 0 ; i < bf ;i++){
+
+				// }
+
+				//cout << "result " << resultSize<< endl;
+				(*it2)= joinResults[0];
+				(*it).relationID.push_back(relationID2);
+				(*it).rowID.push_back(joinResults[1]);
+				(*it).size = resultSize;
+		}
+	}
+	else if(foundFlag2==1 && foundFlag1 ==0)
+	{ 
+		for( it = (*tpr)->res.begin(); it != (*tpr)->res.end(); it++)
+		{	uint64_t s = (*it).size;
+				std::vector<int>::iterator it1;
+				std::vector<uint64_t *>::iterator it2 = (*it).rowID.begin();
+				for( it1 = (*it).relationID.begin(); it1 != (*it).relationID.end(); it1++,it2++)
+					if( (*it1) == relationID2 )//VRIKA TON PINAKA STA TEMP RESULTS
+						break;
+					else{
+						before.push_back(bf);
+						bf++;
+					}
+
+
+				int k = 0;
+				for(int i = 0 ; i < before.size() ;i++){
+					uint64_t* newrow = new uint64_t[resultSize];
+					uint64_t* og = (*it).rowID.at(before.at(i));
+					for(int j = 0 ; j < resultSize ; j++){
+						newrow[k] = og[old->results_array.at(j)->key];
+						k++;
+					}
+
+					(*it).rowID.at(before.at(i)) = newrow;
+				}
+
+
+				(*it2) = joinResults[1];
+				(*it).relationID.push_back(relationID1);
+				(*it).rowID.push_back(joinResults[0]);
+				(*it).size = resultSize;
+		}		
+	}
+	else
+	{ 
+		for( it = (*tpr)->res.begin(); it != (*tpr)->res.end(); it++)
+		{
+				std::vector<int>::iterator it1;
+				std::vector<int>::iterator it3;
+				std::vector<uint64_t *>::iterator it2 = (*it).rowID.begin();
+				std::vector<uint64_t *>::iterator it4 = (*it).rowID.begin();
+				for( it1 = (*it).relationID.begin(); it1 != (*it).relationID.end(); it1++,it2++)
+					if( (*it1) == relationID1 )//VRIKA TON PINAKA STA TEMP RESULTS
+						break;
+
+				for( it3 = (*it).relationID.begin(); it3 != (*it).relationID.end(); it3++,it4++)
+					if( (*it3) == relationID2 )//VRIKA TON PINAKA STA TEMP RESULTS
+						break;
+
+				(*it2)= joinResults[0];
+				(*it4)= joinResults[1];
+				(*it).size = resultSize;
+		}				
+	}
+}
