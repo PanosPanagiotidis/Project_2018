@@ -95,14 +95,14 @@ Relations* load_relations(const char* fileName)
             unqArraySize = ALLOCATION_CAP;
             unqArray = new char[unqArraySize] ();
             for( uint64_t j = 0; i < R->size; i++)
-                unqArray[(R->relation[i][j] - R->relationStats[i].minVal) % unqArraySize] = 1;
+                unqArray[(R->relation[i][j] - minVal) % unqArraySize] = 1;
 
         }
         else
         {
             unqArray = new char[unqArraySize] ();
-            for( uint64_t j = 0; i < R->size; i++)
-                unqArray[R->relation[i][j] - R->relationStats[i].minVal] = 1;
+            for( uint64_t j = 0; j < R->size; j++)
+                unqArray[R->relation[i][j] - minVal] = 1;
 
         }
 
