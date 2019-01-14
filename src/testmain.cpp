@@ -82,16 +82,12 @@ int main(void)
 
 	relationArray *rArray = init_relations();
 
-<<<<<<< HEAD
-	//sleep(1);
-=======
 	sleep(1);
 	std::clock_t start;
 	double duration;
 	start = std::clock();
 	threadpool* tp = threadpool_init(NUM_THREADS);
 
->>>>>>> 4be1581ed3a7d039eb2636ff90e5b02ecb48eec7
 	while(1){
 		queryBatch *qBatch = QueryInput();									// Read & Store a batch of queries
 		if (qBatch == NULL) break;
@@ -99,24 +95,6 @@ int main(void)
 
 		std::vector<Relations*> originals;
 		std::vector<uint64_t> rels;
-<<<<<<< HEAD
-		std:vector<Query*>::iterator q;
-		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++){
-				relationArray* localDupe;
-				localDupe = new relationArray;
-				for(int i = 0;i < (*q)->relations.size(); i++){
-					localDupe->relations.push_back(rArray->relations.at((*q)->relations.at(i)));
-				}
-		//for(int i=0; i< qBatch->queryCount; i++)
-			tra = queryExecute((*q),localDupe,originals,rels);							// Execute each query in batch
-			getChecksum(&(tra->res.at(0)),localDupe,(*q)->checksums);
-			deleteTR(&tra);
-			delete(tra);
-			replace_filtered(localDupe,originals,rels);
-
-			vector<Relations*>().swap(originals);
-			vector<uint64_t>().swap(rels);
-=======
 		std::vector<Query*>::iterator q;
 		for(q = qBatch->queries.begin(); q != qBatch->queries.end() ; q++)
 		{
@@ -127,7 +105,6 @@ int main(void)
 			// deleteTR(&tra);
 			// delete(tra);
 			deleteRelations(&localTempArray);
->>>>>>> 4be1581ed3a7d039eb2636ff90e5b02ecb48eec7
 		}
 
 		deleteQuery(&qBatch);
