@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "../header/joinenum.h"
 #include "../header/relation_loader.h"
 #include "../header/parser.h"
 #include "../header/relationops.h"
