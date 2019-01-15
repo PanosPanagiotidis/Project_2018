@@ -7,11 +7,34 @@ using namespace std;
 // #define N 10
 
 pthread_mutex_t w = PTHREAD_MUTEX_INITIALIZER;
+volatile int threads_alive;
 
 
 threadpool* tp;
 
+void destroy_pool(threadpool* pool){
+
+	thread_wait();
+
+	for(int i = 0 ; i < NUM_THREADS; i++){
+		//pthread_exit(pool->threads[i]->thread);
+		//pthread_join(pool->threads[i]->thread,NULL);
+		delete pool->threads[i];
+		//cout << " exiting " << endl;
+	}
+	delete[] pool->threads;
+
+	delete pool->Q;
+
+	delete pool;
+	
+
+}
+
+
+
 threadpool* threadpool_init(int num_threads){
+	threads_alive = 1;
 	tp = new threadpool;
 	if (tp == NULL){
 		cout << "error on threadpool init.No memory to allocate" << endl;
@@ -26,7 +49,6 @@ threadpool* threadpool_init(int num_threads){
 	//init job q here
 	tp->Q = jobq_init();
 
-
 	pthread_mutex_init(&(tp->dsp),NULL);
 	pthread_mutex_init(&(tp->access),NULL);
 	pthread_cond_init(&(tp->all_idle),NULL);
@@ -34,8 +56,10 @@ threadpool* threadpool_init(int num_threads){
 	for(int i = 0 ; i < num_threads ; i++){
 		tp->threads[i] = new thread_info;
 		tp->threads[i]->pool = tp;
-		pthread_create(&(tp->threads[i]->thread),NULL,&thread_work,NULL);
 		tp->threads[i]->id = i;
+		pthread_create(&(tp->threads[i]->thread),NULL,&thread_work,(NULL));
+		
+
 
 	}
 
@@ -79,9 +103,7 @@ Job* getJob(){
 }
 
 void* thread_work(void* arg){
-
 	while(1){
-
 		pthread_mutex_lock(&tp->access);
 		while(tp->Q->len == 0){
 			pthread_cond_wait(&tp->hasjobs,&tp->access);
@@ -98,7 +120,7 @@ void* thread_work(void* arg){
 		if(task){
 			func_buff = task->function;
 			args = task->arg;
-			free(task);
+			delete task;
 		}
 
 		
@@ -106,14 +128,16 @@ void* thread_work(void* arg){
 
 		pthread_mutex_lock(&tp->access);
 
+
 		tp->working--;
 		if(tp->working == 0){
 			pthread_cond_signal(&tp->all_idle);
 		}
 
 		pthread_mutex_unlock(&tp->access);
+		
 	}
-
+	cout << "hey " << endl;
 
 	return NULL;
 }
@@ -272,10 +296,7 @@ void thread_wait(){
 	pthread_mutex_unlock(&tp->access);
 }
 
-// void* print_thread_info(void* arg){
-// 	cout << "hi there " << endl;
-// 	return NULL;
-// }
+
 
 int add_work(Job_Q* q,void *(*function_p)(void*),void* args){
 	Job* newJob;
@@ -305,6 +326,8 @@ int add_work(Job_Q* q,void *(*function_p)(void*),void* args){
 	pthread_cond_broadcast(&tp->hasjobs);
 	pthread_mutex_unlock(&tp->access);
 }
+
+
 
 uint64_t* rebuild_hist(uint64_t** thread_hists,uint64_t histsize){
 	uint64_t size = 1<<N;

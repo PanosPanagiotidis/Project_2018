@@ -62,10 +62,11 @@ Relations* load_relations(const char* fileName)
 	R->numColumns=*reinterpret_cast<uint64_t*>(addr);
 	addr+=sizeof(uint64_t);
 
-	R->relation = (uint64_t**)malloc(sizeof(uint64_t*)*R->numColumns);
+
+	R->relation = new uint64_t*[R->numColumns];
 
 	for(uint64_t i = 0 ; i < R->numColumns ; i ++){
-		R->relation[i] = (uint64_t*)malloc(sizeof(uint64_t)*R->size);
+		R->relation[i] = new uint64_t[R->size];
 	}
 
 	for (unsigned i=0;i<R->numColumns;++i) {
@@ -94,11 +95,11 @@ void deleteRelations(relationArray** ra){
 
 		}
 		delete[] ((*ra)->relations.at(i)->relation);
-		delete((*ra)->relations.at(i));
+		delete ((*ra)->relations.at(i));
 	}
 
 	std::vector<Relations*>().swap((*ra)->relations);
-	delete((*ra));
+	delete ((*ra));
 
 
 }

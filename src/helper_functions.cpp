@@ -13,7 +13,7 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	uint64_t mask = (1 << N) - 1; //Mask the least significant bits.Payload & mask = LSB
 
 
-	Table_Info* ti = (Table_Info*)malloc(sizeof(Table_Info));
+	Table_Info* ti = new Table_Info;
 
 	if(ti == NULL){
 		fprintf(stderr,"Error allocating space for Table Info with size %d \n",size);
@@ -43,21 +43,21 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	// }
 
 	ti->histSize = 1 << N; //16
-	ti->histogram= (uint64_t*)calloc(ti->histSize,sizeof(uint64_t));
 
-	if(ti->histogram == NULL){
-		fprintf(stderr,"Error allocating space for histogram\n");
-		exit(0);
-	}
 
-	ti->pSum = (uint64_t*)calloc(ti->histSize,sizeof(uint64_t));	//prefix sum for each bucket.i.e starting at 0,3,5 items from reordered array
+
+	ti->pSum = new uint64_t[ti->histSize];	//prefix sum for each bucket.i.e starting at 0,3,5 items from reordered array
+	for(int i = 0 ; i < ti->histSize ; i++)
+		ti->pSum[i] = 0;
 
 	if(ti->pSum == NULL){
 		fprintf(stderr,"Error allocating space for pSum table\n");
 		exit(0);
 	}
 
-	ti->pSumDsp = (uint64_t*)calloc(ti->histSize,sizeof(uint64_t)); //Displacement pSum.
+	ti->pSumDsp = new uint64_t[ti->histSize]; //Displacement pSum.
+	for(int i = 0 ; i < ti->histSize ; i++)
+		ti->pSumDsp[i] = 0;
 
 	if(ti->pSumDsp == NULL){
 		fprintf(stderr,"Error allocating space for pSumDsp\n");
@@ -78,21 +78,20 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	if(size < NUM_THREADS){
 		jobs = size;
 	}
-	uint64_t** hists = new uint64_t*[jobs];
-
-	for(int i = 0 ; i < jobs ; i++)
-		hists[i] = new uint64_t[ti->histSize];
-
+	uint64_t** hists = new uint64_t*[jobs];	
 
 	histArg** arg_table;
 	arg_table = new histArg*[jobs];
+	for(int i = 0 ; i < jobs ; i++){
+		arg_table[i] = new histArg;
+	}
 
 	for(int i = 0 ;i < jobs ; i++){
 		row_from+=chunk;
 		row_to+=chunk;
 		if(i == jobs-1 && leftovers > 0)
 			row_to+=leftovers;
-		arg_table[i] = new histArg;
+
 		arg_table[i]->payloads = b;
 		arg_table[i]->rowId = a;
 
@@ -117,7 +116,7 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 		delete[] hists[i];
 		delete arg_table[i];
 	}
-
+	delete[] hists;
 	delete[] arg_table;
 
 
@@ -141,14 +140,14 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 
 	int prg = 0;											// Filling buckets.
 
-	ti->R_Payload = (uint64_t*)calloc(size,sizeof(uint64_t));
+	ti->R_Payload = new uint64_t[size];
 
 	if(ti->R_Payload == NULL){
 		fprintf(stderr,"Error allocating space for Reordered Payload Table\n");
 		exit(0);
 	}
 
-	ti->R_Id = (uint64_t*)calloc(size,sizeof(uint64_t));
+	ti->R_Id = new uint64_t[size];
 
 	if(ti->R_Id == NULL){
 		fprintf(stderr,"Error allocating space for Reordered Id Table\n");
@@ -193,10 +192,13 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 
 	thread_wait();
 
+	for(int i = 0 ;i < jobs ;i++){
+		delete harg_table[i];
+	}
+	delete[] harg_table;
 
-	bucket_array *A = ti->bck_array;
 
-	ti->bck_array = (bucket_array*)malloc(sizeof(bucket_array));
+	ti->bck_array = new bucket_array;
 
 	if(ti->bck_array == NULL){
 		fprintf(stderr,"Error allocating space for a Bucket Array\n");
@@ -205,7 +207,7 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 
 	ti->bck_array->size = ti->histSize;
 
-	ti->bck_array->bck = (bucket**)malloc(sizeof(bucket*) * (ti->histSize));
+	ti->bck_array->bck = new bucket*[ti->histSize];
 
 	if(ti->bck_array->bck == NULL){
 		fprintf(stderr,"Error allocating space for size*bucketArray\n");
@@ -213,7 +215,7 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	}
 
 	for(int i =0; i < ti->histSize; i++){
-		ti->bck_array->bck[i] = (bucket*)malloc(sizeof(bucket));
+		ti->bck_array->bck[i] = new bucket;
 		if(ti->bck_array->bck[i] == NULL){
 			fprintf(stderr,"Error allocating space for bucket\n");
 			exit(0);
@@ -226,11 +228,12 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 
 		if(ti->histogram[i] != 0){ // Bucket is not existant
 
-			ti->bck_array->bck[i]->tuplesArray = (toumble**)malloc(sizeof(toumble*) * ti->histogram[i]);
+
+			ti->bck_array->bck[i]->tuplesArray = new toumble*[ti->histogram[i]];
 
 			for(int j = 0 ; j < ti->histogram[i] ; j++){
 
-				ti->bck_array->bck[i]->tuplesArray[j] = (toumble*)malloc(sizeof(toumble));
+				ti->bck_array->bck[i]->tuplesArray[j] = new toumble;
 
 				if(ti->bck_array->bck[i]->tuplesArray[j] == NULL){
 					fprintf(stderr,"Error allocating space for tuple\n");
@@ -253,10 +256,7 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 
 
 void Destroy_Table_Data(Table_Info** ti){
-	int i,j;
-	bucket* bk;
-	bucket_array *A = (*ti)->bck_array;
-
+	uint64_t i,j;
 
 	for(i = 0 ; i < (*ti)->histSize ; i++){//iterate and free items
 
@@ -264,12 +264,12 @@ void Destroy_Table_Data(Table_Info** ti){
 
 				if((*ti)->bck_array->bck[i]->tuplesArray != NULL){
 
-					free((*ti)->bck_array->bck[i]->tuplesArray[j]);
+					delete ((*ti)->bck_array->bck[i]->tuplesArray[j]);
 				}
 
 			}
-				free((*ti)->bck_array->bck[i]->tuplesArray);
-				free((*ti)->bck_array->bck[i]);
+				delete[] ((*ti)->bck_array->bck[i]->tuplesArray);
+				delete ((*ti)->bck_array->bck[i]);
 	}
 
 	// for(i = 0 ; i < (*ti)->rows ; i++){
@@ -277,13 +277,14 @@ void Destroy_Table_Data(Table_Info** ti){
 	// }
 
 
-	free((*ti)->bck_array->bck);
-	free((*ti)->bck_array);
-	free((*ti)->histogram);
+	delete[] ((*ti)->bck_array->bck);
+	delete ((*ti)->bck_array);
+	delete[] ((*ti)->histogram);
 	// free((*ti)->tuples_table);
-	free((*ti)->R_Payload);
-	free((*ti)->R_Id);
-	free((*ti)->pSumDsp);
-	free((*ti)->pSum);
-	free((*ti));
+	delete[] ((*ti)->R_Payload);
+	delete[] ((*ti)->R_Id);
+	delete[] ((*ti)->pSumDsp);
+	delete[] ((*ti)->pSum);
+	delete ((*ti));
+
 }

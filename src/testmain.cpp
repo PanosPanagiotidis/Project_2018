@@ -40,6 +40,7 @@ int main(void)
 
 		deleteQuery(&qBatch);
 	}
+	destroy_pool(tp);
 	duration = (std::clock() - start)/(double) CLOCKS_PER_SEC;
 	cout << "Total Duration " << duration << endl;
 	deleteRelations(&rArray);

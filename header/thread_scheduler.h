@@ -94,6 +94,7 @@ void thread_wait(void );
 void* histogramJob(void* );
 void* partitionJob(void* );
 void* joinJob(void* );
+void destroy_pool(threadpool* );
 // void* print_thread_info(void *);
 int add_work(Job_Q* ,void *(*function_p)(void*),void* );
 Job* getJob();

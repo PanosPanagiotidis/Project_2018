@@ -170,11 +170,11 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 		}
 	}
 
-	filtered = (uint64_t**)malloc(sizeof(uint64_t*)*currentRelation->numColumns);
+	filtered = new uint64_t*[currentRelation->numColumns];
 
 	for (uint64_t i = 0 ; i < currentRelation->numColumns ; i++)
 	{
-		filtered[i] = (uint64_t*)malloc(sizeof(uint64_t)*(results.size()));
+		filtered[i] = new uint64_t[results.size()];
 		for(uint64_t j = 0 ; j < results.size() ; j ++)
 		{
 			uint64_t rid = results.at(j);
@@ -182,6 +182,11 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 		}
 
 	}
+
+	for(uint64_t i = 0 ; i < currentRelation->numColumns; i++){
+		delete[] currentRelation->relation[i];
+	}
+	delete[] currentRelation->relation;
 
 	currentRelation->relation = filtered;
 	currentRelation->size = results.size();
@@ -292,22 +297,29 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	else	foundFlag2++;
 
 
+	uint64_t *payloadColumn1 = NULL;
+	uint64_t *payloadColumn2 = NULL;
 
 	if( foundFlag1 == 1 && foundFlag2 == 1)
-	{
+	{	
+		delete(&tableInfo2);
+		delete(&tableInfo1);
 		fringeCase(rArray,tpr,relationId1,relationId2,columnId1,columnId2);
 		return;
 	}
 	else if(foundFlag1 == 1)
 	{
-		uint64_t *payloadColumn1 = conjurePayload(rArray->relations.at(relationId1)->relation[columnId1],rowID1,size1);
+		payloadColumn1 = conjurePayload(rArray->relations.at(relationId1)->relation[columnId1],rowID1,size1);
 		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1,thread_pool);
+		
 	}
-	else
+	else if(foundFlag2 == 2)
 	{
-		uint64_t *payloadColumn2 = conjurePayload(rArray->relations.at(relationId2)->relation[columnId2],rowID2,size2);
+		payloadColumn2 = conjurePayload(rArray->relations.at(relationId2)->relation[columnId2],rowID2,size2);
 		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2,thread_pool);
+		
 	}
+
 
 
 	int tempind = 0;
@@ -364,17 +376,31 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	//printJoinResults(joinResults, rArray, relationId1, relationId2, resultSize);
 
 
-	// delete[] (rowID2);
-	// delete[] (rowID1);
 
-	//destroy_results(&res);
-	delete(res);
-	DAIndexArrayDestroy(indx,indexed->bck_array->size);
-	Destroy_Table_Data(&tableInfo1);
-	Destroy_Table_Data(&tableInfo2);
+
+	destroy_results(&res[0]);
+	destroy_results(&res[1]);
+	delete[] res;
+	delete[] joinResults;
 	//cout << endl << "JOIN:" << endl << endl;
 	//printJoinResults(joinResults,rArray,relationId1,relationId2,resultSize);
 	//printTPR(tpr,rArray);
+	if(indexed = tableInfo2){
+		Destroy_Table_Data(&tableInfo1);
+		Destroy_Table_Data(&indexed);
+	}else{
+		Destroy_Table_Data(&tableInfo2);
+		Destroy_Table_Data(&indexed);
+	}
+	DAIndexArrayDestroy(indx,indexed->bck_array->size);
+	if(rowID1!=NULL)
+		delete[] rowID1;
+	if(rowID2!=NULL)
+		delete[] rowID2;
+	if(payloadColumn1 != NULL)
+		delete[] payloadColumn1;
+	if(payloadColumn2!=NULL)
+		delete[] payloadColumn2;
 }
 
 
@@ -428,7 +454,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 					for(int j = 0 ; j < resultSize ; j++){
 						newrow[j] = og[old->results_array.at(j)->key];
 					}
-
+					delete[] (*it).rowID.at(i);
 					(*it).rowID.at(i) = newrow;
 
 				}
@@ -437,7 +463,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 
 				// }
 
-				//cout << "result " << resultSize<< endl;
+				//delete[] (*it2);
 				(*it2)= joinResults[0];
 				(*it).relationID.push_back(relationID2);
 				(*it).rowID.push_back(joinResults[1]);
@@ -463,19 +489,19 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 					for(int j = 0 ; j < resultSize ; j++){
 						newrow[j] = og[old->results_array.at(j)->key];
 					}
-
+					delete[] (*it).rowID.at(i);
 					(*it).rowID.at(i) = newrow;
 
 				}
 
-
+				//delete[] (*it2);
 				(*it2) = joinResults[1];
 				(*it).relationID.push_back(relationID1);
 				(*it).rowID.push_back(joinResults[0]);
 				(*it).size = resultSize;
 		}		
 	}
-
+	return;
 }
 
 
