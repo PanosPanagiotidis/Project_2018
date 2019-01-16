@@ -13,14 +13,17 @@ volatile int threads_alive;
 threadpool* tp;
 
 void destroy_pool(threadpool* pool){
-
 	thread_wait();
+	threads_alive = 0;
+
+	for(int i = 0 ;i < NUM_THREADS;i++){
+		add_work(pool->Q,NULL,NULL);
+	}
 
 	for(int i = 0 ; i < NUM_THREADS; i++){
 		//pthread_exit(pool->threads[i]->thread);
-		//pthread_join(pool->threads[i]->thread,NULL);
+		pthread_join(pool->threads[i]->thread,NULL);
 		delete pool->threads[i];
-		//cout << " exiting " << endl;
 	}
 	delete[] pool->threads;
 
@@ -57,11 +60,11 @@ threadpool* threadpool_init(int num_threads){
 		tp->threads[i] = new thread_info;
 		tp->threads[i]->pool = tp;
 		tp->threads[i]->id = i;
-		pthread_create(&(tp->threads[i]->thread),NULL,&thread_work,(NULL));
-		
-
-
+		pthread_create(&(tp->threads[i]->thread),NULL,&thread_work,tp->threads[i]);
+		//pthread_detach(tp->threads[i]->thread);
 	}
+
+	while(tp->alive != num_threads);
 
 	return tp;
 }
@@ -87,6 +90,7 @@ Job* getJob(){
 	Job* task = tp->Q->first;
 	switch(tp->Q->len){
 		case 0:
+			task = NULL;
 			break;//no jobs
 		case 1:
 			tp->Q->first = NULL;
@@ -103,16 +107,16 @@ Job* getJob(){
 }
 
 void* thread_work(void* arg){
+	thread_info* info = (thread_info*)arg;
+	threadpool* pool = info->pool;
+
+	pthread_mutex_lock(&pool->access);
+	pool->alive+=1;
+	pthread_mutex_unlock(&pool->access);
+
 	while(1){
-		pthread_mutex_lock(&tp->access);
-		while(tp->Q->len == 0){
-			pthread_cond_wait(&tp->hasjobs,&tp->access);
-		}
 
-		tp->working++;
 
-<<<<<<< HEAD
-=======
 			if(threads_alive == 1){
 				pthread_mutex_lock(&pool->access);
 				while(pool->Q->len == 0){
@@ -140,35 +144,31 @@ void* thread_work(void* arg){
 					pthread_mutex_unlock(&pool->access);
 					break;
 				}
->>>>>>> 5991b2d... 0 leaks
 
-		void *(*func_buff)(void*);
-		void* args;
-		Job* task = getJob();
+				pthread_mutex_unlock(&pool->access);
+				if(task != NULL){
+					func_buff = task->function;
+					args = task->arg;
+					delete task;
+					func_buff(args);
+				}
 
-		pthread_mutex_unlock(&tp->access);
-		if(task){
-			func_buff = task->function;
-			args = task->arg;
-			delete task;
+				
+
+				pthread_mutex_lock(&pool->access);
+
+
+				pool->working--;
+				if(pool->working == 0){
+					pthread_cond_signal(&pool->all_idle);
+				}
+
+				pthread_mutex_unlock(&pool->access);
 		}
-
-		
-		func_buff(args);
-
-		pthread_mutex_lock(&tp->access);
-
-
-		tp->working--;
-		if(tp->working == 0){
-			pthread_cond_signal(&tp->all_idle);
-		}
-
-		pthread_mutex_unlock(&tp->access);
-		
 	}
-	cout << "hey " << endl;
-
+	pthread_mutex_lock(&pool->access);
+	pool->alive--;
+	pthread_mutex_unlock(&pool->access);
 	return NULL;
 }
 
@@ -330,27 +330,28 @@ void thread_wait(){
 
 int add_work(Job_Q* q,void *(*function_p)(void*),void* args){
 	Job* newJob;
-	newJob = new Job;
+	if(function_p!=NULL){
+		newJob = new Job;
 
-	newJob->function = function_p;
-	newJob->arg = args;
+		newJob->function = function_p;
+		newJob->arg = args;
 
-	pthread_mutex_lock(&tp->access);
+		pthread_mutex_lock(&tp->access);
 
-	newJob->prev = NULL;
+		newJob->prev = NULL;
 
-	switch(q->len){
-		case 0:
-			q->first = newJob;
+		switch(q->len){
+			case 0:
+				q->first = newJob;
+				q->last = newJob;
+				break;
+
+			default:
+			q->last->prev=newJob;
 			q->last = newJob;
-			break;
 
-		default:
-		q->last->prev=newJob;
-		q->last = newJob;
-
+		}
 	}
-
 	q->len++;
 
 	pthread_cond_broadcast(&tp->hasjobs);

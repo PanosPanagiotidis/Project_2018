@@ -301,9 +301,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	uint64_t *payloadColumn2 = NULL;
 
 	if( foundFlag1 == 1 && foundFlag2 == 1)
-	{	
-		delete(&tableInfo2);
-		delete(&tableInfo1);
+	{
 		fringeCase(rArray,tpr,relationId1,relationId2,columnId1,columnId2);
 		return;
 	}
@@ -385,6 +383,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	//cout << endl << "JOIN:" << endl << endl;
 	//printJoinResults(joinResults,rArray,relationId1,relationId2,resultSize);
 	//printTPR(tpr,rArray);
+	DAIndexArrayDestroy(indx,indexed->bck_array->size);
 	if(indexed = tableInfo2){
 		Destroy_Table_Data(&tableInfo1);
 		Destroy_Table_Data(&indexed);
@@ -392,7 +391,6 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 		Destroy_Table_Data(&tableInfo2);
 		Destroy_Table_Data(&indexed);
 	}
-	DAIndexArrayDestroy(indx,indexed->bck_array->size);
 	if(rowID1!=NULL)
 		delete[] rowID1;
 	if(rowID2!=NULL)
