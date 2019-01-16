@@ -111,6 +111,36 @@ void* thread_work(void* arg){
 
 		tp->working++;
 
+<<<<<<< HEAD
+=======
+			if(threads_alive == 1){
+				pthread_mutex_lock(&pool->access);
+				while(pool->Q->len == 0){
+					pthread_cond_wait(&pool->hasjobs,&pool->access);
+				}
+				pthread_mutex_unlock(&pool->access);
+				if(threads_alive == 0){
+					pthread_mutex_lock(&pool->access);
+					pool->Q->len--;
+					pthread_mutex_unlock(&pool->access);
+					break;
+				}
+				pthread_mutex_lock(&pool->access);
+				pool->working++;
+
+
+				void *(*func_buff)(void*);
+				void* args;
+				Job* task = getJob();
+
+				if(task == NULL && threads_alive == 0){
+					delete task;
+
+					pool->working--;
+					pthread_mutex_unlock(&pool->access);
+					break;
+				}
+>>>>>>> 5991b2d... 0 leaks
 
 		void *(*func_buff)(void*);
 		void* args;
