@@ -158,39 +158,6 @@ void queryReorder(Query *qr)
 
 	qr->p = predv;
 }
-	relationArray *newArray = new relationArray;
-
-	for(uint64_t i = 0; i < qr->relations.size(); i++)
-	{
-		int realID = qr->relations.at(i);
-
-		Relations *originalRel = rArray->relations.at(realID);
-		Relations *rel = new Relations;
-
-		rel->size = originalRel->size;
-		rel->numColumns = originalRel->numColumns;
-		rel->relation   = new uint64_t *[rel->numColumns];
-
-		rel->relationStats = new columnStats[rel->numColumns];
-		for(uint64_t j = 0; j < rel->numColumns; j++)
-		{
-			rel->relation[j] = new uint64_t[rel->size];
-			for(uint64_t k = 0; k < rel->size; k++)
-				rel->relation[j][k] = originalRel->relation[j][k];
-
-			rel->relationStats[j].minVal = originalRel->relationStats[j].minVal;
-			rel->relationStats[j].maxVal = originalRel->relationStats[j].maxVal;
-			rel->relationStats[j].valueCount = originalRel->relationStats[j].valueCount;
-			rel->relationStats[j].uniqueCount = originalRel->relationStats[j].uniqueCount;
-
-		}
-
-
-		newArray->relations.push_back(rel);
-	}
-
-	return newArray;
-}
 
 
 
