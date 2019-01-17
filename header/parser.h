@@ -40,8 +40,6 @@ typedef struct queryHelper{
 
 typedef struct queryBatch{
 	std::vector<Query*> queries;
-	//Query **queries;
-	//int queryCount;
 }queryBatch;
 
 void deleteQuery(queryBatch** );

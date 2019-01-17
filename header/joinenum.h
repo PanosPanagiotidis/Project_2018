@@ -15,12 +15,28 @@ typedef struct treeHashTable
 treeHashTable *initializeTable(relationArray *);
 
 
-void joinEnumeration(relationArray *, Query *);
+std::vector<int> *joinEnumeration(relationArray *, Query *);
 
 int setHashFunction(treeHashTable *, std::unordered_set<int> *);
 int hashFunct(int,int);
 int hashTableUpdate(treeHashTable *, std::unordered_set<int> *, std::vector<int> *);
 std::vector<int> *hashTableGet(treeHashTable *, std::unordered_set<int> *);
 
-std::vector< std::unordered_set<int> *> *getSubSets(std::unordered_set<int> *, int);
+std::vector< std::unordered_set<int> *> *getSubSets(std::unordered_set<int>, int);
+std::unordered_set<int> *createSet(relationArray *);
+std::vector<int> *createJoinTree(std::vector<int> *, int);
+
+uint64_t getCost(std::vector<int> *, relationArray *, Query *);
+columnStats **calculateJoinStats(relationArray *,int,int,int,int, columnStats *, columnStats *);
+int isConnected(std::unordered_set<int>,int,int **,int);
+int **genConnectArray(Query *qr);
+
+void debugPrintSet(std::unordered_set<int>);
+void debugPrintVector(std::vector<int>);
+void debugPrintConArr(int **connectedArray, int size);
+void debugPrintTHT(treeHashTable *tht);
+
+void destroyTreeHashTable(treeHashTable *);
+void destroyConnectArray(int **, uint64_t);
+
 #endif
