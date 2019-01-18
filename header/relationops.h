@@ -30,8 +30,9 @@ uint64_t getChecksum(tempResultArray* ,relationArray* ,std::vector<checksum_view
 
 int tempResultsFilterUpdate(std::vector<uint64_t> &,int,tempResults *);
 int tempResultsAdd(std::vector<uint64_t> &,int,tempResults *);
-uint64_t **convert_to_arrays(result *,uint64_t &ts);
-
+inline uint64_t **convert_to_arrays(result *,uint64_t &ts);
+inline uint64_t* conjure_payload(uint64_t* ,uint64_t* ,uint64_t );
+inline uint64_t* createRowID(uint64_t );
 
 void tempResultsJoinUpdate(uint64_t **,int ,int, int, int, uint64_t, tempResults *,result* );
 void jointest(void);

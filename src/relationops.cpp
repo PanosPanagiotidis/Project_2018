@@ -101,7 +101,7 @@ Query *editQuery(Query *qr)																// Removes duplicate predicates
 }
 
 
-uint64_t **convert_to_arrays(result *r,uint64_t &ts){
+inline uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 	uint64_t** r_convd = new uint64_t*[2];
 
 	result *temp=r;
@@ -503,7 +503,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 }
 
 
-uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *size)
+inline uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *size)
 {
 	if( tpr == NULL )	return NULL;
 

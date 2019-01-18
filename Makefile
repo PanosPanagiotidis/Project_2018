@@ -1,6 +1,6 @@
 CC=g++
 HDIR=-I'./header/'
-CFLAGS = -g 
+CFLAGS = -g
 CPPFLAGS = -g 
 
 all: ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o 

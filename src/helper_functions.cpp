@@ -21,26 +21,7 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	}
 
 	ti->rows = size;
-	// ti->tuples_table= (toumble**)malloc(sizeof(toumble*)*size);			// Creating tuple array (rowID,value)
 
-	// if(ti->tuples_table == NULL){
-	// 	fprintf(stderr,"Error allocating space for Tuples Table\n");
-	// 	exit(0);
-	// }
-
-	// for(int i = 0; i < size; i++)	//creating a tuples array for each combo of rowId + payload
-	// {
-	// 	ti->tuples_table[i] = (toumble*)malloc(sizeof(toumble));
-
-	// 	if(ti->tuples_table[i] == NULL){
-	// 		fprintf(stderr,"Error allocating space for tuple\n");
-	// 		exit(0);
-	// 	}
-
-	// 	ti->tuples_table[i]->key = a[i];
-
-	// 	ti->tuples_table[i]->payload = b[i];
-	// }
 
 	ti->histSize = 1 << N; //16
 
@@ -72,7 +53,6 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	int leftovers = size%NUM_THREADS;
 	row_from-=chunk;
 	jobs = NUM_THREADS;
-
 
 
 	if(size < NUM_THREADS){
@@ -112,28 +92,14 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 
 	ti->histogram = rebuild_hist(hists,jobs);
 
-	for(int i = 0 ; i < jobs ;i++){
-		delete[] hists[i];
-		delete arg_table[i];
-	}
-	delete[] hists;
-	delete[] arg_table;
 
 
-	// for(int i = 0; i < ti->rows; i++)
-	// {
-	// 	LSB = b[i] & mask;
-	// 	ti->histogram[LSB]++;
-	// }
 
-	//cout << "This is a new table " << endl;
 
 	ti->pSum[0] = 0;											// Creating pSum
-
 	for(int i = 1; i < ti->histSize; i++)
 	{
 		ti->pSum[i] = ti->pSum[i-1] + ti->histogram[i-1];
-		// cout << "ti->pSum is " << ti->pSum[i] << endl;
 		ti->pSumDsp[i] = ti->pSumDsp[i-1] + ti->histogram[i-1];
 	}
 
@@ -159,6 +125,14 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	row_from -=chunk;
 	row_to = 0;
 
+	uint64_t**	local_dsp;
+	uint64_t**	local_rid;
+	uint64_t**	local_payload;
+
+	local_rid = new uint64_t*[jobs];
+	local_payload = new uint64_t*[jobs];
+	local_dsp = new uint64_t*[jobs]; 
+
 	for(int i = 0 ;i < jobs ; i++){
 
 		row_from+=chunk;
@@ -169,33 +143,55 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 		harg_table[i] = new hashArg;
 		harg_table[i]->payloads = b;
 		harg_table[i]->rowId = a;
-		harg_table[i]->stored_payloads = ti->R_Payload;
-		harg_table[i]->stored_rows = ti->R_Id;
 		harg_table[i]->fromRow = row_from;
 		harg_table[i]->toRow = row_to;
-		harg_table[i]->dsp = ti->pSumDsp;
 		harg_table[i]->loc = i;
+		harg_table[i]->local_hist = hists[i];
+		harg_table[i]->local_dsp = local_dsp;
+		harg_table[i]->local_payload = local_payload;
+		harg_table[i]->local_rid = local_rid;
+
 
 		add_work(THREAD_POOL->Q,&partitionJob,harg_table[i]);
 	}
 
-
-	// for(int i = 0 ; i < size ; i++){ //Reordering of Id and Payload arrays.Afterwards stored in new arrays
-	// 	LSB = b[i] & mask;
-
-	// 	ti->R_Payload[ti->pSumDsp[LSB]] = b[i];
-
-	// 	ti->R_Id[ti->pSumDsp[LSB]] = a[i];
-
-	// 	ti->pSumDsp[LSB]++;
-	// }
-
 	thread_wait();
 
-	for(int i = 0 ;i < jobs ;i++){
-		delete harg_table[i];
+
+	int local_size;
+	int lcounter;
+	int total;
+	uint64_t temp;
+	for(int i = 0 ; i < jobs ; i++){
+		local_size = harg_table[i]->toRow - harg_table[i]->fromRow;
+		total = 0;
+		for(int j = 0 ; j < ti->histSize ;j++){
+			temp = local_dsp[i][j];
+			while(total < temp){
+				ti->R_Id[ti->pSumDsp[j]] = local_rid[i][total];
+				ti->R_Payload[ti->pSumDsp[j]] = local_payload[i][total];
+				ti->pSumDsp[j]++;
+				total++;
+			}
+		}
+
 	}
+
+
+	for(int i = 0 ; i < jobs ;i++){
+		delete[] local_dsp[i];
+		delete[] local_payload[i];
+		delete[] local_rid[i];
+		delete[] hists[i];
+		delete harg_table[i];
+		delete arg_table[i];
+	}
+	delete[] local_payload;
+	delete[] local_dsp;
+	delete[] local_rid;
+	delete[] hists;
 	delete[] harg_table;
+	delete[] arg_table;
 
 
 	ti->bck_array = new bucket_array;

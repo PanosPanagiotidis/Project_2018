@@ -193,28 +193,59 @@ void* histogramJob(void* arg){
 	return NULL;
 }
 
+		// pthread_mutex_lock(&w);
+		// pl = params->payloads[i];
+		// LSB = pl & mask;
+		// loc = params->dsp[LSB];
+		// params->dsp[LSB]++;
+		// pthread_mutex_unlock(&w);
+
+		
+		// params->stored_payloads[loc] = pl;
+
+		// params->stored_rows[loc] = params->rowId[i];
+
 
 void* partitionJob(void* arg){
 	uint64_t mask = (1<<N) -1;
 	hashArg *params = static_cast<hashArg*>(arg);
 	uint64_t LSB;
 	uint64_t pl;
-	uint64_t loc;
+	uint64_t loc = params->loc;
+	int bsize = (1<<N);
+	uint64_t* payload;// = params->local_payload;
+	uint64_t* rid;// = params->local_rid;
+	uint64_t* dsp;// = params->local_dsp;
+	uint64_t size = params->toRow - params->fromRow;
+
+	payload = new uint64_t[size];
+	rid = new uint64_t[size];
+	dsp = new uint64_t[bsize];
+	for(int i = 0 ; i < bsize ;i++)
+		dsp[i]=0;
+	for(int i = 1 ; i < bsize;i++){
+		dsp[i] = dsp[i-1] + params->local_hist[i-1];
+	}
+
+
+	int pos;
 	for(int i = params->fromRow ; i < params->toRow ; i++){
-		pthread_mutex_lock(&w);
 		pl = params->payloads[i];
 		LSB = pl & mask;
-		loc = params->dsp[LSB];
-		params->dsp[LSB]++;
-		pthread_mutex_unlock(&w);
-
-		
-		params->stored_payloads[loc] = pl;
-
-		params->stored_rows[loc] = params->rowId[i];
-
-		
+		//pos = params->dsp[LSB];
+		payload[dsp[LSB]] = pl;
+		rid[dsp[LSB]] = params->rowId[i];
+		dsp[LSB]++;
+		// params->dsp[LSB]++;
 	}
+
+	params->local_payload[loc] = payload;
+	params->local_rid[loc] = rid;
+	params->local_dsp[loc] = dsp;
+	// for(int i = 0 ; i < bsize; i++){
+	// 	cout << "dsp[i] "<< dsp[i]<<endl;
+	// }
+
 		//	pthread_mutex_unlock(&w);
 	return NULL;
 }
