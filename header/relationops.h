@@ -36,7 +36,6 @@ void tempResultsJoinUpdate(uint64_t **,int ,int, int, int, uint64_t, tempResults
 void jointest(void);
 void fringeCase(relationArray *, tempResults *, int, int, int ,int);
 Query *editQuery(Query *);
-void optimizeQuery(relationArray*, Query *);
 
 relationArray *createTempRelArray(relationArray *, Query *);
 

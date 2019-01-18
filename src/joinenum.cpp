@@ -58,9 +58,48 @@ std::vector<int> *joinEnumeration(relationArray *rArray, Query *qr)
 	delete set;
 
 	// debugPrintVector(*rvect);
-	//return NULL;
 	return rvect;
 }
+
+void optimizeQuery(relationArray *rArray, Query *qr)
+{
+	std::vector<int> *v = joinEnumeration(rArray,qr);
+	std::vector<predicates *> newp;
+
+	std::unordered_set<int> set;
+
+	std::vector<int>::iterator it = v->begin();
+	set.insert(*it);
+	it++;
+
+	std::vector<predicates *>::iterator it2;
+
+	while( it != v->end() )
+	{
+		for( it2 = qr->p.begin(); it2 != qr->p.end(); it2++)
+			if( (*it2)->type == JOIN )
+			{
+				if( (*it2)->relation1 == (*it) && set.find((*it2)->relation2) != set.end() )
+				{
+					newp.push_back(*it2);
+				}
+				else if( (*it2)->relation2 == (*it) && set.find((*it2)->relation1) != set.end() )
+				{
+					newp.push_back(*it2);
+				}
+			}
+		set.insert(*it);
+		it++;
+	}
+
+	qr->p = newp;
+	debugPrintVector(*v);
+	queryPrint(qr);
+
+	delete v;
+}
+
+
 
 void destroyConnectArray(int **connectArray, uint64_t size)
 {

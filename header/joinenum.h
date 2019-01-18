@@ -39,4 +39,7 @@ void debugPrintTHT(treeHashTable *tht);
 void destroyTreeHashTable(treeHashTable *);
 void destroyConnectArray(int **, uint64_t);
 
+void optimizeQuery(relationArray*, Query *);
+
+
 #endif

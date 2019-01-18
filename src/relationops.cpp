@@ -19,21 +19,18 @@ tempResults *queryExecute(Query *qr, relationArray *relArray,threadpool* tp)
 {
 	thread_pool = tp;
 	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
-	optimizeQuery(relArray,qr);
-	tempResults *tRes = new tempResults;
-	Query *qur = editQuery(qr);
-
-	// TODO: order of operations:
-	//			filters -> optimizequery -> joins
-	//
-
 
 	std::vector<predicates*>::iterator it;
+	for( it = qr->p.begin(); it != qr->p.end(); it++)
+		if( (*it)->type != JOIN)		filtered_relation((*it),relArray);
+
+	Query *qur = editQuery(qr);
+	optimizeQuery(relArray,qur);
+
+	tempResults *tRes = new tempResults;
+
 	for( it = qur->p.begin(); it != qur->p.end(); it++)
-	{
 		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
-		else							filtered_relation((*it),relArray);
-	}
 
 	return tRes;
 }
@@ -74,15 +71,6 @@ relationArray *createTempRelArray(relationArray *rArray, Query *qr)
 	return newArray;
 }
 
-void optimizeQuery(relationArray *rArray, Query *qr)
-{
-	std::vector<int> *v = joinEnumeration(rArray,qr);
-	std::vector<predicates *> newp;
-
-	// TODO: Actually change qr order
-
-	delete v;
-}
 
 void deleteTR(tempResults** tr){
 	for(uint64_t i = 0 ; i < (*tr)->res.size() ; i++){
