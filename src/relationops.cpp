@@ -20,7 +20,6 @@ tempResults *queryExecute(Query *qr, relationArray *relArray,threadpool* tp)
 	thread_pool = tp;
 	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
 	optimizeQuery(relArray,qr);
-
 	tempResults *tRes = new tempResults;
 	Query *qur = editQuery(qr);
 
@@ -82,7 +81,7 @@ void optimizeQuery(relationArray *rArray, Query *qr)
 
 	// TODO: Actually change qr order
 
-
+	delete v;
 }
 
 void deleteTR(tempResults** tr){

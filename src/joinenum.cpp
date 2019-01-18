@@ -57,15 +57,16 @@ std::vector<int> *joinEnumeration(relationArray *rArray, Query *qr)
 	destroyConnectArray(connectArray,qr->relations.size());
 	delete set;
 
-	debugPrintVector(*rvect);
+	// debugPrintVector(*rvect);
+	//return NULL;
 	return rvect;
 }
 
 void destroyConnectArray(int **connectArray, uint64_t size)
 {
 	for( uint64_t i = 0; i < size; i++)
-		delete connectArray[i];
-	delete connectArray;
+		delete[] connectArray[i];
+	delete[] connectArray;
 }
 
 void destroyTreeHashTable(treeHashTable *tht)
@@ -77,8 +78,8 @@ void destroyTreeHashTable(treeHashTable *tht)
 			delete tht->trees[i];
 		}
 
-	delete tht->sets;
-	delete tht->trees;
+	delete[] tht->sets;
+	delete[] tht->trees;
 	delete tht;
 }
 
@@ -175,18 +176,18 @@ uint64_t getCost(std::vector<int> *tree, relationArray *rArray, Query *qr)
 
 			if( res != NULL )
 			{
-				delete res[0];
-				delete res[1];
-				delete res;
+				delete[] res[0];
+				delete[] res[1];
+				delete[] res;
 			}
 
 		}
 	}
 
 	for( uint64_t i = 0; i < rArray->relations.size(); i++ )
-		delete tempStats[i];
+		delete[] tempStats[i];
 
-	delete tempStats;
+	delete[] tempStats;
 	return cost;
 }
 
@@ -227,13 +228,13 @@ treeHashTable *initializeTable(relationArray *rArray)
 
 	for( int i = 0; i < (int) rArray->relations.size(); i++)
 	{
-		std::unordered_set<int> *unset = new std::unordered_set<int>;
+		std::unordered_set<int> unset;
 		std::vector<int> *vec = new std::vector<int>;
 
-		unset->insert(i);
+		unset.insert(i);
 		vec->push_back(i);
 
-		hashTableUpdate(tht, unset, vec);
+		hashTableUpdate(tht, &unset, vec);
 	}
 
 	return tht;
@@ -258,6 +259,7 @@ int hashTableUpdate(treeHashTable *tht, std::unordered_set<int> *set, std::vecto
 	else if( (*tht->sets[hf]) == (*tmpset) )
 	{
 		tht->trees[hf] = tree;
+		delete tmpset;
 		return 0;
 	}
 
@@ -275,6 +277,7 @@ int hashTableUpdate(treeHashTable *tht, std::unordered_set<int> *set, std::vecto
 		else if( (*tht->sets[i]) == (*tmpset) )
 		{
 			tht->trees[i] = tree;
+			delete tmpset;
 			return 0;
 		}
 		i++;
