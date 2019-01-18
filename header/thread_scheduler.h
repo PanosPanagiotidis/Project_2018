@@ -33,15 +33,13 @@ typedef struct histArg{
 }histArg;
 
 typedef struct hashArg{
-	uint64_t* histogram;
+	uint64_t* stored_row;
+	uint64_t* stored_payloads;
 	uint64_t* rowId;
 	uint64_t* payloads;
 	uint64_t fromRow;
 	uint64_t toRow;
-	uint64_t** local_dsp;
-	uint64_t** local_rid;
-	uint64_t** local_payload;
-	uint64_t* local_hist;
+	uint64_t* dsp;
 	int loc;
 }hashArg;
 

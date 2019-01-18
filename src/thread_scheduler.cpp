@@ -218,14 +218,10 @@ void* partitionJob(void* arg){
 	uint64_t* dsp;// = params->local_dsp;
 	uint64_t size = params->toRow - params->fromRow;
 
-	payload = new uint64_t[size];
-	rid = new uint64_t[size];
-	dsp = new uint64_t[bsize];
-	for(int i = 0 ; i < bsize ;i++)
-		dsp[i]=0;
-	for(int i = 1 ; i < bsize;i++){
-		dsp[i] = dsp[i-1] + params->local_hist[i-1];
-	}
+	payload = params->stored_payloads;//= new uint64_t[size];
+	rid = params->stored_row; //= new uint64_t[size];
+	dsp = params->dsp;
+
 
 
 	for(int i = params->fromRow ; i < params->toRow ; i++){
@@ -235,10 +231,6 @@ void* partitionJob(void* arg){
 		rid[dsp[LSB]] = params->rowId[i];
 		dsp[LSB]++;
 	}
-
-	params->local_payload[loc] = payload;
-	params->local_rid[loc] = rid;
-	params->local_dsp[loc] = dsp;
 
 	return NULL;
 }

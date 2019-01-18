@@ -95,6 +95,7 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 
 
 
+
 	ti->pSum[0] = 0;											// Creating pSum
 	for(int i = 1; i < ti->histSize; i++)
 	{
@@ -124,15 +125,26 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	row_from -=chunk;
 	row_to = 0;
 
-	uint64_t**	local_dsp;
-	uint64_t**	local_rid;
-	uint64_t**	local_payload;
+	uint64_t** global_dsp = new uint64_t*[jobs];
 
-	local_rid = new uint64_t*[jobs];
-	local_payload = new uint64_t*[jobs];
-	local_dsp = new uint64_t*[jobs]; 
+	for(int i = 0 ; i < jobs ; i++){
+		global_dsp[i] = new uint64_t[ti->histSize];
+		for(int j = 0; j < ti->histSize ;j++){
+			if(i==0)
+				global_dsp[i][j] = ti->pSum[j];
+			else
+				global_dsp[i][j] = 0;
+		}
+	}
+
+	for(int i = 1 ; i < jobs ;i++){
+		for(int j = 0 ; j < ti->histSize;j++){
+			global_dsp[i][j] += hists[i-1][j] +global_dsp[i-1][j];
+		}
+	}
 
 	for(int i = 0 ;i < jobs ; i++){
+		
 
 		row_from+=chunk;
 		row_to+=chunk;
@@ -145,10 +157,10 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 		harg_table[i]->fromRow = row_from;
 		harg_table[i]->toRow = row_to;
 		harg_table[i]->loc = i;
-		harg_table[i]->local_hist = hists[i];
-		harg_table[i]->local_dsp = local_dsp;
-		harg_table[i]->local_payload = local_payload;
-		harg_table[i]->local_rid = local_rid;
+		harg_table[i]->dsp = global_dsp[i];
+		harg_table[i]->stored_row = ti->R_Id;
+		harg_table[i]->stored_payloads = ti->R_Payload;
+
 
 
 		add_work(THREAD_POOL->Q,&partitionJob,harg_table[i]);
@@ -156,35 +168,13 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 
 	thread_wait();
 
-
-	int total;
-	uint64_t temp;
-	for(int i = 0 ; i < jobs ; i++){
-		total = 0;
-		for(int j = 0 ; j < ti->histSize ;j++){
-			temp = local_dsp[i][j];
-			while(total < temp){
-				ti->R_Id[ti->pSumDsp[j]] = local_rid[i][total];
-				ti->R_Payload[ti->pSumDsp[j]] = local_payload[i][total];
-				ti->pSumDsp[j]++;
-				total++;
-			}
-		}
-
-	}
-
-
 	for(int i = 0 ; i < jobs ;i++){
-		delete[] local_dsp[i];
-		delete[] local_payload[i];
-		delete[] local_rid[i];
+		delete[] global_dsp[i];
 		delete[] hists[i];
 		delete harg_table[i];
 		delete arg_table[i];
 	}
-	delete[] local_payload;
-	delete[] local_dsp;
-	delete[] local_rid;
+	delete[] global_dsp;
 	delete[] hists;
 	delete[] harg_table;
 	delete[] arg_table;
