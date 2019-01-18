@@ -228,25 +228,18 @@ void* partitionJob(void* arg){
 	}
 
 
-	int pos;
 	for(int i = params->fromRow ; i < params->toRow ; i++){
 		pl = params->payloads[i];
 		LSB = pl & mask;
-		//pos = params->dsp[LSB];
 		payload[dsp[LSB]] = pl;
 		rid[dsp[LSB]] = params->rowId[i];
 		dsp[LSB]++;
-		// params->dsp[LSB]++;
 	}
 
 	params->local_payload[loc] = payload;
 	params->local_rid[loc] = rid;
 	params->local_dsp[loc] = dsp;
-	// for(int i = 0 ; i < bsize; i++){
-	// 	cout << "dsp[i] "<< dsp[i]<<endl;
-	// }
 
-		//	pthread_mutex_unlock(&w);
 	return NULL;
 }
 
@@ -266,9 +259,7 @@ void* joinJob(void* arg){
 	else
 		row_to = params->nonIndexed->pSum[bck+1];
 
-	// cout << "bck is " << bck <<"max is " << max << endl;
-	// cout << "row_from " << row_from << endl;
-	// cout << "row_to " << row_to << endl;
+
 	uint64_t* payloads = params->nonIndexed->R_Payload;
 	uint64_t* rows = params->nonIndexed->R_Id;
 	daIndex** index = params->Index;
@@ -276,7 +267,6 @@ void* joinJob(void* arg){
 	rlist* olds = params->olds;
 	uint64_t rsize = (128*1000)/sizeof(toumble);
 
-	// results = new rlist;
 	results->next = NULL;
 	results->size = 0;
 	results->ts = new toumble[rsize];

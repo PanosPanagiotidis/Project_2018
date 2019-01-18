@@ -9,8 +9,7 @@ using namespace std;
 Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREAD_POOL)		// Initializes the variables and structs of table info, a=keys, b=payloads
 {
 	// extern threadpool* THREAD_POOL;
-	uint64_t LSB;
-	uint64_t mask = (1 << N) - 1; //Mask the least significant bits.Payload & mask = LSB
+	//Mask the least significant bits.Payload & mask = LSB
 
 
 	Table_Info* ti = new Table_Info;
@@ -158,12 +157,9 @@ Table_Info* init_table_info(uint64_t* a, uint64_t* b, int size,threadpool* THREA
 	thread_wait();
 
 
-	int local_size;
-	int lcounter;
 	int total;
 	uint64_t temp;
 	for(int i = 0 ; i < jobs ; i++){
-		local_size = harg_table[i]->toRow - harg_table[i]->fromRow;
 		total = 0;
 		for(int j = 0 ; j < ti->histSize ;j++){
 			temp = local_dsp[i][j];

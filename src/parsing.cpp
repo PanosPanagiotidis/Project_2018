@@ -59,7 +59,6 @@ Query* ParseQuery(string q){
 	size_t pos = 0;
 	string token;
 	char* array = NULL;
-	char* start = NULL;
 	int ac = 0;
 	int c = -1;
 	char t = '0';
@@ -97,7 +96,6 @@ Query* ParseQuery(string q){
 
 		c = -1;
 		array = NULL;
-		start = NULL;
 		array = strdup(s.c_str());
 
 		ac = 0;
@@ -172,11 +170,8 @@ Query* ParseQuery(string q){
 	}
 
 	array = NULL;
-	start = NULL;
 	q.erase(pos,q.find("|")+1);
 	int size = count (q.begin(),q.end(),'.');
-
-	start = array;
 
 
 	istringstream isc(q);
@@ -206,28 +201,7 @@ Query* ParseQuery(string q){
 
 
 
-	// for(int i = 0 ; i < size ; i++){
 
-	// 	checksum_views *cv = new checksum_views;
-	// 	cv->rel_cols = -1;
-	// 	cv->rel_views = -1;
-
-	// 	cv->rel_views = query->relations.at(atoi(array+ac));
-	// 	//cout << "rel->views is" << cv ->rel_views << endl;// DELET DIS
-	// 	while(isalnum(array[ac])){
-	// 		ac++;
-	// 	}
-	// 	ac++;
-
-	// 	cv->rel_cols =	atoi(array+ac);
-
-	// 	while(isalnum(array[ac])){
-	// 		ac++;
-	// 	}
-
-
-
-	// }
 
 	return query;
 
@@ -235,7 +209,6 @@ Query* ParseQuery(string q){
 
 void deleteQuery(queryBatch** qb){
 	std::vector<Query*>::iterator q;
-	int i = 0;
 
 	for(q = (*qb)->queries.begin(); q != (*qb)->queries.end(); q++){
 
@@ -259,7 +232,6 @@ void deleteQuery(queryBatch** qb){
 
 	}
 
-	//(*qb)->queries.erase((*qb)->queries.begin(),(*qb)->queries.end());
 
 	vector<Query*>().swap((*qb)->queries);
 

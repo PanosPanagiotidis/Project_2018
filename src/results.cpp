@@ -18,7 +18,6 @@ using namespace std;
 
 result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadpool* tp,int flag){
 
-	int key,payload;
 	int jobs = 1<<N;
 
 	result *r = new result;
@@ -37,19 +36,9 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 	// r->next = NULL;
 	// r->size = 0;
 
-	uint64_t r_key;
-	uint64_t LSB;
-	uint64_t hash2_value;
-	uint64_t chain_pos;
 
 	uint64_t mask = (1 << N) - 1;
 
-	// cout << "psum " << endl;
-	// for(int i = 0 ; i < jobs ; i++){
-	// 	cout << nonIndexed->pSum[i]<<endl;
-	// }
-
-	// cout << "-------------"<<endl;
 	rlist** partials = new rlist*[jobs];
 	rlist** olds = new rlist*[jobs];
 	for(int i = 0 ; i < jobs ; i++){
