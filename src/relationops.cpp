@@ -5,6 +5,8 @@
 #include "../header/daindex.h"
 #include "../header/results.h"
 #include "../header/thread_scheduler.h"
+#include "../header/joinenum.h"
+#include <math.h>
 #include <queue>
 #include <iostream>
 #include <bits/stdc++.h>
@@ -14,20 +16,22 @@ using namespace std;
 threadpool* thread_pool;
 
 tempResults *queryExecute(Query *qr, relationArray *relArray,threadpool* tp)
-{	
+{
 	thread_pool = tp;
 	queryReorder(qr);																	// Reorders predicates in query for optimization purposes
-	tempResults *tRes = new tempResults;
-	Query *qur = editQuery(qr);
-
-
-	//relationArray *relArray = createTempRelArray(oRelArray,qr);
-
 	std::vector<predicates*>::iterator it;
+
+	for( it = qr->p.begin(); it != qr->p.end(); it++)
+		if( (*it)->type != JOIN )		filtered_relation((*it),relArray);
+
+	Query *qur = editQuery(qr);
+	optimizeQuery(relArray,qur);
+
+	tempResults *tRes = new tempResults;
+
 	for( it = qur->p.begin(); it != qur->p.end(); it++)
 	{
 		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
-		else							filtered_relation((*it),relArray);
 	}
 
 	return tRes;
@@ -48,11 +52,18 @@ relationArray *createTempRelArray(relationArray *rArray, Query *qr)
 		rel->numColumns = originalRel->numColumns;
 		rel->relation   = new uint64_t *[rel->numColumns];
 
+		rel->relationStats = new columnStats[rel->numColumns];
 		for(uint64_t j = 0; j < rel->numColumns; j++)
 		{
 			rel->relation[j] = new uint64_t[rel->size];
 			for(uint64_t k = 0; k < rel->size; k++)
 				rel->relation[j][k] = originalRel->relation[j][k];
+
+			rel->relationStats[j].minVal = originalRel->relationStats[j].minVal;
+			rel->relationStats[j].maxVal = originalRel->relationStats[j].maxVal;
+			rel->relationStats[j].valueCount = originalRel->relationStats[j].valueCount;
+			rel->relationStats[j].uniqueCount = originalRel->relationStats[j].uniqueCount;
+
 		}
 
 
@@ -61,6 +72,7 @@ relationArray *createTempRelArray(relationArray *rArray, Query *qr)
 
 	return newArray;
 }
+
 
 
 void deleteTR(tempResults** tr){
@@ -85,7 +97,11 @@ Query *editQuery(Query *qr)																// Removes duplicate predicates
 	std::vector<predicates *>::iterator it1, it2, it3;
 
 	it1 = qr->p.begin();
-	while((*it1)->type != JOIN )	it1++;
+	while((*(qr->p.begin()))->type != JOIN )
+	{
+		delete *(qr->p.begin());
+		qr->p.erase(qr->p.begin());
+	}
 
 	for( it2 = it1; it2 != qr->p.end(); it2++)
 	{
@@ -169,11 +185,11 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 		}
 	}
 
-	filtered = new uint64_t*[currentRelation->numColumns];
+	filtered = new uint64_t *[currentRelation->numColumns];
 
 	for (uint64_t i = 0 ; i < currentRelation->numColumns ; i++)
 	{
-		filtered[i] = new uint64_t[results.size()];
+		filtered[i] = new uint64_t [results.size()];
 		for(uint64_t j = 0 ; j < results.size() ; j ++)
 		{
 			uint64_t rid = results.at(j);
@@ -182,14 +198,78 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 
 	}
 
-	for(uint64_t i = 0 ; i < currentRelation->numColumns; i++){
-		delete[] currentRelation->relation[i];
+	columnStats *rStats = currentRelation->relationStats;
+
+	switch (pred->type)
+	{
+		case EQ_FILTER:
+		{
+			rStats[columnId].minVal = filter;									// ColumnID Stats
+			rStats[columnId].maxVal = filter;
+			uint64_t original = rStats[columnId].valueCount;
+			rStats[columnId].valueCount = results.size();
+
+			if( results.size() == 0 )		rStats[columnId].uniqueCount = 0;
+			else							rStats[columnId].uniqueCount = 1;
+
+			for ( uint64_t i = 0 ; i < currentRelation->numColumns ; i++ )
+				if( i != columnId )
+				{
+					float factor = (1 - pow(( 1 - rStats[columnId].valueCount/original ),(rStats[i].valueCount/rStats[i].uniqueCount)));
+					rStats[i].uniqueCount = (uint64_t) (rStats[i].uniqueCount)*factor ;
+					rStats[i].valueCount = rStats[columnId].valueCount;
+				}
+
+			break;
+		}
+		case GT_FILTER:
+		{
+			rStats[columnId].uniqueCount = (uint64_t) ( ( (rStats[columnId].maxVal - filter)/(rStats[columnId].maxVal - rStats[columnId].minVal) )*(rStats[columnId].uniqueCount) );
+			rStats[columnId].minVal = filter;
+			uint64_t original = rStats[columnId].valueCount;
+			rStats[columnId].valueCount = results.size();
+
+			for( uint64_t i = 0 ; i < currentRelation->numColumns ; i++)
+				if( i != columnId )
+				{
+					float factor = (1 - pow(( 1 - rStats[columnId].valueCount/original ),(rStats[i].valueCount/rStats[i].uniqueCount)));
+					rStats[i].uniqueCount = (uint64_t) (rStats[i].uniqueCount)*factor ;
+					rStats[i].valueCount = rStats[columnId].valueCount;
+				}
+
+			break;
+		}
+		case LT_FILTER:
+		{
+			rStats[columnId].uniqueCount = (uint64_t) ( ( ( filter - rStats[columnId].minVal)/(rStats[columnId].maxVal - rStats[columnId].minVal) )*(rStats[columnId].uniqueCount) );
+			rStats[columnId].maxVal = filter;
+			uint64_t original = rStats[columnId].valueCount;
+			rStats[columnId].valueCount = results.size();
+
+			for( uint64_t i = 0 ; i < currentRelation->numColumns ; i++)
+				if( i != columnId )
+				{
+					float factor = (1 - pow(( 1 - rStats[columnId].valueCount/original ),(rStats[i].valueCount/rStats[i].uniqueCount)));
+					rStats[i].uniqueCount = (uint64_t) (rStats[i].uniqueCount)*factor ;
+					rStats[i].valueCount = rStats[columnId].valueCount;
+				}
+
+			break;
+		}
+		default:
+			break;
+	}
+
+
+	for(uint64_t k = 0; k < currentRelation->numColumns; k++ )
+	{
+		delete[] currentRelation->relation[k];
 	}
 	delete[] currentRelation->relation;
 
 	currentRelation->relation = filtered;
 	currentRelation->size = results.size();
-
+	currentRelation->relationStats = rStats;
 
 }
 
@@ -306,13 +386,13 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	{
 		payloadColumn1 = conjurePayload(rArray->relations.at(relationId1)->relation[columnId1],rowID1,size1);
 		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1,thread_pool);
-		
+
 	}
 	else if(foundFlag2 == 2)
 	{
 		payloadColumn2 = conjurePayload(rArray->relations.at(relationId2)->relation[columnId2],rowID2,size2);
 		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2,thread_pool);
-		
+
 	}
 
 
@@ -420,10 +500,10 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 	}
 	else if (foundFlag1 == 1 && foundFlag2 ==0)
 	{
-		
+
 
 		for( it = tpr->res.begin(); it != tpr->res.end(); it++)
-		{	
+		{
 				std::vector<int>::iterator it1;//relationid
 				std::vector<uint64_t *>::iterator it2 = (*it).rowID.begin();//swsto
 				for( it1 = (*it).relationID.begin(); it1 != (*it).relationID.end(); it1++,it2++){
@@ -444,7 +524,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 					(*it).rowID.at(i) = newrow;
 
 				}
-				
+
 				(*it2)= joinResults[0];
 				(*it).relationID.push_back(relationID2);
 				(*it).rowID.push_back(joinResults[1]);
@@ -452,7 +532,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 		}
 	}
 	else if(foundFlag2==1 && foundFlag1 ==0)
-	{ 
+	{
 		for( it = tpr->res.begin(); it != tpr->res.end(); it++)
 		{
 				std::vector<int>::iterator it1;
@@ -480,7 +560,7 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 				(*it).relationID.push_back(relationID1);
 				(*it).rowID.push_back(joinResults[0]);
 				(*it).size = resultSize;
-		}		
+		}
 	}
 	return;
 }
@@ -516,7 +596,7 @@ int tempResultsFilterUpdate(std::vector<uint64_t> &results, int relationId, temp
 		{
 			if( (*it).relationID.at(i) == relationId )									// If found
 			{
-				
+
 				std::vector<uint64_t *> newRowId;
 
 				for(uint64_t j=0; j<(*it).relationID.size(); j++)						// Create new tempresults
@@ -588,8 +668,8 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	for(check = cv.begin(); check != cv.end(); check++)
 	{	checksum = 0;
 		for(j = 0; j < tr->relationID.size() ; j++)
-		{ 
-			if((*check)->rel_views == tr->relationID.at(j)) 
+		{
+			if((*check)->rel_views == tr->relationID.at(j))
 			{
 				for(i = 0 ; i < tr->size ; i++)
 				{
