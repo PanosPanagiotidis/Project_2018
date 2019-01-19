@@ -761,8 +761,12 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	vector<checksum_views*>::iterator check;
 	vector<uint64_t>::iterator rowit;
 	uint64_t j;
+	int count = 0;
+	int tcv = cv.size();
 	for(check = cv.begin(); check != cv.end(); check++)
-	{	checksum = 0;
+	{	
+		count++;
+		checksum = 0;
 		for(j = 0; j < tr->relationID.size() ; j++)
 		{
 			if((*check)->rel_views == tr->relationID.at(j))
@@ -779,12 +783,14 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 		}
 
 		if(checksum == 0)
-			cout << "NULL ";
+			cout << "NULL";
 		else
-			cout << checksum << " ";
+			cout << checksum;
+		if(count<tcv)
+			cout <<" ";
 
 	}
-
+//cout<<",";
 cout << endl;
 
 

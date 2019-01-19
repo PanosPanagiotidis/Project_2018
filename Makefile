@@ -1,7 +1,7 @@
 CC=g++
 HDIR=-I'./header/'
-CFLAGS = -g -o3
-CPPFLAGS = -g -o3
+CFLAGS = -o3
+CPPFLAGS = -o3
 
 all: ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./src/joinenum.o
 	$(CC) $(CFLAGS)	-o JOIN.out ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./header/includes.h ./src/joinenum.o -lpthread

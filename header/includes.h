@@ -3,6 +3,6 @@
 
 
 #define NUM_THREADS 8
-#define N 6
+#define N 8
 
 #endif

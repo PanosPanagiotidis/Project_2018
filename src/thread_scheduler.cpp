@@ -286,7 +286,7 @@ void* joinJob(void* arg){
 
 	rlist* results = params->partials;
 	rlist* olds = params->olds;
-	uint64_t rsize = (128*1000)/sizeof(toumble);
+	uint64_t rsize = (400*1000)/sizeof(toumble);
 
 	results->next = NULL;
 	results->size = 0;

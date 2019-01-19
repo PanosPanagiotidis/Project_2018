@@ -16,7 +16,7 @@ queryBatch * QueryInput(){
 
 
 
-	cout << "Enter your query" << endl;
+	//cout << "Enter your query" << endl;
 
 	while(getline(cin,line)){
 		if(line == "F") break;

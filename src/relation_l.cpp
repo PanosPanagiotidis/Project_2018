@@ -14,9 +14,9 @@ relationArray* init_relations()
     std::string line;
     ifstream is("files.txt");
     relationArray *R = new relationArray;
-
-    while(getline(is,line)){
-        if(is.eof())
+    //cout << "Please enter filepaths" << endl;
+    while(getline(cin,line)){
+        if(line == "DONE" || line == "Done")
             break;
         R->relations.push_back(load_relations(line.c_str()));
     }

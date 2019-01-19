@@ -7,6 +7,5 @@ WORKLOAD_DIR=$(echo $WORKLOAD_DIR | sed 's:/*$::')
 cd $WORKLOAD_DIR
 
 WORKLOAD=$(basename "$PWD")
-echo $WORKLOAD
 echo execute $WORKLOAD ...
-$DIR/harness *.init *.work *.result ./run.sh
+$DIR/harness *.init *.work *.result $DIR/run.sh

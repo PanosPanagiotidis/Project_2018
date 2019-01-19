@@ -88,28 +88,28 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 		}
 	}
 
-	for(int i = 0 ; i < jobs ; i++){
-		while(olds[i] != NULL){
-			for(int j = 0 ;j < olds[i]->size;j++){
-				toumble *t = new toumble;
-				t->key=olds[i]->ts[j].key;
-				old->results_array.push_back(t);
-			}
-			temp = olds[i];
-			olds[i] = olds[i]->next;
-			delete[] temp->ts;
-			delete temp;
-		}
-	}
+	// for(int i = 0 ; i < jobs ; i++){
+	// 	while(olds[i] != NULL){
+	// 		for(int j = 0 ;j < olds[i]->size;j++){
+	// 			toumble *t = new toumble;
+	// 			t->key=olds[i]->ts[j].key;
+	// 			old->results_array.push_back(t);
+	// 		}
+	// 		temp = olds[i];
+	// 		olds[i] = olds[i]->next;
+	// 		delete[] temp->ts;
+	// 		delete temp;
+	// 	}
+	// }
 
-	delete[] partials;
-	delete[] olds;
+	// delete[] partials;
+	// delete[] olds;
 
 
 
 	result** rets = new result*[2];
 	rets[0] = r;
-	rets[1] = old;
+	// rets[1] = old;
 
 	return rets;
 }
