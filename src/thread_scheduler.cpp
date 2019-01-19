@@ -30,7 +30,7 @@ void destroy_pool(threadpool* pool){
 	delete pool->Q;
 
 	delete pool;
-	
+
 
 }
 
@@ -153,7 +153,7 @@ void* thread_work(void* arg){
 					func_buff(args);
 				}
 
-				
+
 
 				pthread_mutex_lock(&pool->access);
 
@@ -200,7 +200,7 @@ void* histogramJob(void* arg){
 		// params->dsp[LSB]++;
 		// pthread_mutex_unlock(&w);
 
-		
+
 		// params->stored_payloads[loc] = pl;
 
 		// params->stored_rows[loc] = params->rowId[i];
@@ -216,10 +216,19 @@ void* partitionJob(void* arg){
 	uint64_t* payload;// = params->local_payload;
 	uint64_t* rid;// = params->local_rid;
 	uint64_t* dsp;// = params->local_dsp;
+
+	int relNum = params->relNum;
+	uint64_t **rids;
+
 	uint64_t size = params->toRow - params->fromRow;
 
 	payload = params->stored_payloads;//= new uint64_t[size];
 	rid = params->stored_row; //= new uint64_t[size];
+
+	rids = NULL;
+	if( relNum != 0 )
+		rids = params->stored_rids;
+
 	dsp = params->dsp;
 
 
@@ -229,6 +238,17 @@ void* partitionJob(void* arg){
 		LSB = pl & mask;
 		payload[dsp[LSB]] = pl;
 		rid[dsp[LSB]] = params->rowId[i];
+
+		if( relNum != 0 )
+		{
+			for( int l = 0; l < relNum; l++)
+			{
+				rids[l][dsp[LSB]] = params->rids[l][i];
+			}
+		}
+
+
+
 		dsp[LSB]++;
 	}
 
@@ -255,6 +275,15 @@ void* joinJob(void* arg){
 	uint64_t* payloads = params->nonIndexed->R_Payload;
 	uint64_t* rows = params->nonIndexed->R_Id;
 	daIndex** index = params->Index;
+
+	int relNum = params->nonIndexed->relNum;
+	uint64_t **rids = NULL;
+
+
+	if( relNum != 0)
+		rids = params->nonIndexed->rids;
+
+
 	rlist* results = params->partials;
 	rlist* olds = params->olds;
 	uint64_t rsize = (128*1000)/sizeof(toumble);
@@ -309,12 +338,23 @@ void* joinJob(void* arg){
 					olds->ts = new toumble[rsize];
 					olds->size = 0;
 				}
-				
+
 				results->ts[results->size].key = key;
 				results->ts[results->size].payload = params->indexed->bck_array->bck[LSB]->tuplesArray[rkey]->key;
+				results->ts[results->size].rids = NULL;
+
+				if(relNum != 0)
+				{
+					results->ts[results->size].rids = new uint64_t[relNum];
+					for( int l=0; l < relNum; l++ )
+						results->ts[results->size].rids[l] = (rids[l][i]);
+
+
+				}
+
 				results->size++;
 
-					olds->ts[olds->size].key = i;
+				olds->ts[olds->size].key = i;
 
 				olds->size++;
 

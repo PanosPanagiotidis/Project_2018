@@ -355,13 +355,11 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	rowID2 = tempResultsLookup(tpr,relationId2, &size2);
 
 
-
-
 	if( rowID1 == NULL )
 	{
 		rowID1 = createRowID(currentRelation1->size);
 		size1  = currentRelation1->size;
-		tableInfo1 = init_table_info(rowID1,currentRelation1->relation[columnId1],size1,thread_pool);
+		tableInfo1 = init_table_info2(&rowID1, currentRelation1->relation[columnId1], 0, 0, size1, thread_pool);
 	}
 	else	foundFlag1++;
 
@@ -371,13 +369,17 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	{
 		rowID2 = createRowID(currentRelation2->size);
 		size2  = currentRelation2->size;
-		tableInfo2 = init_table_info(rowID2,currentRelation2->relation[columnId2],size2,thread_pool);
+		tableInfo2 = init_table_info2(&rowID2, currentRelation2->relation[columnId2], 0, 0, size2, thread_pool);
 	}
 	else	foundFlag2++;
 
 
 	uint64_t *payloadColumn1 = NULL;
 	uint64_t *payloadColumn2 = NULL;
+	uint64_t **DrowID1 = NULL;
+	uint64_t **DrowID2 = NULL;
+	uint64_t tprPos1, tprPos2;
+
 
 	if( foundFlag1 == 1 && foundFlag2 == 1)
 	{
@@ -387,73 +389,78 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	else if(foundFlag1 == 1)
 	{
 		payloadColumn1 = conjurePayload(rArray->relations.at(relationId1)->relation[columnId1],rowID1,size1);
-		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1,thread_pool);
+
+		DrowID1 = new uint64_t*[ tpr->res.at(0).rowID.size() ];
+		for( uint64_t f = 0; f <  tpr->res.at(0).rowID.size(); f++ )
+		{
+			DrowID1[f] = tpr->res.at(0).rowID.at(f);
+			if( relationId1 == tpr->res.at(0).relationID.at(f) )
+				tprPos1 = f;
+		}
+
+		tableInfo1 = init_table_info2(DrowID1, payloadColumn1,(int) tpr->res.at(0).rowID.size(), tprPos1, size1, thread_pool);
 
 	}
 	else if(foundFlag2 == 1)
 	{
 		payloadColumn2 = conjurePayload(rArray->relations.at(relationId2)->relation[columnId2],rowID2,size2);
-		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2,thread_pool);
+
+		DrowID2 = new uint64_t*[ tpr->res.at(0).rowID.size() ];
+		for( uint64_t f = 0; f <  tpr->res.at(0).rowID.size(); f++ )
+		{
+			DrowID2[f] = tpr->res.at(0).rowID.at(f);
+			if( relationId2 == tpr->res.at(0).relationID.at(f) )
+				tprPos2 = f;
+		}
+		tableInfo2 = init_table_info2(DrowID2, payloadColumn2,(int) tpr->res.at(0).rowID.size(), tprPos2, size2, thread_pool);
 
 	}
-
 
 
 	int tempind = 0;
 	daIndex **indx;
 	result **res;
-	uint64_t resultSize;
-	uint64_t ** joinResults;
 	Table_Info* indexed;
 
 	if(foundFlag2)
 	{
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
 		res = getResults(tableInfo1,tableInfo2,indx,thread_pool,tempind);
-		joinResults = convert_to_arrays(res[0],resultSize);
-
-		uint64_t * tmp = joinResults[1];
-		joinResults[1] = joinResults[0];
-		joinResults[0] = tmp;
 		indexed = tableInfo1;
+
+		tempResultsJoinUpdate2(res[0], tpr, relationId1, relationId2);
 	}
 	else if(foundFlag1)
 	{
 		indx = DAIndexArrayCreate(tableInfo2->bck_array);
 		res = getResults(tableInfo2,tableInfo1,indx,thread_pool,tempind);
-		joinResults = convert_to_arrays(res[0],resultSize);
 		indexed = tableInfo2;
 
+		tempResultsJoinUpdate2(res[0], tpr, relationId2, relationId1);
 	}
 	else if (size1 < size2 && !foundFlag2 && !foundFlag1)
 	{
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
 		res = getResults(tableInfo1,tableInfo2,indx,thread_pool,tempind);
-		joinResults = convert_to_arrays(res[0],resultSize);
-
-		uint64_t * tmp = joinResults[1];
-		joinResults[1] = joinResults[0];
-		joinResults[0] = tmp;
 		indexed = tableInfo1;
+
+		tempResultsJoinUpdate2(res[0], tpr, relationId2, relationId1);
 	}
 	else if(size2 <= size1  && !foundFlag2 && !foundFlag1)
 	{
 		indx = DAIndexArrayCreate(tableInfo2->bck_array);
 		res = getResults(tableInfo2,tableInfo1,indx,thread_pool,tempind);
-		joinResults = convert_to_arrays(res[0],resultSize);
 		indexed = tableInfo2;
+
+		tempResultsJoinUpdate2(res[0], tpr, relationId1, relationId2);
 	}
 
-	if(foundFlag2 || foundFlag1)
-		tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr,res[1]);
-	else
-		tempResultsJoinUpdate(joinResults, relationId1, relationId2, foundFlag1, foundFlag2, resultSize, tpr,NULL);
 
+	return;
 
 	destroy_results(&res[0]);
 	destroy_results(&res[1]);
 	delete[] res;
-	delete[] joinResults;
 
 	DAIndexArrayDestroy(indx,indexed->bck_array->size);
 	if(indexed == tableInfo2){
@@ -480,6 +487,92 @@ uint64_t *createRowID(uint64_t rSize)
 	for(uint64_t i=0; i < rSize; i++)	rowID[i] = i;
 	return rowID;
 }
+
+void tempResultsJoinUpdate2(result *res , tempResults *tpr, int relID1, int relID2)
+{
+	if( res->results_array.size() > 0 )													// If results not empty
+	{
+		if( tpr->res.size() > 0 )														// If there are temp results
+		{
+			uint64_t newtprsize = tpr->res.at(0).rowID.size()+1;
+			uint64_t **rsl = new uint64_t*[newtprsize];
+
+			for( uint64_t i = 0; i < newtprsize; i++ )
+				rsl[i] = new uint64_t[res->results_array.size()];
+
+			int f = 0;
+			for( std::vector<toumble *>::iterator it2 = res->results_array.begin(); it2 != res->results_array.end(); it2++,f++)
+			{
+				uint64_t i;
+				for( i = 0; i < newtprsize-1; i++)
+				{
+					rsl[i][f] = (*it2)->rids[i];
+				}
+				rsl[i][f] = (*it2)->payload;
+			}
+
+			std::vector<uint64_t *> newRowId;
+			for( uint64_t i = 0; i < newtprsize; i++ )
+				newRowId.push_back(rsl[i]);
+
+
+			tpr->res.at(0).relationID.push_back(relID1);
+			tpr->res.at(0).size = res->results_array.size();
+			tpr->res.at(0).rowID = newRowId;
+		}
+		else
+		{
+			uint64_t *rsl[2];
+			rsl[0] = new uint64_t[res->results_array.size()];
+			rsl[1] = new uint64_t[res->results_array.size()];
+
+			int f = 0;
+			for( std::vector<toumble *>::iterator it2 = res->results_array.begin(); it2 != res->results_array.end(); it2++,f++)
+			{
+				rsl[0][f] = (*it2)->key;
+				rsl[1][f] = (*it2)->payload;
+			}
+
+			tempResultArray temp;
+
+			temp.rowID.push_back(rsl[0]);
+			temp.rowID.push_back(rsl[1]);
+			temp.relationID.push_back(relID1);
+			temp.relationID.push_back(relID2);
+
+			temp.size = res->results_array.size();
+			tpr->res.push_back(temp);
+		}
+	}
+	else
+	{
+		if( tpr->res.size() > 0 )
+		{
+			for( std::vector<uint64_t *>:: iterator it = tpr->res.at(0).rowID.begin(); it != tpr->res.at(0).rowID.end(); it++ )
+			{
+				delete *it;
+				*it = NULL;
+			}
+
+			tpr->res.at(0).relationID.push_back(relID2);
+			tpr->res.at(0).rowID.push_back(NULL);
+			tpr->res.at(0).size = 0;
+		}
+		else
+		{
+			tempResultArray temp;
+			temp.rowID.push_back(NULL);
+			temp.rowID.push_back(NULL);
+			temp.relationID.push_back(relID1);
+			temp.relationID.push_back(relID2);
+
+			temp.size = 0;
+			tpr->res.push_back(temp);
+
+		}
+	}
+}
+
 
 void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relationID2, int foundFlag1, int foundFlag2, uint64_t resultSize, tempResults *tpr,result* old)
 {

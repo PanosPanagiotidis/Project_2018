@@ -1,16 +1,12 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #ifndef STRUCTS_H
 #define STRUCTS_H
 #include <stdint.h>
-
+#include <vector>
 
 typedef struct toumble{
 	uint64_t key;//rowId
 	uint64_t payload;//data
+	uint64_t *rids;
 }toumble;
 
 
@@ -44,6 +40,9 @@ typedef struct Table_Info
 	uint64_t* R_Payload;
 	uint64_t histSize;
 	bucket_array* bck_array;	//this needs to be bucket** fix later
+
+	int relNum;
+	uint64_t**rids;
 }Table_Info;
 
 typedef struct Tables{
@@ -53,8 +52,4 @@ typedef struct Tables{
 
 
 
-#endif
-
-#ifdef __cplusplus
-}
 #endif

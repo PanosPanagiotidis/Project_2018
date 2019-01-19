@@ -30,6 +30,9 @@ typedef struct histArg{
 	uint64_t toRow;
 	uint64_t** thread_hists;
 	int loc;
+
+	int relNum;
+	uint64_t **rids;
 }histArg;
 
 typedef struct hashArg{
@@ -41,6 +44,10 @@ typedef struct hashArg{
 	uint64_t toRow;
 	uint64_t* dsp;
 	int loc;
+
+	int relNum;
+	uint64_t** stored_rids;
+	uint64_t** rids;
 }hashArg;
 
 

@@ -41,6 +41,10 @@ Query *editQuery(Query *);
 
 relationArray *createTempRelArray(relationArray *, Query *);
 
+void tempResultsJoinUpdate2(result *, tempResults *, int relID1, int relID2);
+
+
+
 // Debug stuff
 
 void printJoinResults(uint64_t **, relationArray *, int, int, int);

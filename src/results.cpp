@@ -78,6 +78,7 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 				toumble* temp = new toumble;
 				temp->key = partials[i]->ts[j].key;
 				temp->payload = partials[i]->ts[j].payload;
+				temp->rids = partials[i]->ts[j].rids;
 				r->results_array.push_back(temp);
 			}
 			temp = partials[i];
