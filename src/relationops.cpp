@@ -29,7 +29,7 @@ tempResults *queryExecute(Query *qr, relationArray *relArray,threadpool* tp)
 
 	tempResults *tRes = new tempResults;
 
-	for( it = qur->p.begin(); it != qur->p.end(); it++)
+	for( it = (qur)->p.begin(); it != (qur)->p.end(); it++)
 	{
 		if( (*it)->type == JOIN)		relation_join((*it),relArray,tRes);				// Each predicate is either a join or a filter
 	}
@@ -109,6 +109,7 @@ Query *editQuery(Query *qr)																// Removes duplicate predicates
 		{
 			if(isEqualPred((*it2),(*it3)) == 0)
 			{
+				delete *it3;
 				qr->p.erase(it3);
 			}
 		}
@@ -316,6 +317,7 @@ void fringeCase(relationArray *rArray, tempResults *tr, int relationId1, int rel
 		{
 			finalRes.at(i)[j] = newRes.at(i).at(j);
 		}
+		delete[] tr->res.at(0).rowID.at(i);
 	}
 
 	tr->res.at(0).size = newSize;
@@ -388,7 +390,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 		tableInfo1 = init_table_info(rowID1,payloadColumn1,size1,thread_pool);
 
 	}
-	else if(foundFlag2 == 2)
+	else if(foundFlag2 == 1)
 	{
 		payloadColumn2 = conjurePayload(rArray->relations.at(relationId2)->relation[columnId2],rowID2,size2);
 		tableInfo2 = init_table_info(rowID2,payloadColumn2,size2,thread_pool);
@@ -403,6 +405,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	uint64_t resultSize;
 	uint64_t ** joinResults;
 	Table_Info* indexed;
+
 	if(foundFlag2)
 	{
 		indx = DAIndexArrayCreate(tableInfo1->bck_array);
@@ -453,7 +456,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	delete[] joinResults;
 
 	DAIndexArrayDestroy(indx,indexed->bck_array->size);
-	if(indexed = tableInfo2){
+	if(indexed == tableInfo2){
 		Destroy_Table_Data(&tableInfo1);
 		Destroy_Table_Data(&indexed);
 	}else{
@@ -462,7 +465,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}
 	if(rowID1!=NULL)
 		delete[] rowID1;
-	if(rowID2!=NULL)
+	if(rowID2!=NULL )
 		delete[] rowID2;
 	if(payloadColumn1 != NULL)
 		delete[] payloadColumn1;
