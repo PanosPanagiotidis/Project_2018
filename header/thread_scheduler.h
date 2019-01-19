@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <time.h>
 #include <stdint.h>
+#include "../header/results.h"
 #include "../header/structs.h"
 #include "../header/daindex.h"
 #include "../header/includes.h"
@@ -16,12 +17,22 @@
 
 using namespace std;
 
+
+
 typedef struct rlist{
 	toumble* ts;
 	struct rlist* next;
 	uint64_t size;
 }rlist;
 
+
+typedef struct updateArg{
+	uint64_t* final;
+	uint64_t resultSize;
+	uint64_t* og;
+	struct result* old;
+	int loc;
+}updateArg;
 
 typedef struct histArg{
 	uint64_t* payloads;
@@ -91,6 +102,7 @@ Job_Q* jobq_init(void );
 void* thread_work(void* );
 void thread_wait(void );
 void* histogramJob(void* );
+void* updateJob(void* );
 void* partitionJob(void* );
 void* joinJob(void* );
 void destroy_pool(threadpool* );

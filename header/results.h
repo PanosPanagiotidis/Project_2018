@@ -15,7 +15,8 @@ typedef struct result{
 
 
 
-result** getResults(Table_Info* ,Table_Info* ,daIndex** ,threadpool* ,int );
+
+result** getResults(Table_Info* ,Table_Info* ,daIndex** ,struct threadpool* ,int );
 
 void destroy_results(result** );
 

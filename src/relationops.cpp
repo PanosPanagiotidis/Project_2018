@@ -298,7 +298,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	uint64_t *payloadColumn2 = NULL;
 
 	if( foundFlag1 == 1 && foundFlag2 == 1)
-	{
+	{	
 		fringeCase(rArray,tpr,relationId1,relationId2,columnId1,columnId2);
 		return;
 	}
@@ -431,19 +431,37 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 						break;
 				}
 
+				int count = 0;
+				vector<int> toupdate;
 
 				for(int i = 0 ; i < (*it).rowID.size();i++){
 					if(relationID1 == (*it).relationID.at(i)) continue;
+					else	toupdate.push_back(i); 
+				}
 
-					uint64_t* newrow = new uint64_t[resultSize];
-					uint64_t* og = (*it).rowID.at(i);
-					for(int j = 0 ; j < resultSize ; j++){
-						newrow[j] = og[old->results_array.at(j)->key];
-					}
-					delete[] (*it).rowID.at(i);
-					(*it).rowID.at(i) = newrow;
+				count = toupdate.size();
+				uint64_t** finals = new uint64_t*[count];
+
+				updateArg** updates = new updateArg*[count];
+				for(int i = 0 ; i < count ; i++){
+					finals[i] = new uint64_t[resultSize];
+					updates[i] = new updateArg;
+					updates[i]->loc = i;
+					updates[i]->resultSize = resultSize;
+					updates[i]->old = old;
+					updates[i]->final =  finals[i];
+					updates[i]->og = (*it).rowID.at(toupdate.at(i));
+
+					add_work(thread_pool->Q,&updateJob,updates[i]);
 
 				}
+				thread_wait();
+
+
+				for(int i = 0 ; i < count ; i++){
+					delete[] (*it).rowID.at(toupdate.at(i));
+					(*it).rowID.at(toupdate.at(i))=finals[i];
+				}				
 				
 				(*it2)= joinResults[0];
 				(*it).relationID.push_back(relationID2);
@@ -462,20 +480,37 @@ void tempResultsJoinUpdate(uint64_t ** joinResults,int relationID1, int relation
 						break;
 
 
+				int count = 0;
+				vector<int> toupdate;
+
 				for(int i = 0 ; i < (*it).rowID.size();i++){
-					if(relationID2 == (*it).relationID.at(i)) continue;
-
-					uint64_t* newrow = new uint64_t[resultSize];
-					uint64_t* og = (*it).rowID.at(i);
-					for(int j = 0 ; j < resultSize ; j++){
-						newrow[j] = og[old->results_array.at(j)->key];
-					}
-					delete[] (*it).rowID.at(i);
-					(*it).rowID.at(i) = newrow;
-
+					if(relationID1 == (*it).relationID.at(i)) continue;
+					else	toupdate.push_back(i); 
 				}
 
-				//delete[] (*it2);
+				count = toupdate.size();
+				uint64_t** finals = new uint64_t*[count];
+
+				updateArg** updates = new updateArg*[count];
+				for(int i = 0 ; i < count ; i++){
+					finals[i] = new uint64_t[resultSize];
+					updates[i] = new updateArg;
+					updates[i]->loc = i;
+					updates[i]->resultSize = resultSize;
+					updates[i]->old = old;
+					updates[i]->final =  finals[i];
+					updates[i]->og = (*it).rowID.at(toupdate.at(i));
+
+					add_work(thread_pool->Q,&updateJob,updates[i]);
+
+				}
+				thread_wait();
+
+				for(int i = 0 ; i < count ; i++){
+					delete[] (*it).rowID.at(toupdate.at(i));
+					(*it).rowID.at(toupdate.at(i))=finals[i];
+				}		
+				
 				(*it2) = joinResults[1];
 				(*it).relationID.push_back(relationID1);
 				(*it).rowID.push_back(joinResults[0]);

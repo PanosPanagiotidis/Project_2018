@@ -193,18 +193,19 @@ void* histogramJob(void* arg){
 	return NULL;
 }
 
-		// pthread_mutex_lock(&w);
-		// pl = params->payloads[i];
-		// LSB = pl & mask;
-		// loc = params->dsp[LSB];
-		// params->dsp[LSB]++;
-		// pthread_mutex_unlock(&w);
+void* updateJob(void* arg){
+	updateArg *params = static_cast<updateArg*>(arg);
+	uint64_t* newrow = params->final; 
+	uint64_t* og = params->og;
+	//uint64_t size = params->prev_size;
+	result *old = params->old;
+	
+	for(int i = 0 ; i < params->resultSize;i++){
+		newrow[i] = og[old->results_array.at(i)->key];
+	}
 
-		
-		// params->stored_payloads[loc] = pl;
-
-		// params->stored_rows[loc] = params->rowId[i];
-
+	
+}
 
 void* partitionJob(void* arg){
 	uint64_t mask = (1<<N) -1;
