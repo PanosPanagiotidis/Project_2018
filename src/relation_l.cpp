@@ -124,7 +124,7 @@ void deleteRelations(relationArray** ra){
 
 	for(i = 0; i < (*ra)->relations.size();i++)
     {
-		for(j = 0;j < ((*ra)->relations.at(i))->numColumns ; j++)
+		for(j = 0;j < ((*ra)->relations[i])->numColumns ; j++)
         {
 				delete[] (((*ra)->relations.at(i))->relation[j]);
 		}

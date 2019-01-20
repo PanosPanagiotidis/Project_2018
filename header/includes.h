@@ -2,8 +2,8 @@
 #define INCLUDES_H
 
 
-#define NUM_THREADS 8
-#define N 7
+#define NUM_THREADS 10
+#define N 8
 #define ALLOCATION_CAP 50000000
 
 #endif

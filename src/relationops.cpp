@@ -78,12 +78,12 @@ relationArray *createTempRelArray(relationArray *rArray, Query *qr)
 void deleteTR(tempResults** tr){
 	for(uint64_t i = 0 ; i < (*tr)->res.size() ; i++){
 
-			for(uint64_t a = 0 ; a < ((*tr)->res.at(i)).rowID.size() ; a++){
-				delete[]((*tr)->res.at(i).rowID.at(a));
+			for(uint64_t a = 0 ; a < (*tr)->res[i].rowID.size() ; a++){
+				delete[]((*tr)->res[i].rowID[a]);
 			}
 
-			vector<uint64_t*>().swap((*tr)->res.at(i).rowID);
-			vector<int>().swap((*tr)->res.at(i).relationID);
+			vector<uint64_t*>().swap((*tr)->res[i].rowID);
+			vector<int>().swap((*tr)->res[i].relationID);
 
 	}
 
@@ -129,8 +129,8 @@ inline uint64_t **convert_to_arrays(result *r,uint64_t &ts){
 	r_convd[1] = new uint64_t[total_size];
 
 	for(int i = 0 ; i < total_size ; i++){
-		r_convd[0][i] = r->results_array.at(i)->key;
-		r_convd[1][i] = r->results_array.at(i)->payload;
+		r_convd[0][i] = r->results_array[i]->key;
+		r_convd[1][i] = r->results_array[i]->payload;
 	}
 
 	return r_convd;
@@ -160,7 +160,7 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 	int columnId = pred->column1;
 	uint64_t filter = pred->filter;
 
-	Relations *currentRelation = rArray->relations.at(relationId);
+	Relations *currentRelation = rArray->relations[relationId];
 	uint64_t **filtered;
 
 	vector<uint64_t> results;
@@ -193,7 +193,7 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 		filtered[i] = new uint64_t [results.size()];
 		for(uint64_t j = 0 ; j < results.size() ; j ++)
 		{
-			uint64_t rid = results.at(j);
+			uint64_t rid = results[j];
 			filtered[i][j] = currentRelation->relation[i][rid];
 		}
 
@@ -276,15 +276,15 @@ void filtered_relation(predicates *pred,relationArray* rArray)
 
 void fringeCase(relationArray *rArray, tempResults *tr, int relationId1, int relationId2, int columnId1, int columnId2)
 {
-	Relations *currRelation1 = rArray->relations.at(relationId1);						// Fetch RELATIONS
-	Relations *currRelation2 = rArray->relations.at(relationId2);
+	Relations *currRelation1 = rArray->relations[relationId1];						// Fetch RELATIONS
+	Relations *currRelation2 = rArray->relations[relationId2];
 
 	std::vector<int>::iterator it1;
-	std::vector<uint64_t *>::iterator it2 = tr->res.at(0).rowID.begin();
+	std::vector<uint64_t *>::iterator it2 = tr->res[0].rowID.begin();
 
 	uint64_t *rid1,*rid2;
 
-	for( it1 = tr->res.at(0).relationID.begin(); it1 != tr->res.at(0).relationID.end(); it1++,it2++)
+	for( it1 = tr->res[0].relationID.begin(); it1 != tr->res[0].relationID.end(); it1++,it2++)
 	{
 		if( relationId1 == (*it1) )		rid1 = (*it2);
 		if( relationId2 == (*it1) )		rid2 = (*it2);
@@ -293,15 +293,15 @@ void fringeCase(relationArray *rArray, tempResults *tr, int relationId1, int rel
 
 	uint64_t newSize = 0;
 	std::vector< std::vector<uint64_t> > newRes;
-	newRes.resize(tr->res.at(0).rowID.size());
+	newRes.resize(tr->res[0].rowID.size());
 
-	for(uint64_t i=0; i < tr->res.at(0).size; i++)
+	for(uint64_t i=0; i < tr->res[0].size; i++)
 	{
 		if( currRelation1->relation[columnId1][rid1[i]] == currRelation2->relation[columnId2][rid2[i]] )
 		{
-			for(uint64_t j=0; j < tr->res.at(0).rowID.size(); j++)
+			for(uint64_t j=0; j < tr->res[0].rowID.size(); j++)
 			{
-				newRes.at(j).push_back(tr->res.at(0).rowID.at(j)[i]);
+				newRes[j].push_back(tr->res[0].rowID.at(j)[i]);
 			}
 			newSize++;
 		}
@@ -312,16 +312,16 @@ void fringeCase(relationArray *rArray, tempResults *tr, int relationId1, int rel
 
 	for(uint64_t i = 0; i < newRes.size(); i++)
 	{
-		finalRes.at(i) = new uint64_t[newSize];
+		finalRes[i] = new uint64_t[newSize];
 		for( uint64_t j = 0; j < newSize; j++)
 		{
 			finalRes.at(i)[j] = newRes.at(i).at(j);
 		}
-		delete[] tr->res.at(0).rowID.at(i);
+		delete[] tr->res[0].rowID.at(i);
 	}
 
-	tr->res.at(0).size = newSize;
-	tr->res.at(0).rowID = finalRes;
+	tr->res[0].size = newSize;
+	tr->res[0].rowID = finalRes;
 }
 
 
@@ -348,8 +348,8 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	Table_Info *tableInfo1, *tableInfo2;
 	int foundFlag1 = 0, foundFlag2 = 0;
 
-	Relations * currentRelation1 = rArray->relations.at(relationId1);
-	Relations * currentRelation2 = rArray->relations.at(relationId2);
+	Relations * currentRelation1 = rArray->relations[relationId1];
+	Relations * currentRelation2 = rArray->relations[relationId2];
 
 	rowID1 = tempResultsLookup(tpr,relationId1, &size1);
 	rowID2 = tempResultsLookup(tpr,relationId2, &size2);
@@ -363,9 +363,9 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}
 	else if( rowID1 == NULL && size1 == 1)												// signifies that it was found and it was empty
 	{
-		tpr->res.at(0).rowID.push_back(NULL);
-		tpr->res.at(0).relationID.push_back(relationId2);
-		tpr->res.at(0).size = 0;
+		tpr->res[0].rowID.push_back(NULL);
+		tpr->res[0].relationID.push_back(relationId2);
+		tpr->res[0].size = 0;
 		return;
 	}
 	else
@@ -380,9 +380,9 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}
 	else if( rowID2 == NULL && size2 == 1)
 	{
-		tpr->res.at(0).rowID.push_back(NULL);
-		tpr->res.at(0).relationID.push_back(relationId1);
-		tpr->res.at(0).size = 0;
+		tpr->res[0].rowID.push_back(NULL);
+		tpr->res[0].relationID.push_back(relationId1);
+		tpr->res[0].size = 0;
 		return;
 	}
 	else
@@ -403,13 +403,13 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}
 	else if(foundFlag1 == 1)
 	{
-		payloadColumn1 = conjurePayload(rArray->relations.at(relationId1)->relation[columnId1],rowID1,size1);
+		payloadColumn1 = conjurePayload(rArray->relations[relationId1]->relation[columnId1],rowID1,size1);
 
 		DrowID1 = new uint64_t*[ tpr->res.at(0).rowID.size() ];
 		for( uint64_t f = 0; f <  tpr->res.at(0).rowID.size(); f++ )
 		{
-			DrowID1[f] = tpr->res.at(0).rowID.at(f);
-			if( relationId1 == tpr->res.at(0).relationID.at(f) )
+			DrowID1[f] = tpr->res.at(0).rowID[f];
+			if( relationId1 == tpr->res.at(0).relationID[f] )
 				tprPos1 = f;
 		}
 
@@ -419,7 +419,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}
 	else if(foundFlag2 == 1)
 	{
-		payloadColumn2 = conjurePayload(rArray->relations.at(relationId2)->relation[columnId2],rowID2,size2);
+		payloadColumn2 = conjurePayload(rArray->relations[relationId2]->relation[columnId2],rowID2,size2);
 
 		DrowID2 = new uint64_t*[ tpr->res.at(0).rowID.size() ];
 		for( uint64_t f = 0; f <  tpr->res.at(0).rowID.size(); f++ )
@@ -616,7 +616,7 @@ inline uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *s
 		if(*size == 0)	*size = 1;
 
 		for( uint64_t j=0; j<(*it1).relationID.size(); j++)
-			if( (*it1).relationID.at(j) == relationId )			return (*it1).rowID.at(j);
+			if( (*it1).relationID[j] == relationId )			return (*it1).rowID[j];
 
 	}
 	*size = 0;
@@ -710,14 +710,14 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 		checksum = 0;
 		for(j = 0; j < tr->relationID.size() ; j++)
 		{
-			if((*check)->rel_views == tr->relationID.at(j))
+			if((*check)->rel_views == tr->relationID[j])
 			{
 				for(i = 0 ; i < tr->size ; i++)
 				{
-					uint64_t* temp = tr->rowID.at(j);
+					uint64_t* temp = tr->rowID[j];
 					row = temp[i];
-					relID = tr->relationID.at(j);
-					checksum += (ra->relations.at(relID))->relation[(*check)->rel_cols][row];
+					relID = tr->relationID[j];
+					checksum += (ra->relations[relID])->relation[(*check)->rel_cols][row];
 				}
 
 			}
@@ -774,14 +774,14 @@ void printJoinResults(uint64_t ** joinResults, relationArray *rarr, int r1, int 
 {
 	for(int i = 0; i < rsize; i++)
 	{
-		for(uint64_t j = 0; j < rarr->relations.at(r1)->numColumns; j++)
+		for(uint64_t j = 0; j < rarr->relations[r1]->numColumns; j++)
 		{
-			cout << rarr->relations.at(r1)->relation[j][joinResults[0][i]] << " | ";
+			cout << rarr->relations[r1]->relation[j][joinResults[0][i]] << " | ";
 		}
 
-		for(uint64_t j = 0; j < rarr->relations.at(r2)->numColumns; j++)
+		for(uint64_t j = 0; j < rarr->relations[r2]->numColumns; j++)
 		{
-			cout << rarr->relations.at(r2)->relation[j][joinResults[1][i]] << " | ";
+			cout << rarr->relations[r2]->relation[j][joinResults[1][i]] << " | ";
 		}
 
 		cout << endl;

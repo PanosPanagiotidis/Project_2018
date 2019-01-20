@@ -83,8 +83,6 @@ typedef struct threadpool{
 }threadpool;
 
 typedef struct joinArg{
-	Table_Info* indexed;
-	Table_Info* nonIndexed;
 	daIndex** Index;
 	bucket* nonidx_bucket;
 	bucket* idx_bucket;
@@ -94,7 +92,6 @@ typedef struct joinArg{
 	uint64_t** rids;
 	uint64_t start_from;
 	rlist* partials;
-	rlist* olds;
 	int flag;
 
 }joinArg;
