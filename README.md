@@ -32,17 +32,9 @@ Thus, by looking a payload up using the index, all bucket entries that hash to t
 
 ## Compiling and Running
 
-To compile the program, simply run:
+To compile and run the program using the harness, simply run the bash script:
 
 ```
-make
-
-```
-
-then, run with:
-
-
-```
-./RHJ.out
+./run.sh
 
 ```
