@@ -1,7 +1,7 @@
-#include "../header/joinenum.h"
 #include <iostream>
 #include <math.h>
-#include "../header/relationops.h"
+#include "joinenum.h"
+#include "relationops.h"
 
 std::vector<int> *joinEnumeration(relationArray *rArray, Query *qr)
 {

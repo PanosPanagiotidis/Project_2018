@@ -9,9 +9,9 @@
 #include <errno.h>
 #include <time.h>
 #include <stdint.h>
-#include "../header/structs.h"
-#include "../header/daindex.h"
-#include "../header/includes.h"
+#include "structs.h"
+#include "daindex.h"
+#include "includes.h"
 #include <vector>
 
 using namespace std;

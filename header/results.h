@@ -1,11 +1,11 @@
 #ifndef __RESULTS_H__
 #define __RESULTS_H__
 
-#include "../header/thread_scheduler.h"
-#include "../header/structs.h"
-#include "../header/daindex.h"
+#include "thread_scheduler.h"
+#include "structs.h"
+#include "daindex.h"
+#include "includes.h"
 #include <vector>
-#include "../header/includes.h"
 
 using namespace std;
 

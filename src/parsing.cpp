@@ -4,7 +4,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cstring>
-#include "../header/parser.h"
+#include "parser.h"
 #include <cctype>
 
 using namespace std;

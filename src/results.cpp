@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
-#include "../header/results.h"
+#include "results.h"
 
 using namespace std;
 
@@ -28,13 +28,7 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 	}
 
 
-	// uint64_t result_size = (1024*1024)/sizeof(toumble);
 	uint64_t counter = 0;
-
-	// r->results_array = (toumble*)malloc(sizeof(toumble)*result_size);
-	// r->next = NULL;
-	// r->size = 0;
-
 
 	uint64_t mask = (1 << N) - 1;
 
@@ -96,7 +90,7 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 }
 
 /*
-*	Prints kinda prettily the results
+*	Prints the results kinda prettily
 *
 */
 

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 #include <vector>
+#include "includes.h"
 
-#define ALLOCATION_CAP 50000000
 
 typedef struct columnStats
 {

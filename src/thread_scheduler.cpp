@@ -1,4 +1,4 @@
-#include "../header/thread_scheduler.h"
+#include "thread_scheduler.h"
 #include <iostream>
 
 

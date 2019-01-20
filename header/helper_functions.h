@@ -1,7 +1,7 @@
 #ifndef HELPER_FUNCTIONS_H
 #define HELPER_FUNCTIONS_H
-#include "../header/thread_scheduler.h"
-#include "../header/includes.h"
+#include "thread_scheduler.h"
+#include "includes.h"
 #include "structs.h"
 #include <stdio.h>
 #include <stdlib.h>

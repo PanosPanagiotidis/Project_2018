@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../header/daindex.h"
+#include "daindex.h"
 
 chainArray *chainArrayCreateInit(int size)												// Creates and initializes a chainArray
 {
@@ -14,11 +14,9 @@ bucketHashTable *bucketTableCreateInit(void)											// Creates and initialize
 {
 	bucketHashTable *bucket = (bucketHashTable*)malloc(sizeof(bucketHashTable));
 	bucket->size = HASHFUNC_RANGE;														// Bucket array's size is equal to the range of the hash function
-	//bucket->table =  malloc((bucket->size)*sizeof(bucketHashTableData));
 	bucket->table = (uint64_t*)malloc((bucket->size)*sizeof(uint64_t));
 	bucket->occupiedCount = 0;
 
-	//for(int i=0; i< bucket->size; i++ )	bucket->table[i].position = 0;				// Marking all 'bucket' entries as empty
 	for(int i=0; i<bucket->size; i++)	bucket->table[i] = 0;
 
 	return bucket;

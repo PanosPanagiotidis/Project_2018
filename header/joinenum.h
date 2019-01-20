@@ -1,8 +1,8 @@
 #ifndef _JOINENUM_H_
 #define _JOINENUM_H_
 
-#include "../header/relation_loader.h"
-#include "../header/parser.h"
+#include "relation_loader.h"
+#include "parser.h"
 #include <unordered_set>
 
 

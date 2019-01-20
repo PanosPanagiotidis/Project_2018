@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "../header/relation_loader.h"
+#include "relation_loader.h"
 
 using namespace std;
 

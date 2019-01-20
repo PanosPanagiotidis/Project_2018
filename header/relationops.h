@@ -1,10 +1,10 @@
 #ifndef __RELATIONOPS_H__
 #define __RELATIONOPS_H__
 
-#include "../header/parser.h"
-#include "../header/relation_loader.h"
-#include "../header/results.h"
-#include "../header/thread_scheduler.h"
+#include "parser.h"
+#include "relation_loader.h"
+#include "results.h"
+#include "thread_scheduler.h"
 
 typedef struct tempResultArray{
 	std::vector<uint64_t *> rowID;
