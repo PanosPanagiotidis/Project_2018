@@ -1,0 +1,3 @@
+/home/george/Desktop/test/CMakeFiles/rebuild_cache.dir
+/home/george/Desktop/test/CMakeFiles/runTests.dir
+/home/george/Desktop/test/CMakeFiles/edit_cache.dir
