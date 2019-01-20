@@ -1,10 +1,18 @@
 CC=g++
 HDIR=-I'./header/'
-CFLAGS = -o3
 CPPFLAGS = -o3
 
-all: ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./src/joinenum.o
-	$(CC) $(CFLAGS)	-o JOIN.out ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./header/includes.h ./src/joinenum.o -lpthread
+all: HARNESS JOIN
+
+
+HARNESS: ./harnessfolder/harness.o
+	$(CC) $(CPPFLAGS) -o ./harnessfolder/harness ./harnessfolder/harness.o
+
+JOIN: ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./src/joinenum.o
+	$(CC) $(CPPFLAGS) -o JOIN.out ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./header/includes.h ./src/joinenum.o -lpthread
+
+harness.o:	./harnessfolder/harness.cpp
+	$(CC) $(CPPFLAGS) -c ./harnessfolder/harness.cpp
 
 testmain.o:	./src/testmain.cpp
 	$(CC) $(CPPFLAGS) -c ./src/testmain.cpp
@@ -19,7 +27,7 @@ results.o:	./src/results.cpp ./header/daindex.h
 	$(CC) $(CPPFLAGS) -c ./src/results.cpp ./header/includes.h
 
 daindex.o: 	./src/daindex.c
-	$(CC) $(CFLAGS) -c ./src/daindex.c
+	$(CC) $(CPPFLAGS) -c ./src/daindex.c
 
 parsing.o:	./src/parsing.cpp
 	$(CC) $(CPPFLAGS) -c ./src/parsing.cpp
@@ -38,3 +46,6 @@ clean:
 	$(RM) *.out
 	$(RM) ./src/*.o
 	$(RM) ./header/*.h.gch
+	$(RM) ./harnessfolder/*.o
+	$(RM) ./harnessfolder/harness
+
