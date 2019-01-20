@@ -38,3 +38,5 @@ To compile and run the program using the harness, simply run the bash script:
 ./run.sh
 
 ```
+
+need to chmod run.sh and runTestharness.sh
