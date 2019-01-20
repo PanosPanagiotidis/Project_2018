@@ -242,10 +242,16 @@ void Destroy_Table_Data(Table_Info** ti){
 
 	for(i = 0 ; i < (*ti)->histSize ; i++){//iterate and free items
 
-			for(j = 0 ; j < (*ti)->histogram[i] ; j++){
+			for(j = 0 ; j < (*ti)->histogram[i] ; j++)
+			{
 
-				if((*ti)->bck_array->bck[i]->tuplesArray != NULL){
 
+				if((*ti)->bck_array->bck[i]->tuplesArray != NULL)
+				{
+					if( (*ti)->relNum != 0 )
+					{
+						delete[] (*ti)->bck_array->bck[i]->tuplesArray[j]->rids;
+					}
 					delete ((*ti)->bck_array->bck[i]->tuplesArray[j]);
 				}
 
@@ -259,9 +265,19 @@ void Destroy_Table_Data(Table_Info** ti){
 	// }
 
 
+
+
 	delete[] ((*ti)->bck_array->bck);
 	delete ((*ti)->bck_array);
 	delete[] ((*ti)->histogram);
+	if((*ti)->rids != NULL )
+	{
+		for( int i  = 0; i < (*ti)->relNum; i++)
+		{
+			delete[] ((*ti)->rids[i]);
+		}
+		delete[] (*ti)->rids;
+	}
 	// free((*ti)->tuples_table);
 	delete[] ((*ti)->R_Payload);
 	delete[] ((*ti)->R_Id);
@@ -517,6 +533,7 @@ Table_Info* init_table_info2(uint64_t** a, uint64_t* b,int relNum, int relID, in
 				ti->bck_array->bck[i]->tuplesArray[j]->payload = ti->R_Payload[prg];
 
 				ti->bck_array->bck[i]->tuplesArray[j]->rids = NULL;
+
 				if( relNum != 0 )
 				{
 					ti->bck_array->bck[i]->tuplesArray[j]->rids = new uint64_t[relNum];

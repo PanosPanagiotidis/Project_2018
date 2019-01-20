@@ -21,7 +21,6 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 	int jobs = 1<<N;
 
 	result *r = new result;
-	result *old = new result;
 
 	if(r == NULL){
 		fprintf(stderr,"Error allocating space for result struct \n");
@@ -40,10 +39,9 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 	uint64_t mask = (1 << N) - 1;
 
 	rlist** partials = new rlist*[jobs];
-	rlist** olds = new rlist*[jobs];
-	for(int i = 0 ; i < jobs ; i++){
+	for(int i = 0 ; i < jobs ; i++)
+	{
 		partials[i] = new rlist;
-		olds[i] = new rlist;
 	}
 
 	joinArg** args = new joinArg*[jobs];
@@ -57,7 +55,6 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 		args[i]->Index = Index;
 		args[i]->partials=partials[i];
 		args[i]->bucket = i;
-		args[i]->olds = olds[i];
 		args[i]->flag = flag;
 		add_work(tp->Q,&joinJob,args[i]);
 	}
@@ -88,28 +85,12 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 		}
 	}
 
-	// for(int i = 0 ; i < jobs ; i++){
-	// 	while(olds[i] != NULL){
-	// 		for(int j = 0 ;j < olds[i]->size;j++){
-	// 			toumble *t = new toumble;
-	// 			t->key=olds[i]->ts[j].key;
-	// 			old->results_array.push_back(t);
-	// 		}
-	// 		temp = olds[i];
-	// 		olds[i] = olds[i]->next;
-	// 		delete[] temp->ts;
-	// 		delete temp;
-	// 	}
-	// }
-
-	// delete[] partials;
-	// delete[] olds;
+	delete[] partials;
 
 
 
-	result** rets = new result*[2];
+	result** rets = new result*[1];
 	rets[0] = r;
-	// rets[1] = old;
 
 	return rets;
 }
@@ -135,10 +116,19 @@ void print_results(result* r){
 
 
 
-void destroy_results(result** r){
+void destroy_results(result** r)
+{
 
-	for(int i = 0 ; i < (*r)->results_array.size();i++){
-		delete((*r)->results_array.at(i));
+	for(std::vector<toumble*>::iterator it = (*r)->results_array.begin(); it != (*r)->results_array.end(); it++)
+	{
+		if((*it) != NULL)
+		{
+			if((*it)->rids != NULL)
+			{
+				delete[] (*it)->rids;
+			}
+			delete (*it);
+		}
 	}
 
 

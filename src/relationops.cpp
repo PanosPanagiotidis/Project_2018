@@ -399,6 +399,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 		}
 
 		tableInfo1 = init_table_info2(DrowID1, payloadColumn1,(int) tpr->res.at(0).rowID.size(), tprPos1, size1, thread_pool);
+		rowID1 = NULL;
 
 	}
 	else if(foundFlag2 == 1)
@@ -413,7 +414,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 				tprPos2 = f;
 		}
 		tableInfo2 = init_table_info2(DrowID2, payloadColumn2,(int) tpr->res.at(0).rowID.size(), tprPos2, size2, thread_pool);
-
+		rowID2 = NULL;
 	}
 
 
@@ -456,10 +457,7 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}
 
 
-	return;
-
 	destroy_results(&res[0]);
-	destroy_results(&res[1]);
 	delete[] res;
 
 	DAIndexArrayDestroy(indx,indexed->bck_array->size);
@@ -469,6 +467,16 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	}else{
 		Destroy_Table_Data(&tableInfo2);
 		Destroy_Table_Data(&indexed);
+	}
+
+	if(DrowID1!=NULL)
+	{
+		delete[] DrowID1;
+	}
+	else
+	if(DrowID2!=NULL)
+	{
+		delete[] DrowID2;
 	}
 	if(rowID1!=NULL)
 		delete[] rowID1;
@@ -518,7 +526,13 @@ void tempResultsJoinUpdate2(result *res , tempResults *tpr, int relID1, int relI
 
 			tpr->res.at(0).relationID.push_back(relID1);
 			tpr->res.at(0).size = res->results_array.size();
+			for( uint64_t i =0; i < tpr->res.at(0).rowID.size(); i++)
+			{
+				delete[] tpr->res.at(0).rowID.at(i);
+			}
 			tpr->res.at(0).rowID = newRowId;
+			delete[] rsl;
+
 		}
 		else
 		{
@@ -550,7 +564,7 @@ void tempResultsJoinUpdate2(result *res , tempResults *tpr, int relID1, int relI
 		{
 			for( std::vector<uint64_t *>:: iterator it = tpr->res.at(0).rowID.begin(); it != tpr->res.at(0).rowID.end(); it++ )
 			{
-				delete *it;
+				delete[] *it;
 				*it = NULL;
 			}
 
@@ -764,7 +778,7 @@ uint64_t getChecksum(tempResultArray* tr,relationArray* ra,std::vector<checksum_
 	int count = 0;
 	int tcv = cv.size();
 	for(check = cv.begin(); check != cv.end(); check++)
-	{	
+	{
 		count++;
 		checksum = 0;
 		for(j = 0; j < tr->relationID.size() ; j++)

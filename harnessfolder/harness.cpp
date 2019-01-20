@@ -296,6 +296,7 @@ int main(int argc, char *argv[]) {
     // Output the elapsed time in milliseconds
     double elapsed_sec = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
     cout << (long)(elapsed_sec * 1000) << endl;
+    write_bytes(stdin_pipe[1], "\n", 1);
     return EXIT_SUCCESS;
   }
 

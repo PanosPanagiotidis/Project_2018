@@ -14,9 +14,10 @@ int main(void)
 	relationArray *rArray = init_relations();
 
 	sleep(1);
-	std::clock_t start;
-	double duration;
-	start = std::clock();
+	struct timespec start, finish;
+	double elapsed;
+
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	threadpool* tp = threadpool_init(NUM_THREADS);
 
 	while(1){
@@ -41,10 +42,14 @@ int main(void)
 		deleteQuery(&qBatch);
 	}
 	destroy_pool(tp);
-	duration = (std::clock() - start)/(double) CLOCKS_PER_SEC;
-	cout << "Total Duration " << duration << endl;
+
+	clock_gettime(CLOCK_MONOTONIC, &finish);
+
+	elapsed = (finish.tv_sec - start.tv_sec);
+	elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+	cout << "Total Duration " << elapsed << endl;
 	deleteRelations(&rArray);
 
-
+	exit(0);
 	return 0;
 }
