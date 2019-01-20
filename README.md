@@ -39,4 +39,4 @@ To compile and run the program using the harness, simply run the bash script:
 
 ```
 
-need to chmode run.sh and runTestharness.sh
+need to chmod run.sh and runTestharness.sh
