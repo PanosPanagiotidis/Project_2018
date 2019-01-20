@@ -19,7 +19,7 @@ thread_scheduler.o: ./src/thread_scheduler.cpp ./header/includes.h
 	$(CC) $(CPPFLAGS) -c ./src/thread_scheduler.cpp ./header/includes.h -lpthread
 
 %.o: $(SRCDIR)/%.cpp
-	g++ $(CPPFLAGS) -c -o $@ $<
+	g++ $(CPPFLAGS) -o $@ -c $<
 
 clean:
 	$(RM) *.out

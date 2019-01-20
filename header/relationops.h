@@ -19,7 +19,7 @@ typedef struct tempResults{
 
 tempResults *queryExecute(Query *, relationArray *,threadpool* );
 
-void queryReorder(Query *);															// Reorders predicates in a query
+void queryReorder(Query *);																// Reorders predicates in a query
 
 void filtered_relation(predicates* ,relationArray* );
 uint64_t *createRowID(uint64_t);
@@ -34,7 +34,6 @@ inline uint64_t **convert_to_arrays(result *,uint64_t &ts);
 inline uint64_t* conjure_payload(uint64_t* ,uint64_t* ,uint64_t );
 inline uint64_t* createRowID(uint64_t );
 
-void tempResultsJoinUpdate(uint64_t **,int ,int, int, int, uint64_t, tempResults *,result* );
 void jointest(void);
 void fringeCase(relationArray *, tempResults *, int, int, int ,int);
 Query *editQuery(Query *);
