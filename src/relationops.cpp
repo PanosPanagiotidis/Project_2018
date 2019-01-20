@@ -355,23 +355,38 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 	rowID2 = tempResultsLookup(tpr,relationId2, &size2);
 
 
-	if( rowID1 == NULL )
+	if( rowID1 == NULL && size1 == 0 )
 	{
 		rowID1 = createRowID(currentRelation1->size);
 		size1  = currentRelation1->size;
 		tableInfo1 = init_table_info2(&rowID1, currentRelation1->relation[columnId1], 0, 0, size1, thread_pool);
 	}
-	else	foundFlag1++;
+	else if( rowID1 == NULL && size1 == 1)												// signifies that it was found and it was empty
+	{
+		tpr->res.at(0).rowID.push_back(NULL);
+		tpr->res.at(0).relationID.push_back(relationId2);
+		tpr->res.at(0).size = 0;
+		return;
+	}
+	else
+		foundFlag1++;
 
 
-
-	if( rowID2 == NULL )
+	if( rowID2 == NULL && size2 == 0)
 	{
 		rowID2 = createRowID(currentRelation2->size);
 		size2  = currentRelation2->size;
 		tableInfo2 = init_table_info2(&rowID2, currentRelation2->relation[columnId2], 0, 0, size2, thread_pool);
 	}
-	else	foundFlag2++;
+	else if( rowID2 == NULL && size2 == 1)
+	{
+		tpr->res.at(0).rowID.push_back(NULL);
+		tpr->res.at(0).relationID.push_back(relationId1);
+		tpr->res.at(0).size = 0;
+		return;
+	}
+	else
+		foundFlag2++;
 
 
 	uint64_t *payloadColumn1 = NULL;
@@ -416,7 +431,6 @@ void relation_join(predicates *pred, relationArray *rArray, tempResults *tpr)
 		tableInfo2 = init_table_info2(DrowID2, payloadColumn2,(int) tpr->res.at(0).rowID.size(), tprPos2, size2, thread_pool);
 		rowID2 = NULL;
 	}
-
 
 	int tempind = 0;
 	daIndex **indx;
@@ -589,6 +603,7 @@ void tempResultsJoinUpdate2(result *res , tempResults *tpr, int relID1, int relI
 
 inline uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *size)
 {
+	*size = 0;
 	if( tpr == NULL )	return NULL;
 
 	if( tpr->res.size() == 0 )	return NULL;
@@ -598,12 +613,13 @@ inline uint64_t *tempResultsLookup(tempResults *tpr, int relationId, uint64_t *s
 	for(it1 = tpr->res.begin(); it1 != tpr->res.end(); it1++)
 	{
 		*size = (*it1).size;
+		if(*size == 0)	*size = 1;
 
 		for( uint64_t j=0; j<(*it1).relationID.size(); j++)
 			if( (*it1).relationID.at(j) == relationId )			return (*it1).rowID.at(j);
 
 	}
-
+	*size = 0;
 	return NULL;
 }
 

@@ -31,7 +31,6 @@ std::vector<int> *joinEnumeration(relationArray *rArray, Query *qr)
 					set2.insert(*it2);
 
 					std::vector<int> *oldTree = hashTableGet(tht,&set2);
-
 					if( oldTree == NULL  || getCost(oldTree,rArray,qr) > getCost(currTree,rArray,qr) )
 					{
 						hashTableUpdate(tht, &set2, currTree);
@@ -57,7 +56,6 @@ std::vector<int> *joinEnumeration(relationArray *rArray, Query *qr)
 	destroyConnectArray(connectArray,qr->relations.size());
 	delete set;
 
-	// debugPrintVector(*rvect);
 	return rvect;
 }
 
@@ -165,7 +163,7 @@ uint64_t getCost(std::vector<int> *tree, relationArray *rArray, Query *qr)
 		{
 			if((*it)->type != JOIN )	continue;
 			columnStats **res = NULL;
-			if( (set.find((*it)->relation1) != set.end()) && (set.find((*it)->relation2) == set.end()) && (*it)->relation2 == transrel2 )				// if exactly one of the relations is found in the set
+			if( (set.find(qr->relations.at((*it)->relation1)) != set.end()) && (set.find(qr->relations.at((*it)->relation2)) == set.end()) && qr->relations.at((*it)->relation2) == transrel2 )				// if exactly one of the relations is found in the set
 			{
 				res = calculateJoinStats(rArray,rel1,(*it)->column1,rel2,(*it)->column2,tempStats[rel1],tempStats[rel2]);
 
@@ -187,7 +185,7 @@ uint64_t getCost(std::vector<int> *tree, relationArray *rArray, Query *qr)
 
 				cost += tempStats[rel1][0].valueCount;
 			}
-			else if( (set.find((*it)->relation1) == set.end()) && (set.find((*it)->relation2) != set.end()) && (*it)->relation1 == transrel2 )
+			else if( (set.find(qr->relations.at((*it)->relation1)) == set.end()) && (set.find(qr->relations.at((*it)->relation2)) != set.end()) && qr->relations.at((*it)->relation1) == transrel2 )
 			{
 				res = calculateJoinStats(rArray,rel2,(*it)->column1,rel1,(*it)->column2,tempStats[rel2],tempStats[rel1]);
 
