@@ -2,5 +2,5 @@
 
 make
 echo
-./harnessfolder/runTestharness.sh
+./Harness/runTestharness.sh
 echo
