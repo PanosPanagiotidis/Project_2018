@@ -86,7 +86,13 @@ typedef struct joinArg{
 	Table_Info* indexed;
 	Table_Info* nonIndexed;
 	daIndex** Index;
-	int bucket;
+	bucket* nonidx_bucket;
+	bucket* idx_bucket;
+	uint64_t size;
+	int loc;
+	uint64_t relNum;
+	uint64_t** rids;
+	uint64_t start_from;
 	rlist* partials;
 	rlist* olds;
 	int flag;

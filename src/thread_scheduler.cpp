@@ -258,33 +258,35 @@ void* joinJob(void* arg){
 	uint64_t mask = (1<<N)-1;
 	uint64_t max = 1<<N;
 	uint64_t LSB;
-	int bck = params->bucket;
-	int row_to;
+	int bck = params->loc;
+	int row_to = params->size;
 	int row_from;
+	bucket* nonidx = params->nonidx_bucket;
+	bucket* idx = params->idx_bucket;
+	uint64_t start_from = params->start_from;
+	// row_from = params->nonIndexed->pSum[bck];
 
-	row_from = params->nonIndexed->pSum[bck];
-
-	if(bck == max-1)
-		row_to = params->nonIndexed->rows;
-	else
-		row_to = params->nonIndexed->pSum[bck+1];
+	// if(bck == max-1)
+	// 	row_to = params->nonIndexed->rows;
+	// else
+	// 	row_to = params->nonIndexed->pSum[bck+1];
 
 
-	uint64_t* payloads = params->nonIndexed->R_Payload;
-	uint64_t* rows = params->nonIndexed->R_Id;
+	// uint64_t* payloads = params->nonIndexed->R_Payload;
+	// uint64_t* rows = params->nonIndexed->R_Id;
 	daIndex** index = params->Index;
 
-	int relNum = params->nonIndexed->relNum;
+	int relNum = params->relNum;
 	uint64_t **rids = NULL;
 
 
 	if( relNum != 0)
-		rids = params->nonIndexed->rids;
+		rids = params->rids;
 
 
 	rlist* results = params->partials;
 	//rlist* olds = params->olds;
-	uint64_t rsize = (400*1000)/sizeof(toumble);
+	uint64_t rsize = (500*1000)/sizeof(toumble);
 
 	results->next = NULL;
 	results->size = 0;
@@ -305,21 +307,20 @@ void* joinJob(void* arg){
 	uint64_t chain_pos;
 	uint64_t rkey;
 	//std::vector<toumble*> locals;
-	for(int i = row_from ; i < row_to ;i++){
+	for(int i = 0 ; i < row_to ;i++){
 
-		value = payloads[i];
-		key = rows[i];
+		value = nonidx->tuplesArray[i]->payload;
+		key = nonidx->tuplesArray[i]->key;
 
-		LSB = value & mask;
 		hash2 = value % HASHFUNC_RANGE;
-		chain_pos = index[LSB]->bucket->table[hash2];
+		chain_pos = index[bck]->bucket->table[hash2];
 
 		if(chain_pos == 0) continue;
 
 		while(chain_pos != 0){
 
 			rkey = chain_pos-1;
-			if(params->indexed->bck_array->bck[LSB]->tuplesArray[rkey]->payload == value){
+			if(idx->tuplesArray[rkey]->payload == value){
 
 				if(results->size == rsize){
 					results->next = new rlist;
@@ -330,14 +331,14 @@ void* joinJob(void* arg){
 				}
 
 				results->ts[results->size].key = key;
-				results->ts[results->size].payload = params->indexed->bck_array->bck[LSB]->tuplesArray[rkey]->key;
+				results->ts[results->size].payload = idx->tuplesArray[rkey]->key;
 				results->ts[results->size].rids = NULL;
 
 				if(relNum != 0)
 				{
 					results->ts[results->size].rids = new uint64_t[relNum];
 					for( int l=0; l < relNum; l++ )
-						results->ts[results->size].rids[l] = (rids[l][i]);
+						results->ts[results->size].rids[l] = (rids[l][i+start_from]);
 
 
 				}
@@ -345,7 +346,7 @@ void* joinJob(void* arg){
 				results->size++;
 			}
 
-			chain_pos = params->Index[LSB]->chain->array[chain_pos];
+			chain_pos = params->Index[bck]->chain->array[chain_pos];
 		}
 	}
 

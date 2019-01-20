@@ -40,15 +40,22 @@ result** getResults(Table_Info *T,Table_Info* nonIndexed,daIndex **Index,threadp
 
 	joinArg** args = new joinArg*[jobs];
 
-
+	uint64_t start_from = 0;
 	for(int i = 0 ; i < jobs ; i++){
 		args[i] = new joinArg;
-
-		args[i]->indexed = T;
-		args[i]->nonIndexed= nonIndexed;
+		if(i!=0)
+			start_from += nonIndexed->bck_array->bck[i-1]->size;
+		args[i]->start_from = start_from;
+		//args[i]->indexed = T;
+		//args[i]->nonIndexed= nonIndexed;
 		args[i]->Index = Index;
 		args[i]->partials=partials[i];
-		args[i]->bucket = i;
+		args[i]->rids = nonIndexed->rids;
+		args[i]->loc = i;
+		args[i]->relNum = nonIndexed->relNum;
+		args[i]->size = nonIndexed->bck_array->bck[i]->size;
+		args[i]->idx_bucket = T->bck_array->bck[i];
+		args[i]->nonidx_bucket = nonIndexed->bck_array->bck[i];
 		args[i]->flag = flag;
 		add_work(tp->Q,&joinJob,args[i]);
 	}
