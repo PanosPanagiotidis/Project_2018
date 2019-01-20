@@ -12,8 +12,8 @@ HARNESS: ./harnessfolder/harness.o
 harness.o:	./harnessfolder/harness.cpp
 	$(CC) $(CPPFLAGS) -c ./harnessfolder/harness.cpp
 
-JOIN: ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./src/joinenum.o
-	$(CC) $(CPPFLAGS) -o JOIN.out ./src/testmain.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./header/includes.h ./src/joinenum.o -lpthread
+JOIN: ./src/join.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./src/joinenum.o
+	$(CC) $(CPPFLAGS) -o JOIN.out ./src/join.o ./src/helper_functions.o ./src/results.o ./src/daindex.o ./src/parsing.o ./src/relationops.o ./src/relation_l.o ./src/thread_scheduler.o ./header/includes.h ./src/joinenum.o -lpthread
 
 thread_scheduler.o: ./src/thread_scheduler.cpp ./header/includes.h
 	$(CC) $(CPPFLAGS) -c ./src/thread_scheduler.cpp ./header/includes.h -lpthread
